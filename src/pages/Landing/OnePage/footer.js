@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Col, Container, Input, Row } from 'reactstrap';
 
-import crmLogo from "../../../assets/images/crm-logo.png";
+import { brandLogos, brandText } from "../../../config/brandConfig";
 
 const productLinks = [
     { label: "Leads", to: "/#features" },
@@ -64,7 +64,7 @@ const Footer = () => {
         event.preventDefault();
         const isOnLanding = location.pathname === "/" || location.pathname === "/landing";
         if (!isOnLanding) {
-            navigate("/");
+            navigate("/landing");
         }
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
@@ -77,10 +77,15 @@ const Footer = () => {
                         <Col lg={3} md={6}>
                             <Link to="/" className="landing-footer-brand text-decoration-none" onClick={goToLanding}>
                                 <span className="landing-footer-brand-logo">
-                                    <img src={crmLogo} alt="CRM SoftOnCloud" className="brand-logo-icon" height="40" />
+                                    <img
+                                        src={brandLogos.main}
+                                        alt={brandText.fullName}
+                                        className="brand-logo-icon"
+                                        height="40"
+                                    />
                                     <span className="landing-footer-brand-text">
-                                        <span className="landing-footer-brand-title">CRM</span>
-                                        <span className="landing-footer-brand-subtitle">SoftOnCloud</span>
+                                        <span className="landing-footer-brand-title">{brandText.productName}</span>
+                                        <span className="landing-footer-brand-subtitle">{brandText.companyName}</span>
                                     </span>
                                 </span>
                             </Link>

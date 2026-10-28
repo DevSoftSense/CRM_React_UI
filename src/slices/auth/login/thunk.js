@@ -1,104 +1,90 @@
-//Include Both Helper File with needed methods
-import { getFirebaseBackend } from "../../../helpers/firebase_helper";
+import { APIClient, setAuthorization } from "../../../helpers/api_helper";
+import { crmLogin } from "../../../helpers/crmAuthApi";
+import { isCrmAuth } from "../../../helpers/authMode";
 import {
-  postFakeLogin,
-  postJwtLogin,
-  postSocialLogin,
-} from "../../../helpers/fakebackend_helper";
+  bindTabPasswordEpoch,
+  clearAuthUser,
+  clearTabForceLogout,
+  getStoredAuthToken,
+  kickOtherTabsAfterLogout,
+  writeAuthUser,
+} from "../../../helpers/authSession";
 
-import { loginSuccess, logoutUserSuccess, apiError, reset_login_flag } from './reducer';
+import {
+  apiError,
+  loginPending,
+  loginSuccess,
+  logoutUserSuccess,
+  reset_login_flag,
+} from "./reducer";
 
+const api = new APIClient();
+const ORG_ID_STORAGE_KEY = "crm_last_org_id";
+
+const persistOrgId = (orgId, rememberMe) => {
+  if (rememberMe && orgId) {
+    localStorage.setItem(ORG_ID_STORAGE_KEY, String(orgId));
+  }
+};
+
+/**
+ * SoftOnCloud admin login only (never Themesbrand fake /auth/signin).
+ * Flow: SoftOnCloud login → resolve-context(product 28) → CRM session-renew.
+ */
 export const loginUser = (user, history) => async (dispatch) => {
+  dispatch(loginPending());
+
   try {
-    let response;
-    if (process.env.REACT_APP_DEFAULTAUTH === "firebase") {
-      let fireBaseBackend = getFirebaseBackend();
-      response = fireBaseBackend.loginUser(
-        user.email,
-        user.password
-      );
-    } else if (process.env.REACT_APP_DEFAULTAUTH === "jwt") {
-      response = postJwtLogin({
-        email: user.email,
-        password: user.password
-      });
+    const session = await crmLogin({
+      orgId: user.orgId,
+      email: user.email,
+      password: user.password,
+      rememberMe: user.rememberMe,
+    });
 
-    } else if (process.env.REACT_APP_DEFAULTAUTH) {
-      response = postFakeLogin({
-        email: user.email,
-        password: user.password,
-      });
-    }
-
-    var data = await response;
-
-    if (data) {
-      sessionStorage.setItem("authUser", JSON.stringify(data));
-      if (process.env.REACT_APP_DEFAULTAUTH === "fake") {
-        var finallogin = JSON.stringify(data);
-        finallogin = JSON.parse(finallogin)
-        data = finallogin.data;
-        if (finallogin.status === "success") {
-          dispatch(loginSuccess(data));
-          history('/dashboard')
-        } else {
-          dispatch(apiError(finallogin));
-        }
-      } else {
-        dispatch(loginSuccess(data));
-        history('/dashboard')
-      }
-    }
+    persistOrgId(user.orgId, user.rememberMe);
+    clearTabForceLogout();
+    writeAuthUser(session);
+    setAuthorization(session.token);
+    bindTabPasswordEpoch();
+    dispatch(loginSuccess(session));
+    history("/dashboard-crm");
   } catch (error) {
-    dispatch(apiError(error));
+    const message =
+      error?.message ||
+      error?.response?.data?.message ||
+      (typeof error === "string" ? error : "Unable to sign in. Please try again.");
+    dispatch(apiError(message));
   }
 };
 
 export const logoutUser = () => async (dispatch) => {
   try {
-    sessionStorage.removeItem("authUser");
-    let fireBaseBackend = getFirebaseBackend();
-    if (process.env.REACT_APP_DEFAULTAUTH === "firebase") {
-      const response = fireBaseBackend.logout;
-      dispatch(logoutUserSuccess(response));
-    } else {
-      dispatch(logoutUserSuccess(true));
+    const token = getStoredAuthToken();
+    if (token && isCrmAuth()) {
+      try {
+        setAuthorization(token);
+        await api.create("/api/auth/logout", { reason: "session_ended" });
+      } catch {
+        /* still clear local */
+      }
     }
 
+    kickOtherTabsAfterLogout();
+    clearAuthUser();
+    setAuthorization(null);
+    dispatch(logoutUserSuccess(true));
   } catch (error) {
-    dispatch(apiError(error));
+    clearAuthUser();
+    setAuthorization(null);
+    dispatch(apiError(error?.message || "Logout failed"));
   }
 };
 
-export const socialLogin = (type, history) => async (dispatch) => {
-  try {
-    let response;
-
-    if (process.env.REACT_APP_DEFAULTAUTH === "firebase") {
-      const fireBaseBackend = getFirebaseBackend();
-      response = fireBaseBackend.socialLoginUser(type);
-    }
-    //  else {
-      //   response = postSocialLogin(data);
-      // }
-      
-      const socialdata = await response;
-    if (socialdata) {
-      sessionStorage.setItem("authUser", JSON.stringify(response));
-      dispatch(loginSuccess(response));
-      history('/dashboard')
-    }
-
-  } catch (error) {
-    dispatch(apiError(error));
-  }
+export const socialLogin = () => async () => {
+  /* SoftOnCloud CRM uses org + email + password only */
 };
 
 export const resetLoginFlag = () => async (dispatch) => {
-  try {
-    const response = dispatch(reset_login_flag());
-    return response;
-  } catch (error) {
-    dispatch(apiError(error));
-  }
+  dispatch(reset_login_flag());
 };

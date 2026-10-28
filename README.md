@@ -1,70 +1,45 @@
-# Getting Started with Create React App
+# SoftOnCloud CRM — React UI (`CRM_React_UI`)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Velzon shell + SoftOnCloud login (same pattern as Appointment).
 
-## Available Scripts
+## Env files (like Appointment — only 2)
 
-In the project directory, you can run:
+| File | When used | Product API | SoftOnCloud | App id |
+|------|-----------|-------------|-------------|--------|
+| `.env` | `npm start` (**local**) | `http://localhost:5191` | `https://api.softoncloud.com` | **28** |
+| `.env.production` | `npm run build` (**live**) | `https://crmapi.softoncloud.com` | `https://api.softoncloud.com` | **28** |
 
-### `npm start`
+Key vars:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```
+REACT_APP_DEFAULTAUTH=crm
+REACT_APP_CRM_PRODUCT_ID=28
+REACT_APP_API_URL=...
+REACT_APP_SOFTONCLOUD_API_URL=https://api.softoncloud.com
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Run (local)
 
-### `npm test`
+1. Start CRM API: `CRM_API/CRM.API` → http://localhost:5191  
+2. UI:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+cd CRM_UI/CRM_React_UI
+npm start
+```
 
-### `npm run build`
+3. Browser opens → **`/`** → landing (`/landing`); click **Sign in** → `/login`  
+4. Enter SoftOnCloud **Organisation ID**, admin **email**, **password** → Sign In  
+5. After success → `/dashboard-crm` with JWT (CRM product **28** access required)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Login flow
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
+UI /login
+  → SoftOnCloud POST /api/auth/login
+  → SoftOnCloud GET /api/auth/resolve-context?productId=28
+  → CRM API POST /api/auth/session-renew
+  → store JWT → /dashboard-crm
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Admin must have SoftOnCloud access to product **28** (CRM).

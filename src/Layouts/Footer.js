@@ -1,25 +1,21 @@
-import React from 'react';
-import { Col, Container, Row } from 'reactstrap';
+import React from "react";
+import { Col, Container, Row } from "reactstrap";
+import { brandText } from "../config/brandConfig";
 
 const Footer = () => {
-    return (
-        <React.Fragment>
-            <footer className="footer">
-                <Container fluid>
-                    <Row>
-                        <Col sm={6}>
-                            {new Date().getFullYear()} © Velzon.
-                        </Col>
-                        <Col sm={6}>
-                            <div className="text-sm-end d-none d-sm-block">
-                                Design & Develop by Themesbrand
-                            </div>
-                        </Col>
-                    </Row>
-                </Container>
-            </footer>
-        </React.Fragment>
-    );
+  return (
+    <React.Fragment>
+      <footer className="footer">
+        <Container fluid className="px-0">
+          <Row className="align-items-center g-0">
+            <Col xs={12} className="text-center">
+              <div className="footer-brand-text">{brandText.poweredBy}</div>
+            </Col>
+          </Row>
+        </Container>
+      </footer>
+    </React.Fragment>
+  );
 };
 
 export default Footer;
