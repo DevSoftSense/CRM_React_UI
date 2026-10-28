@@ -47,6 +47,21 @@ import CrmCompanies from "../pages/Crm/CrmCompanies";
 import CrmContacts from "../pages/Crm/CrmContacts";
 import CrmDeals from "../pages/Crm/CrmDeals/index";
 import CrmLeads from "../pages/Crm/CrmLeads/index";
+import SoftOnCloudLeads from "../pages/Crm/Leads/Leads";
+import SoftOnCloudLeadDetail from "../pages/Crm/Leads/LeadDetail";
+import SoftOnCloudOpportunities from "../pages/Crm/Opportunities/Opportunities";
+import SoftOnCloudOpportunityDetail from "../pages/Crm/Opportunities/OpportunityDetail";
+import SoftOnCloudCustomers from "../pages/Crm/Customers/Customers";
+import SoftOnCloudCustomerDetail from "../pages/Crm/Customers/CustomerDetail";
+import SoftOnCloudContacts from "../pages/Crm/Contacts/Contacts";
+import SoftOnCloudContactDetail from "../pages/Crm/Contacts/ContactDetail";
+import SoftOnCloudPipeline from "../pages/Crm/Pipeline/Pipeline";
+import SoftOnCloudOwners from "../pages/Crm/Owners/Owners";
+import SoftOnCloudActivities from "../pages/Crm/Activities/Activities";
+import SoftOnCloudActivityDetail from "../pages/Crm/Activities/ActivityDetail";
+import SoftOnCloudActivityCalendar from "../pages/Crm/Activities/Calendar";
+import SoftOnCloudTasks from "../pages/Crm/Tasks/Tasks";
+import SoftOnCloudTaskDetail from "../pages/Crm/Tasks/TaskDetail";
 
 //Invoices
 import InvoiceList from "../pages/Invoices/InvoiceList";
@@ -230,7 +245,8 @@ import CompaniesList from "../pages/Jobs/CompaniesList";
 import OnePage from "../pages/Landing/OnePage";
 import NFTLanding from "../pages/Landing/NFTLanding";
 
-const RootRoute = () => <OnePage />;
+/** Cold start → CRM landing; Sign in goes to /login. */
+const RootRoute = () => <Navigate to="/landing" replace />;
 
 import PrivecyPolicy from '../pages/Pages/PrivacyPolicy';
 import TermsCondition from '../pages/Pages/TermsCondition';
@@ -300,7 +316,24 @@ const authProtectedRoutes = [
   //Api Key
   { path: "/apps-api-key", component: <APIKey /> },
 
-  //Crm
+  // SoftOnCloud CRM (product — same style as Appointment)
+  { path: "/crm/leads", component: <SoftOnCloudLeads /> },
+  { path: "/crm/leads/:leadId", component: <SoftOnCloudLeadDetail /> },
+  { path: "/crm/opportunities", component: <SoftOnCloudOpportunities /> },
+  { path: "/crm/opportunities/:opportunityId", component: <SoftOnCloudOpportunityDetail /> },
+  { path: "/crm/customers", component: <SoftOnCloudCustomers /> },
+  { path: "/crm/customers/:accountId", component: <SoftOnCloudCustomerDetail /> },
+  { path: "/crm/contacts", component: <SoftOnCloudContacts /> },
+  { path: "/crm/contacts/:contactPersonId", component: <SoftOnCloudContactDetail /> },
+  { path: "/crm/pipeline", component: <SoftOnCloudPipeline /> },
+  { path: "/crm/owners", component: <SoftOnCloudOwners /> },
+  { path: "/crm/activities", component: <SoftOnCloudActivities /> },
+  { path: "/crm/activities/:activityId", component: <SoftOnCloudActivityDetail /> },
+  { path: "/crm/calendar", component: <SoftOnCloudActivityCalendar /> },
+  { path: "/crm/tasks", component: <SoftOnCloudTasks /> },
+  { path: "/crm/tasks/:taskId", component: <SoftOnCloudTaskDetail /> },
+
+  //Crm (Velzon demo — keep for reference)
   { path: "/apps-crm-contacts", component: <CrmContacts /> },
   { path: "/apps-crm-companies", component: <CrmCompanies /> },
   { path: "/apps-crm-deals", component: <CrmDeals /> },
@@ -460,7 +493,7 @@ const authProtectedRoutes = [
   //User Profile
   { path: "/profile", component: <UserProfile /> },
 
-  { path: "*", component: <Navigate to="/dashboard" /> },
+  { path: "*", component: <Navigate to="/dashboard-crm" /> },
 ];
 
 const publicRoutes = [

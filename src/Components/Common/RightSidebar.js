@@ -983,6 +983,44 @@ const RightSidebar = (props) => {
                                                     <h5 className="fs-13 text-center mt-2">Dark</h5>
                                                 </div>
 
+                                                <div className="col-4">
+                                                    <div className="form-check sidebar-setting card-radio">
+                                                        <input
+                                                            className="form-check-input"
+                                                            type="radio"
+                                                            name="data-sidebar"
+                                                            id="sidebar-color-custom"
+                                                            value={leftSidebarTypes.CUSTOM}
+                                                            checked={leftSidebarType === leftSidebarTypes.CUSTOM}
+                                                            onChange={e => {
+                                                                setShow(false);
+                                                                if (e.target.checked) {
+                                                                    dispatch(changeSidebarTheme(e.target.value));
+                                                                }
+                                                            }}
+                                                        />
+                                                        <label className="form-check-label p-0 avatar-md w-100" htmlFor="sidebar-color-custom">
+                                                            <span className="d-flex gap-1 h-100">
+                                                                <span className="flex-shrink-0">
+                                                                    <span className="d-flex h-100 flex-column gap-1 p-1" style={{ backgroundColor: "#7f1d1d" }}>
+                                                                        <span className="d-block p-1 px-2 bg-white bg-opacity-10 rounded mb-2"></span>
+                                                                        <span className="d-block p-1 px-2 pb-0 bg-white bg-opacity-10"></span>
+                                                                        <span className="d-block p-1 px-2 pb-0 bg-white bg-opacity-10"></span>
+                                                                        <span className="d-block p-1 px-2 pb-0 bg-white bg-opacity-10"></span>
+                                                                    </span>
+                                                                </span>
+                                                                <span className="flex-grow-1">
+                                                                    <span className="d-flex h-100 flex-column">
+                                                                        <span className="bg-light d-block p-1"></span>
+                                                                        <span className="bg-light d-block p-1 mt-auto"></span>
+                                                                    </span>
+                                                                </span>
+                                                            </span>
+                                                        </label>
+                                                    </div>
+                                                    <h5 className="fs-13 text-center mt-2">CRM</h5>
+                                                </div>
+
                                                  <div className="col-4">
                                                     <button
                                                         className={classnames(

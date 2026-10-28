@@ -13,6 +13,7 @@ const layoutModeTypes = {
 const leftSidebarTypes = {
   LIGHT: "light",
   DARK: "dark",
+  CUSTOM: "custom",
   GRADIENT: "gradient",
   GRADIENT_2: "gradient-2",
   GRADIENT_3: "gradient-3",

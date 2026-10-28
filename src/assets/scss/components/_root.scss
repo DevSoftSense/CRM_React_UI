@@ -95,6 +95,22 @@
             --#{$prefix}vertical-menu-box-shadow:                       #{$dark-vertical-menu-box-shadow};
             --#{$prefix}vertical-menu-dropdown-box-shadow:              #{$dark-vertical-menu-dropdown-box-shadow};
         }
+
+        // SoftOnCloud CRM landing maroon sidebar
+        &[data-sidebar="custom"] {
+            --#{$prefix}vertical-menu-bg:                               var(--#{$prefix}vertical-menu-bg-custom, #7f1d1d);
+            --#{$prefix}vertical-menu-border:                           var(--#{$prefix}vertical-menu-bg-custom, #7f1d1d);
+            --#{$prefix}vertical-menu-item-color:                       var(--#{$prefix}vertical-menu-item-muted-custom, rgba(255, 255, 255, 0.82));
+            --#{$prefix}vertical-menu-item-bg:                          rgba(255, 255, 255, 0.12);
+            --#{$prefix}vertical-menu-item-hover-color:                 #ffffff;
+            --#{$prefix}vertical-menu-item-active-color:                #ffffff;
+            --#{$prefix}vertical-menu-item-active-bg:                   rgba(255, 255, 255, 0.12);
+            --#{$prefix}vertical-menu-sub-item-color:                   var(--#{$prefix}vertical-menu-sub-item-color-custom, rgba(255, 255, 255, 0.68));
+            --#{$prefix}vertical-menu-sub-item-hover-color:             #ffffff;
+            --#{$prefix}vertical-menu-sub-item-active-color:            #ffffff;
+            --#{$prefix}vertical-menu-title-color:                      var(--#{$prefix}vertical-menu-title-color-custom, rgba(255, 255, 255, 0.45));
+            --#{$prefix}twocolumn-menu-iconview-bg:                     var(--#{$prefix}vertical-menu-bg-custom, #7f1d1d);
+        }
     }
 }
 

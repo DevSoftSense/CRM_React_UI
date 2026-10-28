@@ -51,6 +51,11 @@ export const changeSidebarTheme = (theme) => async (dispatch) => {
     try {
         changeHTMLAttribute("data-sidebar", theme);
         dispatch(changeSidebarThemeAction(theme));
+        // CRM maroon brand vars when using custom (landing) sidebar
+        if (theme === "custom") {
+            const { applyBrandTheme } = await import("../../helpers/brandTheme");
+            applyBrandTheme();
+        }
     } catch (error) {
         // console.log(error);
     }

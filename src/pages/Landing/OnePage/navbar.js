@@ -3,9 +3,8 @@ import { Collapse, Container, NavbarToggler, NavLink } from "reactstrap";
 import Scrollspy from "react-scrollspy";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-import crmLogo from "../../../assets/images/crm-logo.png";
-
-const logoAlt = "CRM SoftOnCloud logo";
+import { brandLogos, brandText } from "../../../config/brandConfig";
+import { applyLandingBrandTheme } from "../../../helpers/brandTheme";
 
 const Navbar = () => {
     const [isOpenMenu, setisOpenMenu] = useState(false);
@@ -13,13 +12,17 @@ const Navbar = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
+    useEffect(() => {
+        applyLandingBrandTheme();
+    }, []);
+
     const toggle = () => setisOpenMenu(!isOpenMenu);
 
     const goToLanding = (event) => {
         event.preventDefault();
         const isOnLanding = location.pathname === "/" || location.pathname === "/landing";
         if (!isOnLanding) {
-            navigate("/");
+            navigate("/landing");
         }
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
@@ -74,10 +77,15 @@ const Navbar = () => {
                 <Container>
                     <Link className="navbar-brand landing-brand" to="/" onClick={goToLanding}>
                         <span className="brand-logo-expanded">
-                            <img src={crmLogo} alt={logoAlt} className="brand-logo-icon" height="50" />
+                            <img
+                                src={brandLogos.main}
+                                alt={brandText.fullName}
+                                className="brand-logo-icon"
+                                height="50"
+                            />
                             <span className="brand-logo-text">
-                                <span className="brand-logo-title">CRM</span>
-                                <span className="brand-logo-subtitle">SoftOnCloud</span>
+                                <span className="brand-logo-title">{brandText.productName}</span>
+                                <span className="brand-logo-subtitle">{brandText.companyName}</span>
                             </span>
                         </span>
                     </Link>
@@ -131,10 +139,18 @@ const Navbar = () => {
                         </Scrollspy>
 
                         <div className="">
-                            <a href="https://softoncloud.com/" className="btn btn-link fw-medium text-decoration-none">
+                            <Link
+                                to="/login"
+                                className="btn btn-link fw-medium text-decoration-none text-white"
+                            >
                                 Sign in
-                            </a>
-                            <a href="https://softoncloud.com/" className="btn btn-light">
+                            </Link>
+                            <a
+                                href="https://softoncloud.com/"
+                                className="btn btn-light"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
                                 Sign Up
                             </a>
                         </div>

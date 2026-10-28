@@ -16,10 +16,9 @@ import { useSelector, useDispatch } from "react-redux";
 
 import { Link, useNavigate } from "react-router-dom";
 
-//import images 
-import logoLight from "../../assets/images/logo-light.png";
 import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
 import { createSelector } from "reselect";
+import { brandLogos, brandText } from "../../config/brandConfig";
 
 const Register = () => {
     const history = useNavigate();
@@ -87,8 +86,8 @@ const Register = () => {
                             <Col lg={12}>
                                 <div className="text-center mt-sm-5 mb-4 text-white-50">
                                     <div>
-                                        <Link to="/" className="d-inline-block auth-logo">
-                                            <img src={logoLight} alt="" height="20" />
+                                        <Link to="/login" className="d-inline-block auth-logo">
+                                            <img src={brandLogos.main} alt={brandText.fullName} height="48" />
                                         </Link>
                                     </div>
                                     <p className="mt-3 fs-15 fw-medium">Premium Admin & Dashboard Template</p>

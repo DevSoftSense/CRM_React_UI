@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import Navbar from './navbar';
 import Home from './home';
@@ -8,9 +8,14 @@ import WorkProcess from './workProcess';
 import Faqs from './faq';
 import Contact from './contact';
 import Footer from './footer';
+import { applyLandingBrandTheme } from '../../../helpers/brandTheme';
 
 const Index = () => {
     document.title = "CRM | SoftOnCloud";
+
+    useEffect(() => {
+        applyLandingBrandTheme();
+    }, []);
 
     window.onscroll = function () {
         scrollFunction();

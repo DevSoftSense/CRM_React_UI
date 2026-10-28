@@ -1,0 +1,818 @@
+//
+// SoftOnCloud CRM brand — landing maroon (#7f1d1d) across app
+// CSS variables set by helpers/brandTheme.js
+//
+
+:root {
+  --vz-primary: #7f1d1d;
+  --vz-primary-rgb: 127, 29, 29;
+  --vz-brand-primary: #7f1d1d;
+  --vz-brand-primary-dark: #5c1018;
+  --vz-brand-primary-light: #fca5a5;
+  --vz-vertical-menu-bg-custom: #7f1d1d;
+  --vz-vertical-menu-item-color-custom: #ffffff;
+  --vz-vertical-menu-item-muted-custom: rgba(255, 255, 255, 0.82);
+  --vz-vertical-menu-sub-item-color-custom: rgba(255, 255, 255, 0.68);
+  --vz-vertical-menu-title-color-custom: rgba(255, 255, 255, 0.45);
+  --landing-accent: #7f1d1d;
+  --landing-accent-rgb: 127, 29, 29;
+  --landing-accent-dark: #5c1018;
+  --landing-accent-hover: #991b1b;
+  --landing-accent-soft: #fca5a5;
+  --auth-overlay-gradient: linear-gradient(to right, #5c1018, #7f1d1d);
+}
+
+.auth-one-bg {
+  .bg-overlay {
+    background: var(
+      --auth-overlay-gradient,
+      linear-gradient(
+        to right,
+        var(--vz-brand-primary-dark, #5c1018),
+        var(--vz-brand-primary, #7f1d1d)
+      )
+    );
+    opacity: 0.92;
+  }
+}
+
+.auth-page-wrapper {
+  .text-primary {
+    color: var(--vz-brand-primary, var(--vz-primary)) !important;
+  }
+
+  .btn-success,
+  .btn-primary {
+    background-color: var(--vz-brand-primary, var(--vz-primary));
+    border-color: var(--vz-brand-primary, var(--vz-primary));
+    color: #fff;
+
+    &:hover,
+    &:focus,
+    &:active {
+      background-color: var(--vz-brand-primary-dark, #5c1018) !important;
+      border-color: var(--vz-brand-primary-dark, #5c1018) !important;
+      color: #fff !important;
+    }
+  }
+}
+
+.btn-primary {
+  color: #fff !important;
+  background-color: var(--vz-brand-primary, var(--vz-primary)) !important;
+  border-color: var(--vz-brand-primary, var(--vz-primary)) !important;
+
+  &:hover,
+  &:focus,
+  &:active,
+  &.active {
+    background-color: var(--vz-brand-primary-dark, #5c1018) !important;
+    border-color: var(--vz-brand-primary-dark, #5c1018) !important;
+    color: #fff !important;
+  }
+}
+
+.text-primary {
+  color: var(--vz-brand-primary, var(--vz-primary)) !important;
+}
+
+.bg-primary {
+  background-color: var(--vz-brand-primary, var(--vz-primary)) !important;
+}
+
+.border-primary {
+  border-color: var(--vz-brand-primary, var(--vz-primary)) !important;
+}
+
+.link-primary,
+a.text-primary {
+  color: var(--vz-brand-primary, var(--vz-primary)) !important;
+
+  &:hover {
+    color: var(--vz-brand-primary-dark, #5c1018) !important;
+  }
+}
+
+.page-item.active .page-link,
+.nav-pills .nav-link.active,
+.nav-tabs .nav-link.active {
+  background-color: var(--vz-brand-primary, var(--vz-primary)) !important;
+  border-color: var(--vz-brand-primary, var(--vz-primary)) !important;
+  color: #fff !important;
+}
+
+.form-check-input:checked {
+  background-color: var(--vz-brand-primary, var(--vz-primary)) !important;
+  border-color: var(--vz-brand-primary, var(--vz-primary)) !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: rgba(var(--landing-accent-rgb, 127, 29, 29), 0.45) !important;
+  box-shadow: 0 0 0 0.2rem rgba(var(--landing-accent-rgb, 127, 29, 29), 0.2) !important;
+}
+
+.badge.bg-primary,
+.badge-soft-primary {
+  background-color: var(--vz-brand-primary, var(--vz-primary)) !important;
+}
+
+.badge-soft-primary {
+  background-color: rgba(var(--landing-accent-rgb, 127, 29, 29), 0.12) !important;
+  color: var(--vz-brand-primary, var(--vz-primary)) !important;
+}
+
+.list-group-item.active {
+  background-color: var(--vz-brand-primary, var(--vz-primary)) !important;
+  border-color: var(--vz-brand-primary, var(--vz-primary)) !important;
+  color: #fff !important;
+}
+
+// Sidebar custom (landing maroon)
+[data-layout="vertical"][data-sidebar="custom"] .navbar-menu.app-menu,
+[data-layout="semibox"][data-sidebar="custom"] .navbar-menu.app-menu,
+[data-layout="vertical"][data-sidebar="dark"] .navbar-menu.app-menu {
+  background: var(--vz-vertical-menu-bg-custom, #7f1d1d) !important;
+  border-right-color: var(--vz-vertical-menu-bg-custom, #7f1d1d);
+}
+
+[data-layout="vertical"][data-sidebar="custom"] .navbar-brand-box,
+[data-layout="vertical"][data-sidebar="dark"] .navbar-brand-box {
+  background-color: var(--vz-vertical-menu-bg-custom, #7f1d1d) !important;
+}
+
+[data-sidebar="custom"] {
+  .logo-dark {
+    display: none;
+  }
+
+  .logo-light {
+    display: inline-block;
+  }
+
+  .menu-title {
+    color: var(--vz-vertical-menu-title-color-custom) !important;
+  }
+
+  .navbar-menu .navbar-nav .nav-link {
+    color: var(--vz-vertical-menu-item-muted-custom) !important;
+    background-color: transparent !important;
+
+    &:hover,
+    &.active,
+    &[aria-expanded="true"] {
+      color: var(--vz-vertical-menu-item-color-custom) !important;
+      background-color: transparent !important;
+    }
+  }
+}
+
+.navbar-landing,
+.navbar-landing.is-sticky {
+  background: var(--vz-vertical-menu-bg-custom, #7f1d1d) !important;
+}
+
+.navbar-landing.is-sticky {
+  background: var(--landing-accent-dark, #5c1018) !important;
+}
+
+/*
+ * Collapsed sidebar (sm) — keep menu icons visible in the maroon rail.
+ * Without flex + SimpleBar height, the icon list collapses to empty.
+ */
+[data-layout="vertical"][data-sidebar-size="sm"],
+[data-layout="vertical"][data-sidebar-size="sm-hover"],
+[data-layout="vertical"][data-sidebar-size="sm-hover-active"],
+[data-layout="semibox"][data-sidebar-size="sm"],
+[data-layout="semibox"][data-sidebar-size="sm-hover"],
+[data-layout="semibox"][data-sidebar-size="sm-hover-active"] {
+  .navbar-menu.app-menu {
+    position: fixed !important;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: var(--vz-vertical-menu-width-sm, 70px) !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    max-height: 100vh !important;
+    max-height: 100dvh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    padding-top: var(--vz-header-height, 70px) !important;
+    padding-bottom: 0 !important;
+    z-index: 1005 !important;
+    background: var(--vz-vertical-menu-bg-custom, #7f1d1d) !important;
+  }
+
+  .navbar-menu.app-menu > .navbar-brand-box {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: var(--vz-vertical-menu-width-sm, 70px) !important;
+    height: var(--vz-header-height, 70px) !important;
+    min-height: var(--vz-header-height, 70px) !important;
+    max-height: var(--vz-header-height, 70px) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    z-index: 1006;
+    background-color: var(--vz-vertical-menu-bg-custom, #7f1d1d) !important;
+  }
+
+  .navbar-menu.app-menu > .navbar-brand-box .logo-dark {
+    display: none !important;
+  }
+
+  .navbar-menu.app-menu > .navbar-brand-box .logo-light {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+
+    .logo-lg {
+      display: none !important;
+    }
+
+    .logo-sm {
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  .navbar-menu.app-menu > .simplebar-scrollable-y,
+  .navbar-menu.app-menu > .h-100,
+  .navbar-menu.app-menu > #scrollbar {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: 0 !important;
+    max-height: none !important;
+    overflow: hidden !important;
+  }
+
+  .navbar-menu.app-menu > .sidebar-background {
+    flex: 0 0 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none;
+  }
+
+  .navbar-menu.app-menu {
+    .simplebar-wrapper {
+      height: 100% !important;
+      min-height: 0 !important;
+    }
+
+    .simplebar-mask,
+    .simplebar-content-wrapper {
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .simplebar-scrollbar {
+      display: block !important;
+    }
+
+    /* Force menu icons visible in icon rail */
+    .navbar-nav {
+      .menu-title {
+        span {
+          display: none !important;
+        }
+
+        i {
+          display: block !important;
+          color: rgba(255, 255, 255, 0.55) !important;
+          line-height: 36px;
+          text-align: center;
+        }
+      }
+
+      > .nav-item > a.menu-link,
+      > .nav-item > .nav-link {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        color: #fff !important;
+        min-height: 44px;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+
+        span {
+          display: none !important;
+        }
+
+        i {
+          display: inline-block !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          font-size: 1.35rem !important;
+          line-height: 1 !important;
+          margin: 0 !important;
+          color: #fff !important;
+        }
+
+        svg {
+          display: inline-block !important;
+          width: 1.25rem !important;
+          height: 1.25rem !important;
+          margin: 0 !important;
+          fill: currentColor !important;
+          color: #fff !important;
+        }
+
+        &:after,
+        &:before {
+          display: none !important;
+        }
+
+        &:hover,
+        &.active,
+        &[aria-expanded="true"] {
+          color: #fff !important;
+          background-color: rgba(255, 255, 255, 0.12) !important;
+
+          i,
+          svg {
+            color: #fff !important;
+          }
+        }
+      }
+    }
+  }
+
+  #page-topbar {
+    @media (min-width: 768px) {
+      left: var(--vz-vertical-menu-width-sm, 70px) !important;
+    }
+  }
+
+  .main-content {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* Keep hamburger always visible next to search when sidebar is collapsed */
+[data-layout="vertical"][data-sidebar-size="sm"] .topnav-hamburger,
+[data-layout="vertical"][data-sidebar-size="sm-hover"] .topnav-hamburger,
+[data-layout="semibox"][data-sidebar-size="sm"] .topnav-hamburger {
+  visibility: visible !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  opacity: 1 !important;
+  z-index: 2;
+}
+
+/*
+ * Collapsed sm hover flyouts (JS adds .flyout-open).
+ * Shows label for leaf items / submenu panel for parents.
+ */
+[data-layout="vertical"][data-sidebar-size="sm"],
+[data-layout="semibox"][data-sidebar-size="sm"] {
+  .navbar-menu.app-menu .navbar-nav > .nav-item {
+    position: relative;
+    z-index: 1;
+
+    > .menu-dropdown,
+    &:hover > .menu-dropdown {
+      display: none !important;
+    }
+
+    &.flyout-open {
+      z-index: 1006;
+      min-height: var(--flyout-height, 0px);
+    }
+
+    &.flyout-open > a.menu-link {
+      position: fixed !important;
+      top: var(--flyout-link-top, var(--flyout-top, 0));
+      left: var(--flyout-left, 0);
+      height: var(--flyout-height, auto);
+      background-color: var(--vz-vertical-menu-bg-custom, #7f1d1d) !important;
+      color: #fff !important;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.28);
+      z-index: 1006;
+      justify-content: flex-start !important;
+      padding-left: 1.15rem !important;
+      padding-right: 1rem !important;
+    }
+
+    /* Leaf: expand label beside icon */
+    &.flyout-open:not(:has(> .menu-dropdown)) > a.menu-link {
+      width: calc(200px + var(--vz-vertical-menu-width-sm, 70px)) !important;
+
+      span {
+        display: inline-block !important;
+        padding-left: 1.25rem;
+        color: #fff !important;
+        white-space: nowrap;
+        vertical-align: middle;
+        font-weight: 500;
+      }
+
+      i {
+        margin: 0 !important;
+      }
+    }
+
+    /* Parent with submenu: icon stays on rail; children panel flies out */
+    &.flyout-open:has(> .menu-dropdown) > a.menu-link {
+      width: var(--vz-vertical-menu-width-sm, 70px) !important;
+      top: var(--flyout-link-top, var(--flyout-top, 0)) !important;
+      justify-content: center !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+
+      span {
+        display: none !important;
+      }
+    }
+
+    &.flyout-open > .menu-dropdown,
+    &.flyout-open:hover > .menu-dropdown {
+      display: block !important;
+      position: fixed !important;
+      top: var(--flyout-top, 0);
+      left: calc(var(--flyout-left, 0px) + var(--vz-vertical-menu-width-sm, 70px));
+      width: 200px;
+      max-height: var(--flyout-max-height, 70vh);
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      height: auto !important;
+      padding: 0.35rem 0;
+      background: var(--vz-vertical-menu-bg-custom, #7f1d1d) !important;
+      z-index: 1006;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      border-radius: 0 0.25rem 0.25rem 0;
+
+      .nav-link {
+        color: rgba(255, 255, 255, 0.85) !important;
+        padding: 0.45rem 1rem !important;
+        white-space: nowrap;
+
+        &:hover,
+        &.active {
+          color: #fff !important;
+          background-color: rgba(255, 255, 255, 0.12) !important;
+        }
+      }
+    }
+  }
+
+  /* Kill Velzon native :hover width expand (conflicts with flyout) */
+  .navbar-menu.app-menu .navbar-nav > .nav-item:hover > a.menu-link {
+    width: var(--vz-vertical-menu-width-sm, 70px) !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+
+    span {
+      display: none !important;
+    }
+  }
+
+  .navbar-menu.app-menu
+    .navbar-nav
+    > .nav-item.flyout-open:not(:has(> .menu-dropdown))
+    > a.menu-link,
+  .navbar-menu.app-menu
+    .navbar-nav
+    > .nav-item.flyout-open:not(:has(> .menu-dropdown)):hover
+    > a.menu-link {
+    width: calc(200px + var(--vz-vertical-menu-width-sm, 70px)) !important;
+    background-color: var(--vz-vertical-menu-bg-custom, #7f1d1d) !important;
+
+    span {
+      display: inline-block !important;
+      color: #fff !important;
+    }
+  }
+
+  .navbar-menu.app-menu .navbar-nav > .nav-item > a.menu-link[data-bs-toggle="collapse"]:after,
+  .navbar-menu.app-menu
+    .navbar-nav
+    > .nav-item:hover
+    > a.menu-link[data-bs-toggle="collapse"]:after {
+    display: none !important;
+  }
+}
+
+// ─── react-toastify — same sizing as Appointment (theme = light/dark from App.js) ───
+.Toastify {
+  .Toastify__toast {
+    min-height: 43px;
+  }
+
+  .Toastify__close-button {
+    top: 6px;
+  }
+}
+
+// ─── CRM list (same classes/layout as Appointment apt-list-*) ───
+.apt-list-card {
+  border: 1px solid var(--vz-border-color);
+  overflow: hidden;
+}
+
+.apt-list-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--vz-border-color);
+  background: var(--vz-card-bg, var(--vz-secondary-bg));
+
+  &__left {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem 1rem;
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  &__count {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--vz-heading-color, var(--vz-body-color));
+    flex: 0 0 auto;
+  }
+
+  &__search {
+    flex: 1 1 220px;
+    min-width: 180px;
+    max-width: 520px;
+    margin: 0 auto 0 0;
+
+    .form-control {
+      background-color: var(--vz-secondary-bg, #f3f6f9);
+      border-color: var(--vz-border-color);
+      color: var(--vz-body-color);
+      padding-left: 2.25rem;
+      border-radius: 0.375rem;
+      min-height: 38px;
+    }
+  }
+
+  &__filter-btn {
+    flex: 0 0 auto;
+    margin-left: auto;
+    min-height: 38px;
+    font-weight: 500;
+    position: relative;
+
+    &.is-active {
+      box-shadow: 0 0 0 2px rgba(var(--vz-primary-rgb), 0.35);
+    }
+  }
+
+  &__filter-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #fff;
+    margin-left: 0.35rem;
+    vertical-align: middle;
+  }
+}
+
+.apt-list-pagesize {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &--inline {
+    background: transparent;
+    padding: 0;
+    border: 0;
+    flex: 0 0 auto;
+  }
+
+  &__select {
+    width: auto;
+    min-width: 5.5rem;
+    display: inline-block;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    padding-right: 1.75rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    border-radius: 0.35rem;
+    border: 1px solid var(--vz-primary);
+    background-color: var(--vz-secondary-bg, #f3f6f9);
+    color: var(--vz-body-color);
+    cursor: pointer;
+
+    &:focus {
+      border-color: var(--vz-primary);
+      box-shadow: 0 0 0 0.15rem rgba(var(--vz-primary-rgb), 0.25);
+    }
+  }
+}
+
+.apt-list-table {
+  thead th {
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  &__head th {
+    background-color: var(--vz-secondary-bg, var(--vz-light));
+    color: var(--vz-heading-color, var(--vz-body-color));
+    border-bottom: 1px solid var(--vz-border-color);
+    font-size: 0.8125rem;
+  }
+
+  tbody td {
+    border-color: var(--vz-border-color);
+  }
+}
+
+.apt-list-header-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.apt-list-header-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+  color: inherit;
+  line-height: 1.2;
+
+  &:hover {
+    color: var(--vz-primary);
+  }
+}
+
+.apt-list-sort-arrows {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1;
+  font-size: 10px;
+  opacity: 0.5;
+  flex-shrink: 0;
+  color: var(--vz-secondary-color, #878a99);
+}
+
+.apt-list-colfilters {
+  &__input {
+    min-width: 5.5rem;
+    width: 100%;
+    max-width: 9rem;
+    font-size: 0.75rem;
+    font-weight: 400;
+    padding: 0.3rem 0.5rem;
+    border-radius: 0.35rem;
+    border: 1px solid var(--vz-border-color, #e9ebec);
+    background-color: var(--vz-input-bg, #fff);
+    color: var(--vz-body-color);
+
+    &::placeholder {
+      color: var(--vz-secondary-color, #878a99);
+      opacity: 1;
+    }
+
+    &:focus {
+      border-color: var(--vz-primary);
+      box-shadow: 0 0 0 0.15rem rgba(var(--vz-primary-rgb), 0.2);
+    }
+  }
+}
+
+.apt-adv-filters {
+  width: min(360px, 100vw) !important;
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
+
+  &__header {
+    border-bottom: 1px solid var(--vz-border-color);
+    padding: 1rem;
+  }
+
+  &__body {
+    padding: 1rem;
+  }
+
+  &__label {
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+  }
+
+  &__hint {
+    font-size: 0.75rem;
+    color: var(--vz-secondary-color, #878a99);
+  }
+
+  &__actions {
+    width: 100%;
+
+    .btn-link {
+      text-decoration: none;
+    }
+  }
+
+  .form-select,
+  .form-control {
+    width: 100%;
+    background-color: var(--vz-secondary-bg, #f3f6f9);
+    border-color: var(--vz-border-color);
+    color: var(--vz-body-color);
+  }
+}
+
+@media (max-width: 575.98px) {
+  .apt-list-toolbar {
+    &__search {
+      flex: 1 1 100%;
+      max-width: none;
+      margin: 0;
+      order: 3;
+    }
+
+    &__filter-btn {
+      margin-left: 0;
+    }
+  }
+
+  .apt-adv-filters {
+    width: 100vw !important;
+  }
+}
+
+html[data-bs-theme="dark"] {
+  .apt-list-table {
+    &__head th {
+      background-color: rgba(255, 255, 255, 0.04);
+      border-color: var(--vz-border-color, #32383e);
+    }
+  }
+
+  .apt-list-toolbar {
+    background: rgba(255, 255, 255, 0.02);
+
+    &__search .form-control {
+      background-color: rgba(255, 255, 255, 0.06);
+      border-color: var(--vz-border-color, #32383e);
+    }
+  }
+
+  .apt-list-pagesize__select,
+  .apt-list-colfilters__input,
+  .apt-adv-filters .form-select,
+  .apt-adv-filters .form-control {
+    background-color: rgba(255, 255, 255, 0.06);
+    border-color: var(--vz-border-color, #32383e);
+    color: var(--vz-body-color, #e9ebec);
+  }
+}
+
+/*
+ * App footer — same as Appointment: centered "Powered by SoftSense",
+ * full content band (no Velzon year / Themesbrand).
+ */
+[data-layout="vertical"],
+[data-layout="semibox"] {
+  .main-content > .footer,
+  .footer {
+    left: 0 !important;
+    right: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+  }
+
+  .footer .footer-brand-text {
+    width: 100%;
+    text-align: center;
+    white-space: nowrap;
+  }
+}
+
+[data-layout="horizontal"] {
+  .footer .footer-brand-text {
+    width: 100%;
+    text-align: center;
+    white-space: nowrap;
+  }
+}
+
