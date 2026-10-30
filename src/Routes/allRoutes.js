@@ -48,6 +48,7 @@ import CrmContacts from "../pages/Crm/CrmContacts";
 import CrmDeals from "../pages/Crm/CrmDeals/index";
 import CrmLeads from "../pages/Crm/CrmLeads/index";
 import SoftOnCloudLeads from "../pages/Crm/Leads/Leads";
+import SoftOnCloudCreateLead from "../pages/Crm/Leads/CreateLead";
 import SoftOnCloudLeadDetail from "../pages/Crm/Leads/LeadDetail";
 import SoftOnCloudOpportunities from "../pages/Crm/Opportunities/Opportunities";
 import SoftOnCloudOpportunityDetail from "../pages/Crm/Opportunities/OpportunityDetail";
@@ -318,6 +319,7 @@ const authProtectedRoutes = [
 
   // SoftOnCloud CRM (product — same style as Appointment)
   { path: "/crm/leads", component: <SoftOnCloudLeads /> },
+  { path: "/crm/leads/create", component: <SoftOnCloudCreateLead /> },
   { path: "/crm/leads/:leadId", component: <SoftOnCloudLeadDetail /> },
   { path: "/crm/opportunities", component: <SoftOnCloudOpportunities /> },
   { path: "/crm/opportunities/:opportunityId", component: <SoftOnCloudOpportunityDetail /> },

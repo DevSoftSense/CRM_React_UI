@@ -34,7 +34,7 @@ export const getOpportunityLookups = () => api.get("/api/opportunities/lookups")
 
 /** GET /api/opportunities/pipeline — kanban board by stage */
 export const getOpportunityPipeline = (params = {}) =>
-  api.get("/api/opportunities/pipeline", cleanParams({ search: params.search }));
+  api.get("/api/opportunities/pipeline", cleanParams({ search: params.search, ownerEmployeeId: params.ownerEmployeeId, fromDate: params.fromDate, toDate: params.toDate }));
 
 /** PUT /api/opportunities/:id/stage — drag card to new stage */
 export const moveOpportunityStage = (opportunityId, stageId) =>
