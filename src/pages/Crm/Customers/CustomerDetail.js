@@ -21,7 +21,8 @@ import {
   TabPane,
   Table,
 } from "reactstrap";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import CommunicationTimelineTab from "./CommunicationTimelineTab";
 import {
   getCustomerById,
   updateCustomer,
@@ -110,9 +111,9 @@ const getStageBadgeStyle = (stageName) => {
     return { bg: "#faf5ff", color: "#7e22ce", border: "#e9d5ff" };
   }
   if (s.includes("qualif")) {
-    return { bg: "#ecfdf5", color: "#047857", border: "#a7f3d0" };
+    return { bg: "#fef2f2", color: "#7f1d1d", border: "#fecaca" };
   }
-  return { bg: "#eff6ff", color: "#1d4ed8", border: "#bfdbfe" };
+  return { bg: "#f8fafc", color: "#475569", border: "#cbd5e1" };
 };
 
 const CustomerDetail = () => {
@@ -127,7 +128,14 @@ const CustomerDetail = () => {
   const [accountTypes, setAccountTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState("overview");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") || "overview";
+  const [activeTab, setActiveTabState] = useState(initialTab);
+
+  const setActiveTab = (tabId) => {
+    setActiveTabState(tabId);
+    setSearchParams(tabId === "overview" ? {} : { tab: tabId }, { replace: true });
+  };
 
   // Edit Customer Modal State
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -433,9 +441,13 @@ const CustomerDetail = () => {
             >
               <i className="ri-arrow-left-line" /> Back to Customers
             </Link>
-            <h4 className="fw-bold text-dark mb-0 fs-20 mt-1">Customer Details</h4>
+            <h4 className="fw-bold text-dark mb-0 fs-20 mt-1">
+              {activeTab === "timeline" ? "Communication Timeline" : "Customer Details"}
+            </h4>
             <div className="text-muted fs-12 mt-1">
-              CRM &gt; Customers &gt; {customer.displayName || customer.companyName}
+              {activeTab === "timeline"
+                ? "All interactions and touchpoints in chronological order"
+                : `CRM > Customers > ${customer.displayName || customer.companyName}`}
             </div>
           </div>
 
@@ -753,6 +765,7 @@ const CustomerDetail = () => {
               { id: "opportunities", label: `Opportunities (${opportunities.length})` },
               { id: "contacts", label: `Contacts (${contacts.length})` },
               { id: "activities", label: `Activities (${activities.length})` },
+              { id: "timeline", label: "Communication Timeline" },
             ].map((tab) => {
               const isActive = activeTab === tab.id;
               return (
@@ -1193,6 +1206,15 @@ const CustomerDetail = () => {
                 )}
               </CardBody>
             </Card>
+          </TabPane>
+          {/* TAB 5: COMMUNICATION TIMELINE */}
+          <TabPane tabId="timeline">
+            <CommunicationTimelineTab
+              accountId={accountId}
+              customer={customer}
+              onEditCustomer={openEditModal}
+              onOpenLogActivity={() => setActivityModalOpen(true)}
+            />
           </TabPane>
         </TabContent>
 

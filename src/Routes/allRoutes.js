@@ -63,6 +63,8 @@ import SoftOnCloudActivityDetail from "../pages/Crm/Activities/ActivityDetail";
 import SoftOnCloudActivityCalendar from "../pages/Crm/Activities/Calendar";
 import SoftOnCloudTasks from "../pages/Crm/Tasks/Tasks";
 import SoftOnCloudTaskDetail from "../pages/Crm/Tasks/TaskDetail";
+import SoftOnCloudDocuments from "../pages/Crm/Documents/Documents";
+import SoftOnCloudTimeline from "../pages/Crm/Timeline/Timeline";
 
 //Invoices
 import InvoiceList from "../pages/Invoices/InvoiceList";
@@ -270,8 +272,9 @@ import PageBlogOverview from "../pages/Pages/Blogs/Overview";
 const authProtectedRoutes = [
   { path: "/dashboard-analytics", component: <DashboardAnalytics /> },
   { path: "/dashboard-crm", component: <DashboardCrm /> },
-  { path: "/dashboard", component: <DashboardEcommerce /> },
-  { path: "/index", component: <DashboardEcommerce /> },
+  { path: "/crm/dashboard", component: <DashboardCrm /> },
+  { path: "/dashboard", component: <DashboardCrm /> },
+  { path: "/index", component: <DashboardCrm /> },
   { path: "/dashboard-crypto", component: <DashboardCrypto /> },
   { path: "/dashboard-projects", component: <DashboardProject /> },
   { path: "/dashboard-nft", component: <DashboardNFT /> },
@@ -334,6 +337,8 @@ const authProtectedRoutes = [
   { path: "/crm/calendar", component: <SoftOnCloudActivityCalendar /> },
   { path: "/crm/tasks", component: <SoftOnCloudTasks /> },
   { path: "/crm/tasks/:taskId", component: <SoftOnCloudTaskDetail /> },
+  { path: "/crm/documents", component: <SoftOnCloudDocuments /> },
+  { path: "/crm/timeline", component: <SoftOnCloudTimeline /> },
 
   //Crm (Velzon demo — keep for reference)
   { path: "/apps-crm-contacts", component: <CrmContacts /> },

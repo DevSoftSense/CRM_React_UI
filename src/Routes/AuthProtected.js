@@ -4,6 +4,7 @@ import { setAuthorization } from "../helpers/api_helper";
 import {
   bindTabPasswordEpoch,
   clearAuthUser,
+  clearTabForceLogout,
   getStoredAuthToken,
   installAuthCrossTabListener,
   isTabForceLogout,
@@ -32,12 +33,13 @@ const AuthProtected = (props) => {
       setAuthorization(bearer);
       try {
         const bound = sessionStorage.getItem("soc_tab_password_epoch");
-        if (bound == null || bound === "") {
+        if (bound == null || bound === "" || bound === "0") {
           bindTabPasswordEpoch();
         }
       } catch {
         bindTabPasswordEpoch();
       }
+      clearTabForceLogout();
     }
   }, [token, userProfile, loading]);
 
@@ -52,12 +54,14 @@ const AuthProtected = (props) => {
     return startSoftOnCloudSessionWatch(kickThisTabToLogin);
   }, []);
 
-  if (isTabForceLogout()) {
-    return <Navigate to="/login?reason=password_changed" replace />;
-  }
-
   const storedUser = userProfile || readAuthUser();
   const storedToken = token || getStoredAuthToken();
+
+  if (storedUser && storedToken) {
+    clearTabForceLogout();
+  } else if (isTabForceLogout()) {
+    return <Navigate to="/login?reason=password_changed" replace />;
+  }
 
   if (!storedUser || !storedToken) {
     return (

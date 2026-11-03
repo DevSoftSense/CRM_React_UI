@@ -955,9 +955,9 @@ const OpportunityDetail = () => {
                       {/* Clean tinted badge matching reference mockup */}
                       {(() => {
                         const s = String(opp.stageName || "").toLowerCase();
-                        let bg = "#eff6ff";
-                        let color = "#1d4ed8";
-                        let border = "#bfdbfe";
+                        let bg = "#f8fafc";
+                        let color = "#475569";
+                        let border = "#cbd5e1";
                         if (s.includes("won")) {
                           bg = "#dcfce7"; color = "#15803d"; border = "#bbf7d0";
                         } else if (s.includes("lost")) {
@@ -967,7 +967,7 @@ const OpportunityDetail = () => {
                         } else if (s.includes("propos")) {
                           bg = "#faf5ff"; color = "#7e22ce"; border = "#e9d5ff";
                         } else if (s.includes("qualif")) {
-                          bg = "#ecfdf5"; color = "#047857"; border = "#a7f3d0";
+                          bg = "#fef2f2"; color = "#7f1d1d"; border = "#fecaca";
                         }
                         return (
                           <span

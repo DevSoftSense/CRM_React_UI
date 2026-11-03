@@ -23,10 +23,13 @@ export const getTasks = (params = {}) =>
       employeeId: params.employeeId,
       dueFrom: params.dueFrom,
       dueTo: params.dueTo,
+      tab: params.tab,
       limit: params.limit ?? 50,
       offset: params.offset ?? 0,
     })
   );
+
+export const getTaskStats = () => api.get("/api/tasks/stats");
 
 export const getTaskLookups = () => api.get("/api/tasks/lookups");
 

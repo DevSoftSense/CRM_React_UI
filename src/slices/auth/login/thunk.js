@@ -21,9 +21,14 @@ import {
 const api = new APIClient();
 const ORG_ID_STORAGE_KEY = "crm_last_org_id";
 
-const persistOrgId = (orgId, rememberMe) => {
-  if (rememberMe && orgId) {
-    localStorage.setItem(ORG_ID_STORAGE_KEY, String(orgId));
+const persistCredentials = (orgId, email, rememberMe) => {
+  if (rememberMe) {
+    if (orgId) localStorage.setItem(ORG_ID_STORAGE_KEY, String(orgId));
+    if (email) localStorage.setItem("crm_remembered_email", String(email).trim());
+    localStorage.setItem("crm_remember_me", "true");
+  } else {
+    localStorage.removeItem("crm_remembered_email");
+    localStorage.removeItem("crm_remember_me");
   }
 };
 
@@ -42,7 +47,7 @@ export const loginUser = (user, history) => async (dispatch) => {
       rememberMe: user.rememberMe,
     });
 
-    persistOrgId(user.orgId, user.rememberMe);
+    persistCredentials(user.orgId, user.email, user.rememberMe);
     clearTabForceLogout();
     writeAuthUser(session);
     setAuthorization(session.token);
