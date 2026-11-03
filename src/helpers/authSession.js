@@ -154,9 +154,24 @@ export const bindTabPasswordEpoch = (epoch = getPasswordEpoch()) => {
 export const isPasswordEpochStale = () => {
   try {
     const shared = getPasswordEpoch();
-    const bound = String(sessionStorage.getItem(TAB_PASSWORD_EPOCH_KEY) || "0");
-    // shared bumped and this tab still on an older (or unbound) epoch
-    return shared !== "0" && shared !== bound;
+    const bound = sessionStorage.getItem(TAB_PASSWORD_EPOCH_KEY);
+
+    // If this tab was never bound, bind it now to the shared epoch.
+    // An unbound tab is just newly opened or switched to — NEVER kick!
+    if (!bound || bound === "0") {
+      if (shared && shared !== "0") {
+        bindTabPasswordEpoch(shared);
+      }
+      return false;
+    }
+
+    // Only considered stale if shared epoch exists and is strictly GREATER than this tab's bound epoch
+    // (i.e. another tab actively bumped the password epoch after this tab was opened)
+    if (shared && shared !== "0" && Number(shared) > Number(bound)) {
+      return true;
+    }
+
+    return false;
   } catch {
     return false;
   }
@@ -244,9 +259,7 @@ export const installAuthCrossTabListener = (onKick) => {
   window.addEventListener("storage", onStorage);
 
   const onVisible = () => {
-    if (document.visibilityState === "visible" && isPasswordEpochStale()) {
-      kick("password_changed");
-    }
+    // Tab visibility change — no auto-kick (SignalR + BroadcastChannel handle cross-tab events safely)
   };
   document.addEventListener("visibilitychange", onVisible);
 

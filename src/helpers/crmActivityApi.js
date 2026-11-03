@@ -43,6 +43,10 @@ export const getActivityCalendar = (params = {}) =>
 /** GET /api/activities/lookups */
 export const getActivityLookups = () => api.get("/api/activities/lookups");
 
+/** GET /api/activities/stats */
+export const getActivityStats = (params = {}) =>
+  api.get("/api/activities/stats", cleanParams(params));
+
 /** GET /api/activities/:activityId */
 export const getActivityById = (activityId) => api.get(`/api/activities/${activityId}`);
 

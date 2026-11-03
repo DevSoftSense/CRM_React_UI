@@ -25,6 +25,8 @@ import { loginUser, resetLoginFlag } from "../../slices/thunks";
 import { brandLogos, brandText } from "../../config/brandConfig";
 
 const ORG_ID_STORAGE_KEY = "crm_last_org_id";
+const SAVED_EMAIL_KEY = "crm_remembered_email";
+const REMEMBER_ME_KEY = "crm_remember_me";
 
 const Login = (props) => {
   const dispatch = useDispatch();
@@ -44,10 +46,10 @@ const Login = (props) => {
   const validation = useFormik({
     enableReinitialize: true,
     initialValues: {
-      orgId: localStorage.getItem(ORG_ID_STORAGE_KEY) || "",
-      email: "",
+      orgId: localStorage.getItem(ORG_ID_STORAGE_KEY) || "100004",
+      email: localStorage.getItem(SAVED_EMAIL_KEY) || "",
       password: "",
-      rememberMe: false,
+      rememberMe: localStorage.getItem(REMEMBER_ME_KEY) === "true",
     },
     validationSchema: Yup.object({
       orgId: Yup.number()
@@ -222,16 +224,27 @@ const Login = (props) => {
                         </div>
                       </div>
 
-                      <div className="form-check">
-                        <Input
-                          className="form-check-input"
+                      <div className="form-check d-flex align-items-center mb-3">
+                        <input
+                          className="form-check-input rounded-0 me-2"
                           type="checkbox"
                           id="rememberMe"
                           name="rememberMe"
-                          checked={validation.values.rememberMe}
-                          onChange={validation.handleChange}
+                          style={{
+                            cursor: 'pointer',
+                            accentColor: '#7f1d1d',
+                            width: '16px',
+                            height: '16px',
+                            marginTop: 0,
+                          }}
+                          checked={Boolean(validation.values.rememberMe)}
+                          onChange={(e) => validation.setFieldValue('rememberMe', e.target.checked)}
                         />
-                        <Label className="form-check-label" htmlFor="rememberMe">
+                        <Label
+                          className="form-check-label text-muted fs-13 user-select-none mb-0"
+                          htmlFor="rememberMe"
+                          style={{ cursor: 'pointer' }}
+                        >
                           Remember me
                         </Label>
                       </div>

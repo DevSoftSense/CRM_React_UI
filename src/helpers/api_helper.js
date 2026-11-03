@@ -19,6 +19,15 @@ axios.interceptors.request.use((config) => {
     config.baseURL = getCrmApiBaseUrl();
   }
 
+  // Always ensure Bearer token is attached from localStorage on every request
+  const token = getStoredAuthToken();
+  if (token) {
+    config.headers = config.headers || {};
+    if (!config.headers["Authorization"] && !config.headers["authorization"]) {
+      config.headers["Authorization"] = "Bearer " + token;
+    }
+  }
+
   try {
     const auth = readAuthUser();
     const roles = Array.isArray(auth?.productContext?.roles)
@@ -58,9 +67,13 @@ axios.interceptors.response.use(
 
     if (status === 401) {
       const reqUrl = String(error.config?.url || "");
-      if (reqUrl.includes("/api/auth/session-renew")) {
+      if (
+        reqUrl.includes("/api/auth/session-renew") ||
+        reqUrl.includes("/api/auth/login") ||
+        reqUrl.includes("/api/auth/resolve-context")
+      ) {
         return Promise.reject({
-          message: data?.message || "Session renew failed",
+          message: data?.message || "Authentication failed",
           status,
           data,
         });

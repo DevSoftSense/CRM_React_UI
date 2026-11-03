@@ -92,6 +92,15 @@ const Navdata = () => {
       },
     },
     {
+      id: "crm-timeline",
+      label: "Timeline",
+      icon: "ri-history-line",
+      link: "/crm/timeline",
+      click: function () {
+        setIscurrentState("Timeline");
+      },
+    },
+    {
       id: "crm-tasks",
       label: "Tasks",
       icon: "ri-task-line",
