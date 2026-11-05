@@ -1050,6 +1050,9 @@ const Tasks = () => {
                             onChange={handleSelectAll}
                           />
                         </th>
+                        <th className="fw-semibold text-secondary text-center py-3" style={{ width: "105px" }}>
+                          Actions
+                        </th>
                         <th className="fw-semibold text-secondary py-3" style={{ minWidth: "220px" }}>
                           Task
                         </th>
@@ -1070,9 +1073,6 @@ const Tasks = () => {
                         </th>
                         <th className="fw-semibold text-secondary py-3" style={{ minWidth: "100px" }}>
                           Status
-                        </th>
-                        <th className="fw-semibold text-secondary text-end pe-3 py-3" style={{ width: "90px" }}>
-                          Actions
                         </th>
                       </tr>
                     </thead>
@@ -1107,6 +1107,42 @@ const Tasks = () => {
                                   checked={selectedIds.includes(t.taskId)}
                                   onChange={() => handleSelectOne(t.taskId)}
                                 />
+                              </td>
+
+                              {/* Actions */}
+                              <td className="text-center py-2" style={{ width: "105px" }}>
+                                <div className="d-flex align-items-center justify-content-center gap-1 flex-nowrap">
+                                  <Button
+                                    color="light"
+                                    size="sm"
+                                    className="btn-icon p-1 rounded-0"
+                                    title="View Task Details"
+                                    onClick={() => openDetailModal(t.taskId)}
+                                    style={{ border: "1px solid #e2e8f0", width: "28px", height: "28px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                                  >
+                                    <i className="ri-eye-line text-muted fs-14"></i>
+                                  </Button>
+                                  <Button
+                                    color="light"
+                                    size="sm"
+                                    className="btn-icon p-1 rounded-0"
+                                    title="Edit Task"
+                                    onClick={() => openEditModal(t)}
+                                    style={{ border: "1px solid #e2e8f0", width: "28px", height: "28px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                                  >
+                                    <i className="ri-pencil-line text-primary fs-14"></i>
+                                  </Button>
+                                  <Button
+                                    color="light"
+                                    size="sm"
+                                    className="btn-icon p-1 rounded-0 text-danger"
+                                    title="Delete Task"
+                                    onClick={() => openDeleteModal(t)}
+                                    style={{ border: "1px solid #e2e8f0", width: "28px", height: "28px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                                  >
+                                    <i className="ri-delete-bin-line fs-14"></i>
+                                  </Button>
+                                </div>
                               </td>
 
                               {/* Task Title & Notes */}
@@ -1211,65 +1247,6 @@ const Tasks = () => {
                                 >
                                   {stBadge.label}
                                 </span>
-                              </td>
-
-                              {/* Actions */}
-                              <td className="text-end pe-3 py-2">
-                                <div className="d-flex align-items-center justify-content-end gap-1">
-                                  {/* Quick complete button */}
-                                  {!isComplete ? (
-                                    <Button
-                                      color="light"
-                                      size="sm"
-                                      className="btn-icon p-1 rounded-0"
-                                      title="Mark Complete"
-                                      onClick={() => handleCompleteTask(t.taskId)}
-                                      style={{ border: "1px solid #e2e8f0" }}
-                                    >
-                                      <i className="ri-check-line text-success fs-14"></i>
-                                    </Button>
-                                  ) : null}
-
-                                  {/* Quick edit button */}
-                                  <Button
-                                    color="light"
-                                    size="sm"
-                                    className="btn-icon p-1 rounded-0"
-                                    title="Edit Task"
-                                    onClick={() => openEditModal(t)}
-                                    style={{ border: "1px solid #e2e8f0" }}
-                                  >
-                                    <i className="ri-edit-line text-secondary fs-14"></i>
-                                  </Button>
-
-                                  {/* More options dropdown */}
-                                  <UncontrolledDropdown>
-                                    <DropdownToggle
-                                      tag="button"
-                                      className="btn btn-light btn-sm btn-icon p-1 rounded-0"
-                                      style={{ border: "1px solid #e2e8f0" }}
-                                    >
-                                      <i className="ri-more-fill text-muted fs-14"></i>
-                                    </DropdownToggle>
-                                    <DropdownMenu end className="rounded-0 shadow-sm fs-12">
-                                      <DropdownItem onClick={() => openDetailModal(t.taskId)}>
-                                        <i className="ri-eye-line me-2 text-primary"></i> View Details
-                                      </DropdownItem>
-                                      {!isComplete ? (
-                                        <DropdownItem onClick={() => handleCompleteTask(t.taskId)}>
-                                          <i className="ri-checkbox-circle-line me-2 text-success"></i> Mark Complete
-                                        </DropdownItem>
-                                      ) : null}
-                                      <DropdownItem onClick={() => openEditModal(t)}>
-                                        <i className="ri-edit-line me-2 text-warning"></i> Edit Task
-                                      </DropdownItem>
-                                      <DropdownItem divider />
-                                      <DropdownItem className="text-danger" onClick={() => openDeleteModal(t)}>
-                                        <i className="ri-delete-bin-line me-2"></i> Delete Task
-                                      </DropdownItem>
-                                    </DropdownMenu>
-                                  </UncontrolledDropdown>
-                                </div>
                               </td>
                             </tr>
                           );

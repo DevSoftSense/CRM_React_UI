@@ -1,6 +1,24 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Row, Col, Button, Input } from "reactstrap";
 import { useNavigate } from "react-router-dom";
+
+const PERIOD_LABELS = {
+  today: "Today",
+  this_week: "This Week",
+  this_month: "This Month",
+  this_quarter: "This Quarter",
+  this_year: "This Year",
+  custom: "Custom Range",
+};
+
+const PERIOD_DEFAULTS = [
+  { id: "today", label: "Today" },
+  { id: "this_week", label: "This Week" },
+  { id: "this_month", label: "This Month" },
+  { id: "this_quarter", label: "This Quarter" },
+  { id: "this_year", label: "This Year" },
+  { id: "custom", label: "Custom Range" },
+];
 
 const DashboardHeader = ({
   meta,
@@ -23,55 +41,63 @@ const DashboardHeader = ({
     }
   };
 
+  // Safe formatting of periods: guarantees clean human-readable labels (no "this_month")
+  const periodOptions = useMemo(() => {
+    const rawList =
+      Array.isArray(lookups?.periods) && lookups.periods.length > 0
+        ? lookups.periods
+        : PERIOD_DEFAULTS;
+
+    return rawList.map((p, index) => {
+      const id = String(p.id || p.code || p.value || `period-${index}`);
+      const fallbackLabel =
+        PERIOD_LABELS[id] ||
+        id.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      const label = p.label || p.name || fallbackLabel;
+      return { id, label };
+    });
+  }, [lookups?.periods]);
+
   return (
     <div className="mb-4">
       <Row className="gy-3 align-items-center">
-        <Col xl={5} lg={6} md={12}>
+        {/* Title & Greeting */}
+        <Col xl={4} lg={4} md={12}>
           <div>
             <h4
-              className="fw-bold mb-1"
-              style={{ color: "#1e293b", fontSize: "1.45rem", letterSpacing: "-0.02em" }}
+              className="fw-bold mb-1 crm-header-title"
+              style={{ fontSize: "1.45rem", letterSpacing: "-0.02em" }}
             >
               CRM Dashboard
             </h4>
             <p className="text-muted mb-0" style={{ fontSize: "0.875rem" }}>
-              Welcome back, <strong style={{ color: "#7f1d1d" }}>{userName}</strong>! Here&apos;s
+              Welcome back, <strong className="crm-header-user-accent" style={{ color: "#7f1d1d" }}>{userName}</strong>! Here&apos;s
               what&apos;s happening with your business.
             </p>
           </div>
         </Col>
 
-        <Col xl={7} lg={6} md={12}>
+        {/* Filter Controls & Action Buttons (Standardized 38px Height, SoftOnCloud Palette) */}
+        <Col xl={8} lg={8} md={12}>
           <div className="d-flex flex-wrap align-items-center justify-content-lg-end gap-2">
             {/* Period Selector */}
-            <div style={{ minWidth: "130px" }}>
+            <div style={{ minWidth: "135px" }}>
               <Input
                 type="select"
-                className="form-select rounded-0"
+                className="form-select rounded-0 crm-header-select"
                 style={{
+                  height: "38px",
                   fontSize: "0.8125rem",
-                  borderColor: "#cbd5e1",
                   fontWeight: 500,
-                  backgroundColor: "#ffffff",
                 }}
                 value={filters.period || "this_month"}
                 onChange={(e) => onFilterChange("period", e.target.value)}
               >
-                {(lookups?.periods || [
-                  { id: "today", label: "Today" },
-                  { id: "this_week", label: "This Week" },
-                  { id: "this_month", label: "This Month" },
-                  { id: "this_quarter", label: "This Quarter" },
-                  { id: "this_year", label: "This Year" },
-                  { id: "custom", label: "Custom Range" },
-                ]).map((p, index) => {
-                  const val = String(p.id || p.code || p.value || `period-${index}`);
-                  return (
-                    <option key={`period-opt-${val}-${index}`} value={val}>
-                      {p.label || p.name || val}
-                    </option>
-                  );
-                })}
+                {periodOptions.map((p) => (
+                  <option key={`period-opt-${p.id}`} value={p.id}>
+                    {p.label}
+                  </option>
+                ))}
               </Input>
             </div>
 
@@ -80,16 +106,24 @@ const DashboardHeader = ({
               <div className="d-flex align-items-center gap-1">
                 <Input
                   type="date"
-                  className="form-control rounded-0"
-                  style={{ fontSize: "0.8125rem", padding: "0.4rem 0.5rem", borderColor: "#cbd5e1" }}
+                  className="form-control rounded-0 crm-header-input"
+                  style={{
+                    height: "38px",
+                    fontSize: "0.8125rem",
+                    padding: "0.375rem 0.6rem",
+                  }}
                   value={filters.dateFrom || ""}
                   onChange={(e) => onFilterChange("dateFrom", e.target.value)}
                 />
-                <span className="text-muted small">to</span>
+                <span className="text-muted small px-1">to</span>
                 <Input
                   type="date"
-                  className="form-control rounded-0"
-                  style={{ fontSize: "0.8125rem", padding: "0.4rem 0.5rem", borderColor: "#cbd5e1" }}
+                  className="form-control rounded-0 crm-header-input"
+                  style={{
+                    height: "38px",
+                    fontSize: "0.8125rem",
+                    padding: "0.375rem 0.6rem",
+                  }}
                   value={filters.dateTo || ""}
                   onChange={(e) => onFilterChange("dateTo", e.target.value)}
                 />
@@ -100,12 +134,11 @@ const DashboardHeader = ({
             <div style={{ minWidth: "140px" }}>
               <Input
                 type="select"
-                className="form-select rounded-0"
+                className="form-select rounded-0 crm-header-select"
                 style={{
+                  height: "38px",
                   fontSize: "0.8125rem",
-                  borderColor: "#cbd5e1",
                   fontWeight: 500,
-                  backgroundColor: "#ffffff",
                 }}
                 value={filters.ownerId || ""}
                 onChange={(e) => onFilterChange("ownerId", e.target.value ? Number(e.target.value) : null)}
@@ -119,58 +152,64 @@ const DashboardHeader = ({
               </Input>
             </div>
 
-            {/* Date Range Badge */}
+            {/* Date Range Badge (Standardized 38px height & border) */}
             {formatDateRange() && filters.period !== "custom" && (
               <div
-                className="d-none d-xl-flex align-items-center px-2 py-1 text-muted"
+                className="d-none d-xl-inline-flex align-items-center px-3 rounded-0 crm-date-badge"
                 style={{
-                  backgroundColor: "#f8fafc",
-                  border: "1px solid #e2e8f0",
-                  fontSize: "0.785rem",
+                  height: "38px",
+                  fontSize: "0.8125rem",
                   fontWeight: 500,
+                  whiteSpace: "nowrap",
                 }}
               >
-                <i className="ri-calendar-line me-1" style={{ color: "#7f1d1d" }} />
+                <i className="ri-calendar-line me-2 fs-14" style={{ color: "#7f1d1d" }} />
                 <span>{formatDateRange()}</span>
               </div>
             )}
 
-            {/* + New Lead Button */}
+            {/* + New Lead Button (SoftOnCloud Maroon) */}
             <Button
-              className="crm-btn-primary-3d d-inline-flex align-items-center"
+              className="crm-btn-primary-3d d-inline-flex align-items-center justify-content-center"
               style={{
+                height: "38px",
                 fontSize: "0.8125rem",
-                padding: "0.48rem 0.95rem",
+                fontWeight: 600,
+                padding: "0 14px",
                 letterSpacing: "0.01em",
               }}
               onClick={() => navigate("/crm/leads")}
             >
-              <i className="ri-user-add-line me-1" /> + New Lead
+              <i className="ri-user-add-line me-1.5 fs-14" /> + New Lead
             </Button>
 
-            {/* + New Opportunity Button */}
+            {/* + New Opportunity Button (SoftOnCloud Theme Maroon) */}
             <Button
-              className="crm-btn-success-3d d-inline-flex align-items-center"
+              className="crm-btn-primary-3d d-inline-flex align-items-center justify-content-center"
               style={{
+                height: "38px",
                 fontSize: "0.8125rem",
-                padding: "0.48rem 0.95rem",
+                fontWeight: 600,
+                padding: "0 14px",
                 letterSpacing: "0.01em",
               }}
               onClick={() => navigate("/crm/opportunities")}
             >
-              <i className="ri-shake-hands-line me-1" /> + New Opportunity
+              <i className="ri-shake-hands-line me-1.5 fs-14" /> + New Opportunity
             </Button>
 
-            {/* Schedule Meeting Button */}
+            {/* Schedule Meeting Button (Executive Outline with SoftOnCloud Maroon Icon) */}
             <Button
-              className="crm-btn-outline-3d d-inline-flex align-items-center"
+              className="crm-btn-outline-3d d-inline-flex align-items-center justify-content-center"
               style={{
+                height: "38px",
                 fontSize: "0.8125rem",
-                padding: "0.48rem 0.95rem",
+                fontWeight: 500,
+                padding: "0 14px",
               }}
               onClick={() => navigate("/crm/calendar")}
             >
-              <i className="ri-calendar-event-line me-1" style={{ color: "#7f1d1d" }} /> Schedule Meeting
+              <i className="ri-calendar-event-line me-1.5 fs-14" style={{ color: "#7f1d1d" }} /> Schedule Meeting
             </Button>
           </div>
         </Col>

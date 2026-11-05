@@ -181,24 +181,25 @@
 }
 
 .crm-btn-success-3d {
-  background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+  background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%) !important;
   color: #ffffff !important;
-  border: 1px solid #059669 !important;
-  box-shadow: 0 3px 10px rgba(5, 150, 105, 0.28),
-              inset 0 1px 1px rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid #7f1d1d !important;
+  box-shadow: 0 2px 6px rgba(127, 29, 29, 0.2) !important;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
   border-radius: 0 !important;
 }
 
 .crm-btn-success-3d:hover {
-  background: linear-gradient(135deg, #047857 0%, #059669 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.38) !important;
+  background: linear-gradient(135deg, #991b1b 0%, #b91c1c 100%) !important;
+  border-color: #991b1b !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(127, 29, 29, 0.28) !important;
 }
 
 .crm-btn-success-3d:active {
-  transform: translateY(1px);
-  box-shadow: 0 1px 4px rgba(5, 150, 105, 0.3) !important;
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(127, 29, 29, 0.25) !important;
 }
 
 .crm-btn-outline-3d {
@@ -389,5 +390,350 @@
   -ms-overflow-style: none !important;
 }
 
+/* =============================================================================
+   15. SOFTONCLOUD CRM — EXECUTIVE DASHBOARD DARK MODE SYSTEM
+   Applies when [data-bs-theme="dark"] or [data-layout-mode="dark"]
+   ============================================================================= */
 
+html[data-bs-theme="dark"],
+html[data-layout-mode="dark"],
+body[data-bs-theme="dark"],
+body[data-layout-mode="dark"] {
 
+  /* 1. Page Background & Dashboard Wrapper */
+  .page-content {
+    background-color: var(--vz-body-bg, #1a1d21) !important;
+  }
+
+  .crm-dashboard-wrapper {
+    color: #cbd5e1;
+  }
+
+  /* 2. 3D Executive Cards */
+  .crm-card-3d {
+    background: #212529 !important;
+    background-color: #212529 !important;
+    border-color: #32383e !important;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4),
+                0 2px 6px -1px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .crm-card-3d:hover {
+    box-shadow: 0 8px 24px -2px rgba(0, 0, 0, 0.5),
+                0 4px 10px -1px rgba(0, 0, 0, 0.35) !important;
+    border-color: #4b5563 !important;
+  }
+
+  /* 3. Card Headers & Headings */
+  .crm-card-3d .card-header {
+    border-bottom-color: #32383e !important;
+    background-color: transparent !important;
+  }
+
+  .crm-card-3d .card-title,
+  .crm-card-3d h4,
+  .crm-card-3d h5,
+  .crm-card-3d h3,
+  .crm-card-3d h2 {
+    color: #f1f5f9 !important;
+  }
+
+  /* 4. Dashboard Header Controls */
+  .crm-header-title {
+    color: #f1f5f9 !important;
+  }
+
+  .crm-header-user-accent {
+    color: #fca5a5 !important;
+  }
+
+  .crm-header-select,
+  .crm-header-input {
+    background-color: #262a2f !important;
+    border-color: #363d45 !important;
+    color: #f1f5f9 !important;
+  }
+
+  .crm-date-badge {
+    background-color: #262a2f !important;
+    border-color: #363d45 !important;
+    color: #cbd5e1 !important;
+  }
+
+  .crm-btn-outline-3d {
+    background: #262a2f !important;
+    color: #e2e8f0 !important;
+    border-color: #363d45 !important;
+  }
+
+  .crm-btn-outline-3d:hover {
+    background: #32383e !important;
+    border-color: #4b5563 !important;
+    color: #ffffff !important;
+  }
+
+  /* Card Header Badge Pills across all cards ("5 Stages", "By Stage", "5 Channels", "Monthly", etc.) */
+  .crm-header-badge {
+    background-color: #262a2f !important;
+    color: #cbd5e1 !important;
+    border-color: #363d45 !important;
+    box-shadow: none !important;
+  }
+
+  /* Card Header Action Links ("View All >", "View Calendar >", "Summary >") */
+  .crm-card-header-link {
+    color: #fca5a5 !important;
+  }
+
+  .crm-card-header-link:hover {
+    color: #fecaca !important;
+  }
+
+  .crm-card-header-btn {
+    background-color: #262a2f !important;
+    color: #fca5a5 !important;
+    border-color: #363d45 !important;
+  }
+
+  .crm-card-header-btn:hover {
+    background-color: #32383e !important;
+    color: #ffffff !important;
+  }
+
+  .crm-accent-value {
+    color: #fca5a5 !important;
+  }
+
+  /* 5. KPI Metrics */
+  .crm-kpi-value,
+  .crm-card-3d h3 {
+    color: #f8fafc !important;
+  }
+
+  .crm-kpi-badge-target {
+    background-color: #262a2f !important;
+    color: #94a3b8 !important;
+    border-color: #363d45 !important;
+  }
+
+  /* 6. Tables (Today's Schedule & Hot Opportunities) */
+  .crm-card-3d .table {
+    color: #cbd5e1 !important;
+  }
+
+  .crm-card-3d .table thead,
+  .crm-card-3d .table thead.table-light,
+  .crm-card-3d .table thead tr,
+  .crm-card-3d .table thead th {
+    background-color: #1a1d21 !important;
+    border-color: #32383e !important;
+    color: #94a3b8 !important;
+  }
+
+  .crm-card-3d .table tbody td {
+    border-color: #2a3036 !important;
+    color: #cbd5e1 !important;
+  }
+
+  .crm-card-3d .table tbody td .text-dark,
+  .crm-card-3d .table tbody td a.text-dark,
+  .crm-card-3d .table tbody td span.text-dark,
+  .crm-card-3d .crm-table-customer,
+  .crm-card-3d .crm-table-time,
+  .crm-card-3d .crm-table-link,
+  .crm-card-3d .crm-table-value {
+    color: #f1f5f9 !important;
+  }
+
+  .crm-table-hover-row:hover {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+  }
+
+  /* 7. Quick Action Tiles */
+  .crm-action-tile-3d {
+    background: #262a2f !important;
+    border-color: #363d45 !important;
+    color: #cbd5e1 !important;
+  }
+
+  .crm-action-tile-3d:hover {
+    background: #2f343a !important;
+    border-color: #7f1d1d !important;
+    color: #f8fafc !important;
+  }
+
+  .crm-action-tile-3d span {
+    color: #f1f5f9 !important;
+  }
+
+  /* 8. AI Insights */
+  .crm-insight-item-3d {
+    background: #262a2f !important;
+    border-color: #363d45 !important;
+    color: #cbd5e1 !important;
+  }
+
+  .crm-insight-item-3d:hover {
+    background: #2f343a !important;
+    border-color: #4b5563 !important;
+  }
+
+  .crm-insight-item-3d h6,
+  .crm-insight-item-3d p,
+  .crm-insight-item-3d .text-dark,
+  .crm-insight-item-3d .fw-semibold {
+    color: #f1f5f9 !important;
+  }
+
+  .crm-insight-icon-circle {
+    background-color: #1a1d21 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  /* 9. Pending Follow-up Cards */
+  .crm-followup-card {
+    background: #262a2f !important;
+    border-color: #363d45 !important;
+  }
+
+  .crm-followup-card .fw-bold,
+  .crm-followup-card span {
+    color: #f1f5f9 !important;
+  }
+
+  /* 10. Recent Activities Timeline */
+  .crm-activity-pill {
+    background-color: #262a2f !important;
+    border-color: #363d45 !important;
+  }
+
+  .crm-activity-pill .text-dark,
+  .crm-activity-pill .crm-activity-title {
+    color: #f1f5f9 !important;
+  }
+
+  .crm-activity-author {
+    color: #fca5a5 !important;
+  }
+
+  .crm-activity-bell-pill {
+    background: #262a2f !important;
+    border-color: #363d45 !important;
+  }
+
+  .crm-activity-count {
+    color: #fca5a5 !important;
+  }
+
+  .crm-activity-label {
+    color: #cbd5e1 !important;
+  }
+
+  .crm-activity-connector-line {
+    background-color: #363d45 !important;
+  }
+
+  /* 11. Lead Sources Donut Chart */
+  .crm-lead-source-center {
+    fill: #212529 !important;
+    stroke: #32383e !important;
+  }
+
+  .crm-lead-source-team-icon circle,
+  .crm-lead-source-team-icon path {
+    fill: #f1f5f9 !important;
+    stroke: #f1f5f9 !important;
+  }
+
+  .crm-lead-source-icon-btn {
+    background-color: #262a2f !important;
+    border-color: #363d45 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  .crm-lead-source-name {
+    color: #cbd5e1 !important;
+  }
+
+  .crm-lead-source-pct {
+    color: #f8fafc !important;
+  }
+
+  .crm-lead-source-hover-pill {
+    background-color: #262a2f !important;
+    border-color: #363d45 !important;
+    color: #f1f5f9 !important;
+  }
+
+  /* 12. Notifications Card */
+  .crm-notif-bell-box {
+    background: linear-gradient(145deg, #1e2227 0%, #252a32 50%, #1e2227 100%) !important;
+    border-right-color: #32383e !important;
+  }
+
+  .crm-notif-label {
+    color: #e2e8f0 !important;
+  }
+
+  .crm-notif-badge {
+    background-color: #262a2f !important;
+    color: #94a3b8 !important;
+    border-color: #363d45 !important;
+  }
+
+  .crm-notif-badge.has-alert {
+    background-color: rgba(185, 28, 28, 0.25) !important;
+    color: #fca5a5 !important;
+    border-color: rgba(239, 68, 68, 0.4) !important;
+  }
+
+  .crm-notif-row:hover {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+  }
+
+  /* 13. Team Performance */
+  .crm-card-3d table thead th {
+    color: #94a3b8 !important;
+  }
+
+  /* 14. ApexCharts Dark Theming */
+  .apexcharts-text tspan,
+  .apexcharts-xaxis-label,
+  .apexcharts-yaxis-label {
+    fill: #94a3b8 !important;
+  }
+
+  .apexcharts-gridline {
+    stroke: #32383e !important;
+  }
+
+  .apexcharts-datalabel,
+  .apexcharts-datalabels text {
+    fill: #e2e8f0 !important;
+  }
+
+  .apexcharts-tooltip {
+    background: #262a2f !important;
+    border: 1px solid #363d45 !important;
+    color: #f1f5f9 !important;
+  }
+
+  .apexcharts-tooltip-title {
+    background: #1a1d21 !important;
+    border-bottom: 1px solid #363d45 !important;
+    color: #cbd5e1 !important;
+  }
+
+  /* 15. Custom Scrollbar in Dark Mode */
+  .crm-custom-scroll::-webkit-scrollbar-track {
+    background: #1a1d21;
+  }
+
+  .crm-custom-scroll::-webkit-scrollbar-thumb {
+    background: #363d45;
+  }
+
+  .crm-custom-scroll::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+  }
+}

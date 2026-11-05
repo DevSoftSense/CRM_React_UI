@@ -14,8 +14,7 @@ const AiInsightsCard = ({ insights = [] }) => {
             AI Insights
           </h5>
         </div>
-        <span
-          className="rounded-0 px-2 py-1 fw-semibold"
+        <span className="rounded-0 px-2 py-1 fw-semibold crm-header-badge"
           style={{
             backgroundColor: "#fffbeb",
             color: "#b45309",

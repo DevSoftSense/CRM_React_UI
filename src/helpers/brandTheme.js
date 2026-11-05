@@ -138,6 +138,7 @@ export const applySavedLayoutMode = () => {
     const mode = layoutState.layoutModeType;
     if (mode === "dark" || mode === "light") {
       document.documentElement.setAttribute("data-bs-theme", mode);
+      document.documentElement.setAttribute("data-layout-mode", mode);
     }
   } catch {
     /* ignore */

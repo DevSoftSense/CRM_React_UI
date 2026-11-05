@@ -523,6 +523,9 @@ const Documents = () => {
                               onChange={handleSelectAll}
                             />
                           </th>
+                          <th style={{ width: "105px" }} className="text-center">
+                            Actions
+                          </th>
                           <th style={{ minWidth: "220px" }}>Document Name</th>
                           <th>Folder</th>
                           <th>Related To</th>
@@ -530,9 +533,6 @@ const Documents = () => {
                           <th>Size</th>
                           <th>Owner</th>
                           <th>Modified On</th>
-                          <th className="text-end" style={{ width: "100px" }}>
-                            Actions
-                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -551,6 +551,48 @@ const Documents = () => {
                                   checked={isSelected}
                                   onChange={() => handleSelectOne(doc.document_id)}
                                 />
+                              </td>
+
+                              {/* Actions */}
+                              <td className="text-center" style={{ width: "105px" }}>
+                                <div className="d-flex align-items-center justify-content-center gap-1 flex-nowrap">
+                                  <Button
+                                    color="light"
+                                    size="sm"
+                                    className="border rounded-0 p-1 text-muted"
+                                    style={{ width: "28px", height: "28px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                                    title="View Details"
+                                    onClick={() => {
+                                      setActiveDocForDetail(doc);
+                                      setDetailModalOpen(true);
+                                    }}
+                                  >
+                                    <i className="ri-eye-line fs-14" />
+                                  </Button>
+                                  <a
+                                    href={downloadUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="btn btn-sm btn-light border rounded-0 p-1 text-primary"
+                                    style={{ width: "28px", height: "28px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                                    title="Download Document"
+                                  >
+                                    <i className="ri-download-2-line fs-14" />
+                                  </a>
+                                  <Button
+                                    color="light"
+                                    size="sm"
+                                    className="border rounded-0 p-1 text-danger"
+                                    style={{ width: "28px", height: "28px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                                    title="Delete Document"
+                                    onClick={() => {
+                                      setActiveDocForDelete(doc);
+                                      setDeleteModalOpen(true);
+                                    }}
+                                  >
+                                    <i className="ri-delete-bin-line fs-14" />
+                                  </Button>
+                                </div>
                               </td>
 
                               {/* Document Name */}
@@ -658,68 +700,6 @@ const Documents = () => {
                               <td className="text-muted small">
                                 {doc.modified_label ||
                                   (doc.modified_on ? new Date(doc.modified_on).toLocaleDateString() : "—")}
-                              </td>
-
-                              {/* Actions */}
-                              <td className="text-end">
-                                <div className="d-flex align-items-center justify-content-end gap-1">
-                                  {/* Download button */}
-                                  <a
-                                    href={downloadUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="btn btn-sm btn-light rounded-0 text-muted border p-1 px-2"
-                                    title="Download"
-                                  >
-                                    <i className="ri-download-2-line" />
-                                  </a>
-
-                                  {/* More actions dropdown */}
-                                  <Dropdown
-                                    isOpen={actionMenuOpenId === doc.document_id}
-                                    toggle={() =>
-                                      setActionMenuOpenId((prev) =>
-                                        prev === doc.document_id ? null : doc.document_id
-                                      )
-                                    }
-                                  >
-                                    <DropdownToggle
-                                      tag="button"
-                                      className="btn btn-sm btn-light rounded-0 text-muted border p-1 px-2"
-                                    >
-                                      <i className="ri-more-fill" />
-                                    </DropdownToggle>
-                                    <DropdownMenu end className="rounded-0 shadow-sm border">
-                                      <DropdownItem
-                                        onClick={() => {
-                                          setActiveDocForDetail(doc);
-                                          setDetailModalOpen(true);
-                                        }}
-                                        className="small"
-                                      >
-                                        <i className="ri-eye-line me-2 text-muted" /> View Details
-                                      </DropdownItem>
-                                      <DropdownItem
-                                        href={downloadUrl}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="small"
-                                      >
-                                        <i className="ri-download-line me-2 text-muted" /> Download
-                                      </DropdownItem>
-                                      <DropdownItem divider />
-                                      <DropdownItem
-                                        className="text-danger small"
-                                        onClick={() => {
-                                          setActiveDocForDelete(doc);
-                                          setDeleteModalOpen(true);
-                                        }}
-                                      >
-                                        <i className="ri-delete-bin-line me-2" /> Delete
-                                      </DropdownItem>
-                                    </DropdownMenu>
-                                  </Dropdown>
-                                </div>
                               </td>
                             </tr>
                           );

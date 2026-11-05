@@ -65,6 +65,10 @@ import SoftOnCloudTasks from "../pages/Crm/Tasks/Tasks";
 import SoftOnCloudTaskDetail from "../pages/Crm/Tasks/TaskDetail";
 import SoftOnCloudDocuments from "../pages/Crm/Documents/Documents";
 import SoftOnCloudTimeline from "../pages/Crm/Timeline/Timeline";
+import SoftOnCloudCampaigns from "../pages/Crm/Campaigns/Campaigns";
+import SoftOnCloudCampaignDetail from "../pages/Crm/Campaigns/CampaignDetail";
+import SoftOnCloudSalesDashboard from "../pages/Crm/SalesDashboard/SalesDashboard";
+import SoftOnCloudReports from "../pages/Crm/Reports/Reports";
 
 //Invoices
 import InvoiceList from "../pages/Invoices/InvoiceList";
@@ -339,6 +343,11 @@ const authProtectedRoutes = [
   { path: "/crm/tasks/:taskId", component: <SoftOnCloudTaskDetail /> },
   { path: "/crm/documents", component: <SoftOnCloudDocuments /> },
   { path: "/crm/timeline", component: <SoftOnCloudTimeline /> },
+  { path: "/crm/campaigns", component: <SoftOnCloudCampaigns /> },
+  { path: "/crm/campaigns/:campaignId", component: <SoftOnCloudCampaignDetail /> },
+  { path: "/crm/sales-dashboard", component: <SoftOnCloudSalesDashboard /> },
+  { path: "/crm/sales", component: <SoftOnCloudSalesDashboard /> },
+  { path: "/crm/reports", component: <SoftOnCloudReports /> },
 
   //Crm (Velzon demo — keep for reference)
   { path: "/apps-crm-contacts", component: <CrmContacts /> },

@@ -206,7 +206,7 @@ const TeamPerformanceCard = ({ reps = [] }) => {
         </div>
         <Link
           to="/crm/reports"
-          className="text-decoration-none fw-semibold d-inline-flex align-items-center"
+          className="text-decoration-none fw-semibold d-inline-flex align-items-center crm-card-header-btn"
           style={{
             fontSize: "0.72rem",
             color: "#991b1b",
@@ -338,7 +338,7 @@ const TeamPerformanceCard = ({ reps = [] }) => {
                           className="fw-bold"
                           style={{
                             fontSize: "0.8125rem",
-                            color: Number(r.leads_count) > 0 ? "#991b1b" : "#1e293b",
+                            color: Number(r.leads_count) > 0 ? "#991b1b" : "var(--vz-heading-color, #1e293b)",
                           }}
                         >
                           {formatNumber(r.leads_count)}

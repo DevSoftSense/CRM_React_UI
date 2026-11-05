@@ -121,48 +121,48 @@ const DashboardCrm = () => {
             {/* Row 2: 4 Main Visual Charts */}
             <Row className="g-3 mb-3 crm-charts-row">
               <Col xl={3} lg={6} md={12}>
-                <SalesFunnelChart data={data?.sales_funnel} />
+                <SalesFunnelChart data={data?.sales_funnel || data?.salesFunnel} />
               </Col>
               <Col xl={3} lg={6} md={12}>
-                <PipelineValueChart data={data?.pipeline_value} />
+                <PipelineValueChart data={data?.pipeline_value || data?.pipelineValue} />
               </Col>
               <Col xl={3} lg={6} md={12}>
-                <LeadSourcesChart data={data?.lead_sources} />
+                <LeadSourcesChart data={data?.lead_sources || data?.leadSources} />
               </Col>
               <Col xl={3} lg={6} md={12}>
-                <RevenueTrendChart data={data?.revenue_trend} />
+                <RevenueTrendChart data={data?.revenue_trend || data?.revenueTrend} />
               </Col>
             </Row>
 
             {/* Row 3: 4 Data Tables / Feeds */}
             <Row className="g-3 mb-3 crm-tables-row">
               <Col xl={3} lg={6} md={12}>
-                <TodaysScheduleCard activities={data?.todays_schedule} />
+                <TodaysScheduleCard activities={data?.todays_schedule || data?.todaysSchedule || []} />
               </Col>
               <Col xl={3} lg={6} md={12}>
-                <PendingFollowupsCard tasks={data?.pending_followups} />
+                <PendingFollowupsCard tasks={data?.pending_followups || data?.pendingFollowups || []} />
               </Col>
               <Col xl={3} lg={6} md={12}>
-                <HotOpportunitiesCard opportunities={data?.hot_opportunities} />
+                <HotOpportunitiesCard opportunities={data?.hot_opportunities || data?.hotOpportunities || []} />
               </Col>
               <Col xl={3} lg={6} md={12}>
-                <RecentActivitiesCard activities={data?.recent_activities} />
+                <RecentActivitiesCard activities={data?.recent_activities || data?.recentActivities || []} />
               </Col>
             </Row>
 
             {/* Row 4: 4 Specialized Cards */}
             <Row className="g-3 mb-4 crm-cards-row">
               <Col xl={3} lg={6} md={12}>
-                <TeamPerformanceCard reps={data?.team_performance} />
+                <TeamPerformanceCard reps={data?.team_performance || data?.teamPerformance || []} />
               </Col>
               <Col xl={3} lg={6} md={12}>
-                <AiInsightsCard insights={data?.ai_insights} />
+                <AiInsightsCard insights={data?.ai_insights || data?.aiInsights || []} />
               </Col>
               <Col xl={3} lg={6} md={12}>
-                <NotificationsCard notifications={data?.notifications} />
+                <NotificationsCard notifications={data?.notifications || data?.notifications || {}} />
               </Col>
               <Col xl={3} lg={6} md={12}>
-                <QuickActionsCard actions={data?.quick_actions} />
+                <QuickActionsCard actions={data?.quick_actions || data?.quickActions || []} />
               </Col>
             </Row>
           </React.Fragment>

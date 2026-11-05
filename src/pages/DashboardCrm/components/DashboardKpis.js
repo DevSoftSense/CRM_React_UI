@@ -74,8 +74,8 @@ const KpiCard = ({
               {title}
             </p>
             <h3
-              className="fw-bold mb-0"
-              style={{ fontSize: "1.6rem", color: "#0f172a", letterSpacing: "-0.03em" }}
+              className="fw-bold mb-0 crm-kpi-value"
+              style={{ fontSize: "1.6rem", letterSpacing: "-0.03em" }}
             >
               {value}
             </h3>
@@ -89,7 +89,7 @@ const KpiCard = ({
           <div className="d-flex align-items-center">
             {growthPct !== undefined && growthPct !== null ? (
               <span
-                className="rounded-0 px-2 py-1 me-1 fw-semibold d-inline-block"
+                className="rounded-0 px-2 py-1 me-1 fw-semibold d-inline-block crm-kpi-badge-target"
                 style={{
                   fontSize: "0.72rem",
                   backgroundColor: isPositive ? "#ecfdf5" : "#fef2f2",
@@ -103,7 +103,7 @@ const KpiCard = ({
               </span>
             ) : isAlert ? (
               <span
-                className="rounded-0 px-2 py-1 me-1 fw-semibold d-inline-block"
+                className="rounded-0 px-2 py-1 me-1 fw-semibold d-inline-block crm-kpi-badge-target"
                 style={{
                   fontSize: "0.72rem",
                   backgroundColor: "#fffbeb",
@@ -117,7 +117,7 @@ const KpiCard = ({
               </span>
             ) : (
               <span
-                className="rounded-0 px-2 py-1 me-1 fw-semibold d-inline-block"
+                className="rounded-0 px-2 py-1 me-1 fw-semibold d-inline-block crm-kpi-badge-target"
                 style={{
                   fontSize: "0.72rem",
                   backgroundColor: "#f8fafc",

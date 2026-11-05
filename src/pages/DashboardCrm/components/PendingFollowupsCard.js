@@ -220,8 +220,7 @@ const PendingFollowupsCard = ({ tasks = [], onTaskCompleted }) => {
           )}
 
           <Link
-            to="/crm/tasks"
-            className="text-decoration-none fw-medium d-inline-flex align-items-center"
+            to="/crm/tasks" className="text-decoration-none fw-medium d-inline-flex align-items-center crm-card-header-link"
             style={{ fontSize: "0.75rem", color: "#7f1d1d" }}
           >
             View All <i className="ri-arrow-right-line ms-1" style={{ fontSize: "0.785rem" }} />

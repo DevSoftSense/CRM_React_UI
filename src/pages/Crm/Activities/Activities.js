@@ -1049,13 +1049,14 @@ const Activities = () => {
                 <Table className="align-middle mb-0" hover>
                   <thead style={{ backgroundColor: "#f8fafc", borderColor: THEME.grayBorder }}>
                     <tr className="small text-muted text-uppercase">
+                      <th style={{ width: 105 }} className="text-center">Actions</th>
                       <th style={{ width: 140 }}>Activity</th>
                       <th>Subject / With</th>
                       <th>Related To</th>
                       <th style={{ width: 130 }}>Owner</th>
                       <th style={{ width: 140 }}>Date & Time</th>
                       <th style={{ width: 100 }}>Status</th>
-                      <th style={{ width: 80 }} className="text-end">Actions</th>
+                      
                     </tr>
                   </thead>
                   <tbody>
@@ -1098,6 +1099,64 @@ const Activities = () => {
 
                         return (
                           <tr key={act.activityId} style={{ borderColor: THEME.grayBorder }}>
+                            {/* 1. Actions */}
+                            <td className="text-center" style={{ width: 105 }}>
+                              <div className="d-flex align-items-center justify-content-center gap-1">
+                                {!isCompleted && (
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-light border rounded-0 text-success"
+                                    style={{
+                                      borderColor: THEME.grayBorder,
+                                      width: 28,
+                                      height: 28,
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      padding: 0,
+                                    }}
+                                    title="Mark Completed"
+                                    onClick={() => handleMarkComplete(act)}
+                                  >
+                                    <i className="ri-check-line" style={{ fontSize: 14 }} />
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-light border rounded-0 text-muted"
+                                  style={{
+                                    borderColor: THEME.grayBorder,
+                                    width: 28,
+                                    height: 28,
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    padding: 0,
+                                  }}
+                                  title="Edit"
+                                  onClick={() => openModal("edit", act)}
+                                >
+                                  <i className="ri-pencil-line" style={{ fontSize: 13 }} />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-light border rounded-0 text-danger"
+                                  style={{
+                                    borderColor: THEME.grayBorder,
+                                    width: 28,
+                                    height: 28,
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    padding: 0,
+                                  }}
+                                  title="Delete"
+                                  onClick={() => handleDeleteActivity(act)}
+                                >
+                                  <i className="ri-delete-bin-line" style={{ fontSize: 13 }} />
+                                </button>
+                              </div>
+                            </td>
                             {/* 1. Activity Type Icon + Name */}
                             <td>
                               <div className="d-flex align-items-center gap-2">
@@ -1187,65 +1246,6 @@ const Activities = () => {
                               >
                                 {isCompleted ? "Completed" : isScheduled ? "Scheduled" : "Pending"}
                               </span>
-                            </td>
-
-                            {/* 7. Actions */}
-                            <td className="text-end">
-                              <div className="d-flex align-items-center justify-content-end gap-1">
-                                {!isCompleted && (
-                                  <button
-                                    type="button"
-                                    className="btn btn-sm btn-light border rounded-0 text-success"
-                                    style={{
-                                      borderColor: THEME.grayBorder,
-                                      width: 28,
-                                      height: 28,
-                                      display: "inline-flex",
-                                      alignItems: "center",
-                                      justifyContent: "center",
-                                      padding: 0,
-                                    }}
-                                    title="Mark Completed"
-                                    onClick={() => handleMarkComplete(act)}
-                                  >
-                                    <i className="ri-check-line" style={{ fontSize: 14 }} />
-                                  </button>
-                                )}
-                                <button
-                                  type="button"
-                                  className="btn btn-sm btn-light border rounded-0 text-muted"
-                                  style={{
-                                    borderColor: THEME.grayBorder,
-                                    width: 28,
-                                    height: 28,
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    padding: 0,
-                                  }}
-                                  title="Edit"
-                                  onClick={() => openModal("edit", act)}
-                                >
-                                  <i className="ri-pencil-line" style={{ fontSize: 13 }} />
-                                </button>
-                                <button
-                                  type="button"
-                                  className="btn btn-sm btn-light border rounded-0 text-danger"
-                                  style={{
-                                    borderColor: THEME.grayBorder,
-                                    width: 28,
-                                    height: 28,
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    padding: 0,
-                                  }}
-                                  title="Delete"
-                                  onClick={() => handleDeleteActivity(act)}
-                                >
-                                  <i className="ri-delete-bin-line" style={{ fontSize: 13 }} />
-                                </button>
-                              </div>
                             </td>
                           </tr>
                         );

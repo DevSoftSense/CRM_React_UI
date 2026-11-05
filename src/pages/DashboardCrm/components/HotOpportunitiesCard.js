@@ -78,13 +78,12 @@ const HotOpportunitiesCard = ({ opportunities = [] }) => {
       >
         <div className="d-flex align-items-center">
           <i className="ri-fire-line me-2" style={{ color: "#7f1d1d", fontSize: "1.05rem" }} />
-          <h5 className="card-title mb-0 fw-semibold" style={{ fontSize: "0.9375rem", color: "#1e293b" }}>
+          <h5 className="card-title mb-0 fw-semibold" style={{ fontSize: "0.9375rem" }}>
             Hot Opportunities
           </h5>
         </div>
         <Link
-          to="/crm/opportunities"
-          className="text-decoration-none fw-medium"
+          to="/crm/opportunities" className="text-decoration-none fw-medium crm-card-header-link"
           style={{ fontSize: "0.75rem", color: "#7f1d1d" }}
         >
           View All <i className="ri-arrow-right-s-line align-middle" />
@@ -94,7 +93,7 @@ const HotOpportunitiesCard = ({ opportunities = [] }) => {
         <div className="table-responsive crm-custom-scroll" style={{ maxHeight: "250px", overflowY: "auto" }}>
           <Table className="align-middle table-nowrap mb-0 table-hover">
             <thead className="table-light">
-              <tr style={{ fontSize: "0.72rem", color: "#64748b" }}>
+              <tr style={{ fontSize: "0.72rem" }}>
                 <th scope="col" className="ps-3">Customer</th>
                 <th scope="col">Stage</th>
                 <th scope="col">Probability</th>
@@ -115,7 +114,7 @@ const HotOpportunitiesCard = ({ opportunities = [] }) => {
                     <td className="ps-3" style={{ maxWidth: "120px" }}>
                       <Link
                         to={`/crm/opportunities/${o.opportunity_id}`}
-                        className="text-decoration-none fw-semibold text-dark text-truncate d-block"
+                        className="text-decoration-none fw-semibold text-truncate d-block crm-table-link"
                         title={o.customer_name}
                       >
                         {o.customer_name}
@@ -126,11 +125,11 @@ const HotOpportunitiesCard = ({ opportunities = [] }) => {
                     </td>
                     <td>{getStageBadge(o.stage_name, o.stage_code)}</td>
                     <td>
-                      <span className="fw-semibold text-dark">
+                      <span className="fw-semibold crm-table-link">
                         {Number(o.probability || 0).toFixed(0)}%
                       </span>
                     </td>
-                    <td className="pe-3 text-end fw-bold" style={{ color: "#0f172a" }}>
+                    <td className="pe-3 text-end fw-bold crm-table-value">
                       {formatFullCurrency(o.amount)}
                     </td>
                   </tr>

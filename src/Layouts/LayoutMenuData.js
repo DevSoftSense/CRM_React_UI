@@ -29,6 +29,15 @@ const Navdata = () => {
       },
     },
     {
+      id: "crm-sales-dashboard",
+      label: "Sales Dashboard",
+      icon: "ri-funds-line",
+      link: "/crm/sales-dashboard",
+      click: function () {
+        setIscurrentState("Sales Dashboard");
+      },
+    },
+    {
       id: "crm-leads",
       label: "Leads",
       icon: "ri-user-add-line",
