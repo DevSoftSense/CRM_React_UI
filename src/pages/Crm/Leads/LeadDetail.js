@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   Alert,
   Badge,
@@ -135,43 +136,81 @@ const formatFollowUpFriendly = (raw) => {
   }
 };
 
-/** Circular SVG Progress Gauge Component for AI Score & Engagement matching SoftOnCloud theme */
-const CircularGauge = ({ value, max = 100, label, color = "#7f1d1d", size = 68 }) => {
-  const strokeWidth = 6;
+/** Circular SVG Progress Gauge Component for AI Score & Engagement with High-Contrast Theming */
+const CircularGauge = ({
+  value,
+  max = 100,
+  label,
+  gradFrom = "#10b981",
+  gradTo = "#34d399",
+  gradId = "gauge-grad",
+  size = 72,
+  isDark = false,
+}) => {
+  const strokeWidth = 6.5;
   const radius = (size - strokeWidth * 2) / 2;
   const circumference = 2 * Math.PI * radius;
   const progress = Math.min(Math.max(value, 0), max);
   const strokeDashoffset = circumference - (progress / max) * circumference;
 
   return (
-    <div className="position-relative d-inline-flex align-items-center justify-content-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-        {/* Warm theme background track */}
+    <div
+      className="position-relative d-inline-flex align-items-center justify-content-center"
+      style={{ width: size, height: size, flexShrink: 0 }}
+    >
+      <svg width={size} height={size} style={{ transform: "rotate(-90deg)", overflow: "visible" }}>
+        <defs>
+          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={gradFrom} />
+            <stop offset="100%" stopColor={gradTo} />
+          </linearGradient>
+        </defs>
+        {/* Track ring */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="#fee2e2"
+          stroke={isDark ? "#334155" : "#e2e8f0"}
           strokeWidth={strokeWidth}
-          fill="transparent"
+          fill="none"
         />
-        {/* Dynamic theme progress stroke */}
+        {/* Progress arc */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={color}
+          stroke={`url(#${gradId})`}
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
-          fill="transparent"
-          style={{ transition: "stroke-dashoffset 0.5s ease" }}
+          fill="none"
+          style={{ transition: "stroke-dashoffset 0.6s ease" }}
         />
       </svg>
-      <div className="position-absolute text-center" style={{ lineHeight: 1 }}>
-        <div className="fw-bold fs-14" style={{ color: color }}>{value}</div>
-        {label ? <div className="text-muted" style={{ fontSize: "9px" }}>{label}</div> : null}
+      <div className="position-absolute text-center" style={{ lineHeight: 1.1 }}>
+        <div
+          className="fw-bold"
+          style={{
+            fontSize: "16px",
+            color: isDark ? "#f8fafc" : "#0f172a",
+            letterSpacing: "-0.03em",
+          }}
+        >
+          {value}
+        </div>
+        {label ? (
+          <div
+            style={{
+              fontSize: "9.5px",
+              fontWeight: 600,
+              color: isDark ? "#94a3b8" : "#64748b",
+              marginTop: "2px",
+            }}
+          >
+            {label}
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -212,9 +251,20 @@ const parseLeadContent = (description) => {
   return { notes, extras, followUp, address };
 };
 
-/** Dynamic AI Lead Score computed strictly from actual lead database attributes using theme colors */
-const computeLeadScore = (lead) => {
-  if (!lead) return { score: 0, label: "Unscored", color: "#64748b", desc: "No data available" };
+/** Dynamic AI Lead Score computed strictly from actual lead database attributes */
+const computeLeadScore = (lead, isDark = false) => {
+  if (!lead) {
+    return {
+      score: 0,
+      label: "Unscored",
+      gradFrom: "#64748b",
+      gradTo: "#94a3b8",
+      badgeBg: isDark ? "rgba(100,116,139,0.2)" : "#f1f5f9",
+      badgeText: isDark ? "#cbd5e1" : "#475569",
+      desc: "No data available",
+    };
+  }
+
   let score = 20;
   if (lead.leadName) score += 10;
   if (lead.companyName) score += 15;
@@ -229,30 +279,108 @@ const computeLeadScore = (lead) => {
 
   score = Math.min(score, 100);
 
-  if (score >= 80) return { score, label: "Excellent", color: "#7f1d1d", desc: "High chance of conversion" };
-  if (score >= 60) return { score, label: "Good", color: "#991b1b", desc: "Actively progressing" };
-  if (score >= 40) return { score, label: "Moderate", color: "#c2410c", desc: "Requires follow-up" };
-  return { score, label: "Low", color: "#64748b", desc: "Needs qualification" };
+  if (score >= 80) {
+    return {
+      score,
+      label: "Excellent",
+      gradFrom: isDark ? "#10b981" : "#059669",
+      gradTo: isDark ? "#34d399" : "#10b981",
+      badgeBg: isDark ? "rgba(16, 185, 129, 0.2)" : "#ecfdf5",
+      badgeText: isDark ? "#34d399" : "#047857",
+      desc: "High chance of conversion",
+    };
+  }
+  if (score >= 60) {
+    return {
+      score,
+      label: "Good",
+      gradFrom: isDark ? "#3b82f6" : "#2563eb",
+      gradTo: isDark ? "#60a5fa" : "#3b82f6",
+      badgeBg: isDark ? "rgba(59, 130, 246, 0.2)" : "#eff6ff",
+      badgeText: isDark ? "#93c5fd" : "#1d4ed8",
+      desc: "Actively progressing",
+    };
+  }
+  if (score >= 40) {
+    return {
+      score,
+      label: "Moderate",
+      gradFrom: isDark ? "#f59e0b" : "#d97706",
+      gradTo: isDark ? "#fbbf24" : "#f59e0b",
+      badgeBg: isDark ? "rgba(245, 158, 11, 0.2)" : "#fffbeb",
+      badgeText: isDark ? "#fde68a" : "#b45309",
+      desc: "Requires follow-up",
+    };
+  }
+  return {
+    score,
+    label: "Low",
+    gradFrom: "#64748b",
+    gradTo: "#94a3b8",
+    badgeBg: isDark ? "rgba(100,116,139,0.2)" : "#f1f5f9",
+    badgeText: isDark ? "#cbd5e1" : "#475569",
+    desc: "Needs qualification",
+  };
 };
 
-/** Dynamic Engagement Level computed from actual activities count in database using theme colors */
-const computeEngagementLevel = (actCount) => {
+/** Dynamic Engagement Level computed from actual activities count */
+const computeEngagementLevel = (actCount, isDark = false) => {
   if (!actCount || actCount === 0) {
-    return { percent: 15, label: "Initial", color: "#64748b", desc: "No recent activity logged" };
+    return {
+      percent: 15,
+      label: "Initial",
+      gradFrom: "#64748b",
+      gradTo: "#94a3b8",
+      badgeBg: isDark ? "rgba(100,116,139,0.2)" : "#f1f5f9",
+      badgeText: isDark ? "#cbd5e1" : "#475569",
+      desc: "No recent activity logged",
+    };
   }
   if (actCount === 1) {
-    return { percent: 40, label: "Fair", color: "#c2410c", desc: "Initial contact made" };
+    return {
+      percent: 40,
+      label: "Fair",
+      gradFrom: isDark ? "#f59e0b" : "#d97706",
+      gradTo: isDark ? "#fbbf24" : "#f59e0b",
+      badgeBg: isDark ? "rgba(245, 158, 11, 0.2)" : "#fffbeb",
+      badgeText: isDark ? "#fde68a" : "#b45309",
+      desc: "Initial contact made",
+    };
   }
   if (actCount === 2) {
-    return { percent: 65, label: "Active", color: "#991b1b", desc: "Ongoing discussions" };
+    return {
+      percent: 65,
+      label: "Active",
+      gradFrom: isDark ? "#6366f1" : "#4f46e5",
+      gradTo: isDark ? "#a5b4fc" : "#6366f1",
+      badgeBg: isDark ? "rgba(99, 102, 241, 0.2)" : "#eef2ff",
+      badgeText: isDark ? "#c7d2fe" : "#4338ca",
+      desc: "Ongoing discussions",
+    };
   }
   const percent = Math.min(95, 65 + (actCount - 2) * 10);
-  return { percent, label: "Good", color: "#7f1d1d", desc: "Actively Engaged" };
+  return {
+    percent,
+    label: "Engaged",
+    gradFrom: isDark ? "#06b6d4" : "#0284c7",
+    gradTo: isDark ? "#38bdf8" : "#0ea5e9",
+    badgeBg: isDark ? "rgba(6, 182, 212, 0.2)" : "#f0f9ff",
+    badgeText: isDark ? "#67e8f9" : "#0369a1",
+    desc: "Actively Engaged",
+  };
 };
 
 const LeadDetail = () => {
   const { leadId } = useParams();
   const navigate = useNavigate();
+
+  const layoutModeType = useSelector((state) => state.Layout?.layoutModeType);
+  const isDark = layoutModeType === "dark" || (
+    typeof document !== "undefined" && (
+      document.documentElement.getAttribute("data-bs-theme") === "dark" ||
+      document.documentElement.getAttribute("data-layout-mode") === "dark"
+    )
+  );
 
   const [lead, setLead] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -357,9 +485,9 @@ const LeadDetail = () => {
           text: parsed.notes.trim(),
           author: data.leadName || "Lead Contact",
           date: formatDate(data.createdAt),
-          bg: "#fef9c3",
-          border: "#fef08a",
-          textColor: "#713f12",
+          bg: isDark ? "rgba(245, 158, 11, 0.12)" : "#fef9c3",
+          border: isDark ? "rgba(245, 158, 11, 0.3)" : "#fef08a",
+          textColor: isDark ? "#fef08a" : "#713f12",
         });
       }
       setNotesList(initialNotes);
@@ -924,8 +1052,8 @@ const LeadDetail = () => {
     : [];
 
   // Calculate dynamic metrics strictly from database state
-  const aiScoreData = computeLeadScore(lead);
-  const engagementData = computeEngagementLevel(activities.length);
+  const aiScoreData = computeLeadScore(lead, isDark);
+  const engagementData = computeEngagementLevel(activities.length, isDark);
 
   const totalOppValue = opportunities.reduce((acc, o) => acc + (Number(o.amount) || 0), 0);
   const wonOpps = opportunities.filter((o) => (o.stageName || "").toLowerCase().includes("won"));
@@ -938,7 +1066,7 @@ const LeadDetail = () => {
         <div className="d-flex align-items-center justify-content-between mb-3 pb-1 flex-wrap gap-2">
           <Link
             to="/crm/leads"
-            className="text-decoration-none fw-semibold fs-13 d-inline-flex align-items-center"
+            className="text-decoration-none fw-semibold fs-13 d-inline-flex align-items-center crm-back-link"
             style={{ color: "#7f1d1d" }}
           >
             <i className="ri-arrow-left-s-line me-1 fs-16" />
@@ -949,7 +1077,7 @@ const LeadDetail = () => {
             <Button
               color="light"
               size="sm"
-              className="px-3 border bg-white d-inline-flex align-items-center"
+              className="px-3 border bg-white d-inline-flex align-items-center crm-detail-top-btn"
               style={{ borderRadius: "3px", fontWeight: 500, height: "34px" }}
               onClick={openEdit}
             >
@@ -969,7 +1097,7 @@ const LeadDetail = () => {
             <Button
               color="light"
               size="sm"
-              className="px-3 border bg-white d-inline-flex align-items-center"
+              className="px-3 border bg-white d-inline-flex align-items-center crm-detail-top-btn"
               style={{ borderRadius: "3px", fontWeight: 500, height: "34px" }}
               onClick={() => setActivityModal(true)}
             >
@@ -979,7 +1107,7 @@ const LeadDetail = () => {
             <Button
               color="light"
               size="sm"
-              className="px-3 border bg-white d-inline-flex align-items-center"
+              className="px-3 border bg-white d-inline-flex align-items-center crm-detail-top-btn"
               style={{ borderRadius: "3px", fontWeight: 500, height: "34px" }}
               onClick={() => {
                 setEmailForm({
@@ -1242,17 +1370,32 @@ const LeadDetail = () => {
                             value={aiScoreData.score}
                             max={100}
                             label="/100"
-                            color={aiScoreData.color}
+                            gradFrom={aiScoreData.gradFrom}
+                            gradTo={aiScoreData.gradTo}
+                            gradId="ai-lead-score-gauge"
+                            isDark={isDark}
                           />
-                          <div>
-                            <div className="fw-bold fs-15" style={{ color: aiScoreData.color }}>
-                              {aiScoreData.label}
+                          <div className="d-flex flex-column justify-content-center">
+                            <div className="mb-1">
+                              <span
+                                className="px-2 py-0.5 fw-bold text-uppercase d-inline-block"
+                                style={{
+                                  fontSize: "11px",
+                                  letterSpacing: "0.03em",
+                                  borderRadius: "3px",
+                                  backgroundColor: aiScoreData.badgeBg,
+                                  color: aiScoreData.badgeText,
+                                  border: `1px solid ${aiScoreData.badgeText}40`,
+                                }}
+                              >
+                                {aiScoreData.label}
+                              </span>
                             </div>
                             <div className="text-muted fs-11">{aiScoreData.desc}</div>
                           </div>
                         </div>
                         <div className="mt-3 pt-2 border-top">
-                          <span className="text-primary fs-11 fw-semibold" style={{ cursor: "pointer", color: "#7f1d1d" }} onClick={() => setActiveTab("details")}>
+                          <span className="crm-detail-action-link fs-11 fw-semibold text-decoration-none" style={{ cursor: "pointer" }} onClick={() => setActiveTab("details")}>
                             View Score Factors &rarr;
                           </span>
                         </div>
@@ -1274,17 +1417,32 @@ const LeadDetail = () => {
                             value={engagementData.percent}
                             max={100}
                             label="%"
-                            color={engagementData.color}
+                            gradFrom={engagementData.gradFrom}
+                            gradTo={engagementData.gradTo}
+                            gradId="engagement-level-gauge"
+                            isDark={isDark}
                           />
-                          <div>
-                            <div className="fw-bold fs-15" style={{ color: engagementData.color }}>
-                              {engagementData.label}
+                          <div className="d-flex flex-column justify-content-center">
+                            <div className="mb-1">
+                              <span
+                                className="px-2 py-0.5 fw-bold text-uppercase d-inline-block"
+                                style={{
+                                  fontSize: "11px",
+                                  letterSpacing: "0.03em",
+                                  borderRadius: "3px",
+                                  backgroundColor: engagementData.badgeBg,
+                                  color: engagementData.badgeText,
+                                  border: `1px solid ${engagementData.badgeText}40`,
+                                }}
+                              >
+                                {engagementData.label}
+                              </span>
                             </div>
                             <div className="text-muted fs-11">{engagementData.desc}</div>
                           </div>
                         </div>
                         <div className="mt-3 pt-2 border-top">
-                          <span className="text-primary fs-11 fw-semibold" style={{ cursor: "pointer", color: "#7f1d1d" }} onClick={() => setActiveTab("activities")}>
+                          <span className="crm-detail-action-link fs-11 fw-semibold text-decoration-none" style={{ cursor: "pointer" }} onClick={() => setActiveTab("activities")}>
                             View Activities &rarr;
                           </span>
                         </div>
@@ -1315,8 +1473,7 @@ const LeadDetail = () => {
                         </div>
                         <div className="mt-3 pt-2 border-top">
                           <span
-                            className="text-primary fs-11 fw-semibold"
-                            style={{ cursor: "pointer", color: "#7f1d1d" }}
+                            className="crm-detail-action-link fs-11 fw-semibold text-decoration-none" style={{ cursor: "pointer" }}
                             onClick={() => setActiveTab("opportunities")}
                           >
                             View Opportunities &rarr;
@@ -1351,8 +1508,7 @@ const LeadDetail = () => {
                         </div>
                         <div className="mt-3 pt-2 border-top">
                           <span
-                            className="text-primary fs-11 fw-semibold"
-                            style={{ cursor: "pointer", color: "#7f1d1d" }}
+                            className="crm-detail-action-link fs-11 fw-semibold text-decoration-none" style={{ cursor: "pointer" }}
                             onClick={() => setActiveTab("invoices")}
                           >
                             View Business &rarr;
@@ -1377,8 +1533,7 @@ const LeadDetail = () => {
                               About Company
                             </h6>
                             <span
-                              className="text-primary fs-11 fw-semibold"
-                              style={{ cursor: "pointer", color: "#7f1d1d" }}
+                              className="crm-detail-action-link fs-11 fw-semibold text-decoration-none" style={{ cursor: "pointer" }}
                               onClick={openEdit}
                             >
                               Edit Info
@@ -1456,8 +1611,7 @@ const LeadDetail = () => {
                               Key People (Contacts)
                             </h6>
                             <span
-                              className="text-primary fs-11 fw-semibold"
-                              style={{ cursor: "pointer", color: "#7f1d1d" }}
+                              className="crm-detail-action-link fs-11 fw-semibold text-decoration-none" style={{ cursor: "pointer" }}
                               onClick={() => setActiveTab("contacts")}
                             >
                               View All
@@ -1520,8 +1674,7 @@ const LeadDetail = () => {
                               <Button
                                 color="light"
                                 size="sm"
-                                className="w-100 border border-dashed py-2 fs-11 fw-semibold"
-                                style={{ borderRadius: "3px", color: "#7f1d1d", backgroundColor: "#fef2f2", borderColor: "#fecdd3" }}
+                                className="w-100 border border-dashed py-2 fs-11 fw-semibold crm-detail-dashed-btn" style={{ borderRadius: "3px", color: "#7f1d1d", backgroundColor: "#fef2f2", borderColor: "#fecdd3" }}
                                 onClick={() => setAddContactModal(true)}
                               >
                                 <i className="ri-user-add-line me-1" />
@@ -1575,8 +1728,7 @@ const LeadDetail = () => {
                             </div>
                             <div className="mt-2 pt-2 border-top text-center">
                               <span
-                                className="text-primary fs-11 fw-semibold"
-                                style={{ cursor: "pointer", color: "#7f1d1d" }}
+                                className="crm-detail-action-link fs-11 fw-semibold text-decoration-none" style={{ cursor: "pointer" }}
                                 onClick={() => setActiveTab("invoices")}
                               >
                                 View Full Business &rarr;
@@ -1594,8 +1746,7 @@ const LeadDetail = () => {
                               Recent Activities
                             </h6>
                             <span
-                              className="text-primary fs-11 fw-semibold"
-                              style={{ cursor: "pointer", color: "#7f1d1d" }}
+                              className="crm-detail-action-link fs-11 fw-semibold text-decoration-none" style={{ cursor: "pointer" }}
                               onClick={() => setActiveTab("activities")}
                             >
                               View All
@@ -1624,8 +1775,7 @@ const LeadDetail = () => {
                               <Button
                                 color="light"
                                 size="sm"
-                                className="w-100 border border-dashed fs-11 py-1 fw-semibold"
-                                style={{ borderRadius: "3px", color: "#7f1d1d", backgroundColor: "#fef2f2", borderColor: "#fecdd3" }}
+                                className="w-100 border border-dashed fs-11 py-1 fw-semibold crm-detail-dashed-btn" style={{ borderRadius: "3px", color: "#7f1d1d", backgroundColor: "#fef2f2", borderColor: "#fecdd3" }}
                                 onClick={() => setActivityModal(true)}
                               >
                                 <i className="ri-calendar-event-line me-1" />
@@ -1644,8 +1794,7 @@ const LeadDetail = () => {
                               Opportunities
                             </h6>
                             <span
-                              className="text-primary fs-11 fw-semibold"
-                              style={{ cursor: "pointer", color: "#7f1d1d" }}
+                              className="crm-detail-action-link fs-11 fw-semibold text-decoration-none" style={{ cursor: "pointer" }}
                               onClick={() => setActiveTab("opportunities")}
                             >
                               View All
@@ -1681,8 +1830,7 @@ const LeadDetail = () => {
                             )}
                             <div className="mt-2 pt-1 border-top text-center">
                               <span
-                                className="text-primary fs-11 fw-semibold"
-                                style={{ cursor: "pointer", color: "#7f1d1d" }}
+                                className="crm-detail-action-link fs-11 fw-semibold text-decoration-none" style={{ cursor: "pointer" }}
                                 onClick={() => setActiveTab("opportunities")}
                               >
                                 View Opportunities &rarr;
@@ -1700,8 +1848,7 @@ const LeadDetail = () => {
                               Notes
                             </h6>
                             <span
-                              className="text-primary fs-11 fw-semibold"
-                              style={{ cursor: "pointer", color: "#7f1d1d" }}
+                              className="crm-detail-action-link fs-11 fw-semibold text-decoration-none" style={{ cursor: "pointer" }}
                               onClick={() => setActiveTab("notes")}
                             >
                               View All
@@ -1713,7 +1860,7 @@ const LeadDetail = () => {
                                 {notesList.slice(0, 2).map((n) => (
                                   <div
                                     key={n.id}
-                                    className="p-2 border rounded"
+                                    className="p-2 border rounded crm-lead-note-card"
                                     style={{
                                       backgroundColor: n.bg,
                                       borderColor: n.border,
@@ -1736,8 +1883,7 @@ const LeadDetail = () => {
                               <Button
                                 color="light"
                                 size="sm"
-                                className="w-100 border border-dashed fs-11 py-1 fw-semibold"
-                                style={{ borderRadius: "3px", color: "#7f1d1d", backgroundColor: "#fef2f2", borderColor: "#fecdd3" }}
+                                className="w-100 border border-dashed fs-11 py-1 fw-semibold crm-detail-dashed-btn" style={{ borderRadius: "3px", color: "#7f1d1d", backgroundColor: "#fef2f2", borderColor: "#fecdd3" }}
                                 onClick={() => setNoteModal(true)}
                               >
                                 <i className="ri-add-line me-1" />
@@ -1760,8 +1906,7 @@ const LeadDetail = () => {
                             Last Activity
                           </h6>
                           <span
-                            className="text-primary fs-11 fw-semibold"
-                            style={{ cursor: "pointer", color: "#7f1d1d" }}
+                            className="crm-detail-action-link fs-11 fw-semibold text-decoration-none" style={{ cursor: "pointer" }}
                             onClick={() => setActiveTab("timeline")}
                           >
                             View All
@@ -1805,8 +1950,7 @@ const LeadDetail = () => {
                             Next Follow-up
                           </h6>
                           <span
-                            className="text-primary fs-11 fw-semibold"
-                            style={{ cursor: "pointer", color: "#7f1d1d" }}
+                            className="crm-detail-action-link fs-11 fw-semibold text-decoration-none" style={{ cursor: "pointer" }}
                             onClick={() => setRescheduleModal(true)}
                           >
                             Edit
@@ -1849,8 +1993,7 @@ const LeadDetail = () => {
                                 <Button
                                   color="light"
                                   size="sm"
-                                  className="w-50 border fs-11 fw-medium"
-                                  style={{ borderRadius: "3px", backgroundColor: "#fff", borderColor: "#e2e8f0", color: "#334155" }}
+                                  className="w-50 border fs-11 fw-medium crm-detail-btn-subtle" style={{ borderRadius: "3px" }}
                                   onClick={() => setRescheduleModal(true)}
                                 >
                                   Reschedule
@@ -1858,8 +2001,7 @@ const LeadDetail = () => {
                                 <Button
                                   color="light"
                                   size="sm"
-                                  className="w-50 border fs-11 fw-medium"
-                                  style={{ borderRadius: "3px", backgroundColor: "#fff", borderColor: "#e2e8f0", color: "#334155" }}
+                                  className="w-50 border fs-11 fw-medium crm-detail-btn-subtle" style={{ borderRadius: "3px" }}
                                   onClick={handleMarkFollowUpDone}
                                 >
                                   <i className="ri-check-line text-success me-1" />
@@ -1875,8 +2017,7 @@ const LeadDetail = () => {
                                 <Button
                                   color="light"
                                   size="sm"
-                                  className="border fs-11 fw-semibold"
-                                  style={{ borderRadius: "3px", color: "#7f1d1d", backgroundColor: "#fef2f2", borderColor: "#fecdd3" }}
+                                  className="border fs-11 fw-semibold crm-detail-dashed-btn" style={{ borderRadius: "3px", color: "#7f1d1d", backgroundColor: "#fef2f2", borderColor: "#fecdd3" }}
                                   onClick={() => setRescheduleModal(true)}
                                 >
                                   + Schedule Follow-up
@@ -1894,8 +2035,7 @@ const LeadDetail = () => {
                             Tags
                           </h6>
                           <span
-                            className="text-primary fs-11 fw-semibold"
-                            style={{ cursor: "pointer", color: "#7f1d1d" }}
+                            className="crm-detail-action-link fs-11 fw-semibold text-decoration-none" style={{ cursor: "pointer" }}
                             onClick={() => setShowAddTag(!showAddTag)}
                           >
                             Edit
@@ -2302,7 +2442,7 @@ const LeadDetail = () => {
                         {notesList.map((n) => (
                           <Col key={n.id} md={4}>
                             <div
-                              className="p-3 border rounded h-100"
+                              className="p-3 border rounded h-100 crm-lead-note-card"
                               style={{ backgroundColor: n.bg, borderColor: n.border, color: n.textColor }}
                             >
                               <div className="fs-13 fw-medium mb-3">{n.text}</div>

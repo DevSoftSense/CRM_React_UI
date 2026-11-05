@@ -4,6 +4,10 @@ import ReactApexChart from "react-apexcharts";
 import { formatCurrency } from "./dashboardUtils";
 
 const RevenueTrendChart = ({ data = [] }) => {
+  const isDark = typeof document !== "undefined" && (
+    document.documentElement.getAttribute("data-bs-theme") === "dark" ||
+    document.documentElement.getAttribute("data-layout-mode") === "dark"
+  );
   const points = Array.isArray(data) && data.length > 0 ? data : [];
 
   const categories = points.map((p) => p.month_label);
@@ -59,9 +63,9 @@ const RevenueTrendChart = ({ data = [] }) => {
           ? categories
           : ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"],
       labels: {
-        style: { fontSize: "11px", fontWeight: 500, colors: "#64748b" },
+        style: { fontSize: "11px", fontWeight: 500, colors: isDark ? "#cbd5e1" : "#64748b" },
       },
-      axisBorder: { show: true, color: "#e2e8f0" },
+      axisBorder: { show: true, color: isDark ? "#363d45" : "#e2e8f0" },
       axisTicks: { show: false },
     },
     yaxis: {
@@ -71,11 +75,11 @@ const RevenueTrendChart = ({ data = [] }) => {
       },
     },
     grid: {
-      borderColor: "#f1f5f9",
+      borderColor: isDark ? "#32383e" : "#f1f5f9",
       strokeDashArray: 3,
     },
     tooltip: {
-      theme: "light",
+      theme: isDark ? "dark" : "light",
       y: {
         formatter: (val, { dataPointIndex }) => {
           const deals = points[dataPointIndex]?.deal_count || 0;
@@ -105,8 +109,7 @@ const RevenueTrendChart = ({ data = [] }) => {
           </div>
         </div>
 
-        <span
-          className="rounded-0 px-2 py-1 fw-semibold"
+        <span className="rounded-0 px-2 py-1 fw-semibold crm-header-badge"
           style={{
             backgroundColor: "#f8fafc",
             color: "#64748b",

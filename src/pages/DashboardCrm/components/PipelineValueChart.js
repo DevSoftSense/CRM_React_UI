@@ -4,6 +4,10 @@ import ReactApexChart from "react-apexcharts";
 import { formatCurrency } from "./dashboardUtils";
 
 const PipelineValueChart = ({ data = {} }) => {
+  const isDark = typeof document !== 'undefined' && (
+    document.documentElement.getAttribute('data-bs-theme') === 'dark' ||
+    document.documentElement.getAttribute('data-layout-mode') === 'dark'
+  );
   const totalValue = data?.total_pipeline_value || 0;
   const stages = Array.isArray(data?.stages) ? data.stages : [];
 
@@ -43,7 +47,7 @@ const PipelineValueChart = ({ data = {} }) => {
       style: {
         fontSize: "10px",
         fontWeight: 600,
-        colors: ["#334155"],
+        colors: [isDark ? "#f8fafc" : "#334155"],
       },
     },
     legend: { show: false },
@@ -53,10 +57,10 @@ const PipelineValueChart = ({ data = {} }) => {
         style: {
           fontSize: "11px",
           fontWeight: 500,
-          colors: "#64748b",
+          colors: isDark ? "#cbd5e1" : "#64748b",
         },
       },
-      axisBorder: { show: true, color: "#e2e8f0" },
+      axisBorder: { show: true, color: isDark ? "#363d45" : "#e2e8f0" },
       axisTicks: { show: false },
     },
     yaxis: {
@@ -66,11 +70,11 @@ const PipelineValueChart = ({ data = {} }) => {
       },
     },
     grid: {
-      borderColor: "#f1f5f9",
+      borderColor: isDark ? "#32383e" : "#f1f5f9",
       strokeDashArray: 3,
     },
     tooltip: {
-      theme: "light",
+      theme: isDark ? "dark" : "light",
       y: {
         formatter: (val, { dataPointIndex }) => {
           const count = stages[dataPointIndex]?.count || 0;
@@ -95,8 +99,7 @@ const PipelineValueChart = ({ data = {} }) => {
               Pipeline Value
             </h5>
           </div>
-          <span
-            className="rounded-0 px-2 py-1 fw-semibold"
+          <span className="rounded-0 px-2 py-1 fw-semibold crm-header-badge"
             style={{
               backgroundColor: "#f8fafc",
               color: "#64748b",
@@ -110,7 +113,7 @@ const PipelineValueChart = ({ data = {} }) => {
         </div>
         <p className="text-muted mb-0" style={{ fontSize: "0.8125rem" }}>
           Total Pipeline Value:{" "}
-          <strong style={{ color: "#7f1d1d" }}>{formatCurrency(totalValue)}</strong>
+          <strong className="crm-accent-value" style={{ color: "#7f1d1d" }}>{formatCurrency(totalValue)}</strong>
         </p>
       </CardHeader>
       <CardBody className="p-2 pt-3">

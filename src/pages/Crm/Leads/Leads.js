@@ -1166,6 +1166,11 @@ const Leads = () => {
                       />
                     </th>
 
+                    {/* Col 2: Actions Header */}
+                    <th style={{ width: "130px" }} className="text-center py-3">
+                      Actions
+                    </th>
+
                     {/* Columns 2-11: Clean Headers with Sorting matching CRM_02_Leads.png */}
                     {SORT_COLUMNS.filter((col) => visibleColumns[col.key] !== false).map((col) => {
                       const isSorted = sortConfig.key === col.key;
@@ -1201,11 +1206,6 @@ const Leads = () => {
                         </th>
                       );
                     })}
-
-                    {/* Col 12: Actions Header on FAR RIGHT */}
-                    <th style={{ width: "100px" }} className="text-end pe-3 py-3">
-                      Actions
-                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1245,6 +1245,70 @@ const Leads = () => {
                               checked={isSelected}
                               onChange={() => handleSelectOne(lead.leadId)}
                             />
+                          </td>
+
+                          {/* Actions (Column 2) */}
+                          <td className="text-center" style={{ width: "130px" }}>
+                            <div className="d-flex align-items-center justify-content-center gap-1 flex-nowrap">
+                              <Link
+                                to={`/crm/leads/${lead.leadId}`}
+                                className="btn btn-sm btn-light border rounded-0"
+                                style={{ width: "28px", height: "28px", padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                                title="View 360° Profile"
+                              >
+                                <i className="ri-eye-line fs-14" />
+                              </Link>
+                              <Button
+                                color="light"
+                                size="sm"
+                                className="border rounded-0"
+                                style={{ width: "28px", height: "28px", padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                                onClick={() => openEdit(lead.leadId)}
+                                title="Edit Lead"
+                              >
+                                <i className="ri-pencil-line fs-14 text-primary" />
+                              </Button>
+                              <Button
+                                color="light"
+                                size="sm"
+                                className="border rounded-0 text-danger"
+                                style={{ width: "28px", height: "28px", padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                                onClick={() => {
+                                  setDeleteTarget(lead);
+                                  setDeleteModal(true);
+                                }}
+                                title="Delete Lead"
+                              >
+                                <i className="ri-delete-bin-line fs-14" />
+                              </Button>
+                              <Dropdown
+                                isOpen={openDropdownId === lead.leadId}
+                                toggle={() => setOpenDropdownId(openDropdownId === lead.leadId ? null : lead.leadId)}
+                              >
+                                <DropdownToggle
+                                  color="light"
+                                  size="sm"
+                                  className="border rounded-0 p-0 d-inline-flex align-items-center justify-content-center"
+                                  style={{ width: "28px", height: "28px" }}
+                                  title="More actions"
+                                >
+                                  <i className="ri-more-fill text-muted fs-14" />
+                                </DropdownToggle>
+                                <DropdownMenu end container="body" className="shadow border-0 py-1" style={{ borderRadius: "0px" }}>
+                                  <DropdownItem onClick={() => openQuickActivity(lead)} className="fs-12 py-1 px-3">
+                                    <i className="ri-phone-line me-2 text-success" /> Log Activity
+                                  </DropdownItem>
+                                  {lead.email && (
+                                    <DropdownItem href={`mailto:${lead.email}`} className="fs-12 py-1 px-3">
+                                      <i className="ri-mail-line me-2 text-primary" /> Send Email
+                                    </DropdownItem>
+                                  )}
+                                  <DropdownItem onClick={() => openConvertModal(lead)} className="fs-12 py-1 px-3">
+                                    <i className="ri-user-follow-line me-2 text-success" /> Convert to Customer
+                                  </DropdownItem>
+                                </DropdownMenu>
+                              </Dropdown>
+                            </div>
                           </td>
 
                           {/* Col 2: Lead Name (Monogram Avatar + Contact + Company) */}
@@ -1362,82 +1426,6 @@ const Leads = () => {
                           {visibleColumns.followUp !== false && (
                             <td>{formatFollowUpDisplay(followUpText)}</td>
                           )}
-
-                          {/* Col 12: Actions (Quick Call, Quick Email, Functional Dropdown) */}
-                          <td className="text-end pe-3">
-                            <div className="d-inline-flex align-items-center gap-1">
-                              {/* Quick Call */}
-                              <Button
-                                color="light"
-                                size="sm"
-                                className="border p-0 d-inline-flex align-items-center justify-content-center"
-                                style={{ width: "28px", height: "28px", borderRadius: "3px" }}
-                                onClick={() => openQuickActivity(lead)}
-                                title="Log Call / Activity"
-                              >
-                                <i className="ri-phone-line text-success fs-14" />
-                              </Button>
-
-                              {/* Quick Email */}
-                              {lead.email ? (
-                                <a
-                                  href={`mailto:${lead.email}`}
-                                  className="btn btn-sm btn-light border p-0 d-inline-flex align-items-center justify-content-center"
-                                  style={{ width: "28px", height: "28px", borderRadius: "3px" }}
-                                  title="Send Email"
-                                >
-                                  <i className="ri-mail-line text-primary fs-14" />
-                                </a>
-                              ) : null}
-
-                              {/* Functional Row More Dropdown - container="body" portals menu so it never clips or causes table scrollbars */}
-                              <Dropdown
-                                isOpen={openDropdownId === lead.leadId}
-                                toggle={() => setOpenDropdownId(openDropdownId === lead.leadId ? null : lead.leadId)}
-                              >
-                                <DropdownToggle
-                                  color="light"
-                                  size="sm"
-                                  className="border p-0 d-inline-flex align-items-center justify-content-center"
-                                  style={{ width: "28px", height: "28px", borderRadius: "3px" }}
-                                >
-                                  <i className="ri-more-fill text-muted fs-14" />
-                                </DropdownToggle>
-                                <DropdownMenu end container="body" className="shadow border-0 py-1" style={{ borderRadius: "4px" }}>
-                                  <DropdownItem
-                                    onClick={() => {
-                                      setOpenDropdownId(null);
-                                      navigate(`/crm/leads/${lead.leadId}`);
-                                    }}
-                                    className="fs-12 py-1 px-3"
-                                  >
-                                    <i className="ri-eye-line me-2 text-primary" />
-                                    View 360° Profile
-                                  </DropdownItem>
-                                  <DropdownItem onClick={() => openEdit(lead.leadId)} className="fs-12 py-1 px-3">
-                                    <i className="ri-pencil-line me-2 text-warning" />
-                                    Edit Lead
-                                  </DropdownItem>
-                                  <DropdownItem onClick={() => openConvertModal(lead)} className="fs-12 py-1 px-3">
-                                    <i className="ri-user-follow-line me-2 text-success" />
-                                    Convert to Customer
-                                  </DropdownItem>
-                                  <DropdownItem divider className="my-1" />
-                                  <DropdownItem
-                                    className="text-danger fs-12 py-1 px-3"
-                                    onClick={() => {
-                                      setDeleteTarget(lead);
-                                      setDeleteModal(true);
-                                      setOpenDropdownId(null);
-                                    }}
-                                  >
-                                    <i className="ri-delete-bin-line me-2" />
-                                    Delete Lead
-                                  </DropdownItem>
-                                </DropdownMenu>
-                              </Dropdown>
-                            </div>
-                          </td>
                         </tr>
                       );
                     })

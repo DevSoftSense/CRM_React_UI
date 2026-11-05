@@ -12,7 +12,7 @@ const LightDark = ({ layoutMode, onChangeLayoutMode }) => {
             <button
                 onClick={() => onChangeLayoutMode(mode)}
                 type="button" className="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle light-dark-mode">
-                <i className='bx bx-moon fs-22'></i>
+                <i className={layoutMode === layoutModeTypes['DARKMODE'] ? 'bx bx-sun fs-22' : 'bx bx-moon fs-22'}></i>
             </button>
         </div>
     );

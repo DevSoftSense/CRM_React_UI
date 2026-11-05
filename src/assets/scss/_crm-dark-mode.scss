@@ -1,0 +1,852 @@
+
+/* ── Pipeline Base Defaults ── */
+.crm-pipeline-weighted-box {
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+}
+.crm-pipeline-bar-track {
+  background-color: #f1f5f9;
+}
+
+/* ── Lead Detail & 360 View Defaults ── */
+.crm-detail-nav-link {
+  color: #64748b;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background-color: transparent;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: #334155;
+  }
+
+  &.active {
+    color: #7f1d1d !important;
+    border-bottom: 3px solid #7f1d1d !important;
+    font-weight: 600;
+  }
+}
+/* =============================================================================
+   SOFTONCLOUD CRM — MASTER DARK MODE SYSTEM (ALL MODULES)
+   Applies when data-bs-theme="dark" or data-layout-mode="dark"
+   ============================================================================= */
+
+html[data-bs-theme="dark"],
+html[data-layout-mode="dark"],
+body[data-bs-theme="dark"],
+body[data-layout-mode="dark"] {
+
+  /* ── 1. Page Background & Content Containers ── */
+  .page-content,
+  .page-content[style] {
+    background-color: var(--vz-body-bg, #1a1d21) !important;
+    color: var(--vz-body-color, #cbd5e1);
+  }
+
+  /* ── 2. Cards & Containers across ALL Modules ── */
+  .card,
+  .card[style*="ffffff"],
+  .card[style*="#fff"],
+  .card[style*="f8fafc"],
+  .card[style*="rgb(255, 255, 255)"] {
+    background-color: var(--vz-card-bg, #212529) !important;
+    border-color: var(--vz-border-color, #32383e) !important;
+    color: var(--vz-body-color, #cbd5e1);
+  }
+
+  .card-header,
+  .card-footer {
+    border-color: var(--vz-border-color, #32383e) !important;
+    background-color: transparent !important;
+  }
+
+  /* ── 3. Utility Color Classes (Overrides) ── */
+  .bg-white,
+  .bg-light {
+    background-color: var(--vz-card-bg, #212529) !important;
+    color: var(--vz-body-color, #cbd5e1) !important;
+    border-color: var(--vz-border-color, #32383e) !important;
+  }
+
+  .text-dark {
+    color: #f1f5f9 !important;
+  }
+
+  .text-muted {
+    color: #94a3b8 !important;
+  }
+
+  /* ── 4. Headings & Titles across ALL Modules ── */
+  h1, h2, h3, h4, h5, h6,
+  .h1, .h2, .h3, .h4, .h5, .h6,
+  .card-title,
+  .modal-title,
+  .offcanvas-title {
+    color: var(--vz-heading-color, #f1f5f9) !important;
+  }
+
+  /* ── 5. Tables across ALL Modules (Leads, Deals, Accounts, Tasks, etc.) ── */
+  .table {
+    color: var(--vz-body-color, #cbd5e1) !important;
+    border-color: var(--vz-border-color, #32383e) !important;
+
+    thead,
+    thead.table-light,
+    thead tr,
+    thead th {
+      background-color: #1a1d21 !important;
+      border-color: var(--vz-border-color, #32383e) !important;
+      color: #94a3b8 !important;
+      font-weight: 600;
+    }
+
+    tbody tr {
+      background-color: transparent !important;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.04) !important;
+      }
+    }
+
+    tbody td,
+    tbody th {
+      border-color: var(--vz-border-color, #32383e) !important;
+      color: var(--vz-body-color, #cbd5e1) !important;
+      background-color: transparent !important;
+
+      .text-dark,
+      a.text-dark,
+      span.text-dark {
+        color: #f1f5f9 !important;
+      }
+
+      a:not(.btn):not(.badge) {
+        color: #e2e8f0;
+
+        &:hover {
+          color: var(--vz-brand-primary-light, #fca5a5);
+        }
+      }
+    }
+  }
+
+  /* Table sorting headers & column filters */
+  .apt-list-header-label {
+    color: #cbd5e1 !important;
+
+    &:hover {
+      color: #f1f5f9 !important;
+    }
+  }
+
+  .apt-list-sort-arrows {
+    color: #94a3b8 !important;
+  }
+
+  .apt-list-colfilters__input {
+    background-color: #262a2f !important;
+    border-color: #363d45 !important;
+    color: #f1f5f9 !important;
+
+    &::placeholder {
+      color: #64748b !important;
+    }
+  }
+
+  .apt-list-toolbar {
+    background-color: #212529 !important;
+    border-color: #32383e !important;
+
+    &__search .form-control {
+      background-color: #262a2f !important;
+      border-color: #363d45 !important;
+      color: #f1f5f9 !important;
+
+      &::placeholder {
+        color: #64748b !important;
+      }
+    }
+  }
+
+  /* Pagination */
+  .page-link {
+    background-color: #262a2f !important;
+    border-color: #363d45 !important;
+    color: #cbd5e1 !important;
+
+    &:hover {
+      background-color: #32383e !important;
+      color: #ffffff !important;
+    }
+  }
+
+  .page-item.active .page-link {
+    background-color: var(--vz-primary, #7f1d1d) !important;
+    border-color: var(--vz-primary, #7f1d1d) !important;
+    color: #ffffff !important;
+  }
+
+  .page-item.disabled .page-link {
+    background-color: #1e2227 !important;
+    border-color: #32383e !important;
+    color: #64748b !important;
+  }
+
+  /* ── 6. Form Controls, Inputs & Selects across ALL Modules ── */
+  .form-control,
+  .form-select,
+  select.form-select,
+  input.form-control,
+  textarea.form-control {
+    background-color: var(--vz-input-bg, #262a2f) !important;
+    border-color: var(--vz-input-border, #363d45) !important;
+    color: #f1f5f9 !important;
+
+    &::placeholder {
+      color: #64748b !important;
+      opacity: 1;
+    }
+
+    &:focus {
+      border-color: var(--vz-primary, #7f1d1d) !important;
+      box-shadow: 0 0 0 0.15rem rgba(127, 29, 29, 0.35) !important;
+      color: #f1f5f9 !important;
+    }
+
+    option {
+      background-color: #262a2f !important;
+      color: #f1f5f9 !important;
+    }
+  }
+
+  .form-label,
+  label {
+    color: #cbd5e1 !important;
+  }
+
+  .input-group-text {
+    background-color: #1e2226 !important;
+    border-color: #363d45 !important;
+    color: #94a3b8 !important;
+  }
+
+  /* ── 7. Buttons & Action Bars ── */
+  .btn-light,
+  .btn-white,
+  .btn-outline-secondary,
+  button.bg-white {
+    background-color: #262a2f !important;
+    border-color: #363d45 !important;
+    color: #e2e8f0 !important;
+
+    &:hover,
+    &:focus,
+    &:active {
+      background-color: #32383e !important;
+      border-color: #4b5563 !important;
+      color: #ffffff !important;
+    }
+  }
+
+  /* ── 8. Modals & Offcanvases across ALL Modules ── */
+  .modal-content,
+  .offcanvas {
+    background-color: var(--vz-modal-bg, #212529) !important;
+    border-color: var(--vz-border-color, #32383e) !important;
+    color: var(--vz-body-color, #cbd5e1);
+  }
+
+  .modal-header,
+  .modal-footer,
+  .offcanvas-header {
+    border-color: var(--vz-border-color, #32383e) !important;
+    background-color: #212529 !important;
+  }
+
+  .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%) !important;
+  }
+
+  /* ── 9. Dropdowns & Context Menus ── */
+  .dropdown-menu {
+    background-color: var(--vz-dropdown-bg, #292e33) !important;
+    border-color: #363d45 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+
+    .dropdown-item {
+      color: #cbd5e1 !important;
+
+      &:hover,
+      &:focus {
+        background-color: #363d45 !important;
+        color: #ffffff !important;
+      }
+
+      &.active,
+      &:active {
+        background-color: var(--vz-primary, #7f1d1d) !important;
+        color: #ffffff !important;
+      }
+    }
+
+    .dropdown-divider {
+      border-color: #363d45 !important;
+    }
+  }
+
+  /* ── 10. Breadcrumbs & Header Titles ── */
+  .page-title-box {
+    background: transparent !important;
+    box-shadow: none !important;
+
+    .breadcrumb-item {
+      color: #94a3b8;
+
+      &.active,
+      span {
+        color: #cbd5e1 !important;
+      }
+
+      a {
+        color: #94a3b8;
+
+        &:hover {
+          color: #f1f5f9;
+        }
+      }
+    }
+  }
+
+  /* ── 11. Advanced Filters Drawer ── */
+  .apt-adv-filters {
+    background-color: #212529 !important;
+    border-color: #32383e !important;
+
+    &__header,
+    &__body {
+      border-color: #32383e !important;
+    }
+
+    &__label {
+      color: #f1f5f9 !important;
+    }
+
+    &__hint {
+      color: #94a3b8 !important;
+    }
+  }
+
+  /* ── 12. Kanban Pipeline Board (/crm/pipeline) ── */
+  .crm-pipeline-column-card,
+  .card[style*="f8fafc"] {
+    background-color: #1e2227 !important;
+    border-color: #32383e !important;
+  }
+
+  .crm-pipeline-kpi-card {
+    background-color: #212529 !important;
+    border-color: #32383e !important;
+  }
+
+  .crm-pipeline-kpi-icon {
+    background-color: rgba(127, 29, 29, 0.2) !important;
+    color: #fca5a5 !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+
+    &.crm-pipeline-kpi-icon-success {
+      background-color: rgba(5, 150, 105, 0.2) !important;
+      color: #34d399 !important;
+      border: 1px solid rgba(5, 150, 105, 0.3) !important;
+    }
+
+    &.crm-pipeline-kpi-icon-danger {
+      background-color: rgba(225, 29, 72, 0.2) !important;
+      color: #fb7185 !important;
+      border: 1px solid rgba(225, 29, 72, 0.3) !important;
+    }
+  }
+
+  .crm-pipeline-search {
+    background-color: #262a2f !important;
+    border-color: #363d45 !important;
+    color: #f1f5f9 !important;
+
+    &::placeholder {
+      color: #94a3b8 !important;
+    }
+  }
+
+  .crm-pipeline-filter-btn {
+    &:not(.active) {
+      background-color: #262a2f !important;
+      border-color: #363d45 !important;
+      color: #cbd5e1 !important;
+
+      i {
+        color: #94a3b8 !important;
+      }
+    }
+  }
+
+  .crm-pipeline-select {
+    background-color: #262a2f !important;
+    border-color: #363d45 !important;
+    color: #f1f5f9 !important;
+  }
+
+  .crm-pipeline-view-btn {
+    background-color: #262a2f !important;
+    border-color: #363d45 !important;
+    color: #cbd5e1 !important;
+
+    &:hover {
+      background-color: #32383e !important;
+      color: #f1f5f9 !important;
+    }
+
+    i {
+      color: #94a3b8 !important;
+    }
+  }
+
+  .crm-pipeline-filter-card {
+    background-color: #212529 !important;
+    border-color: #32383e !important;
+  }
+
+  .crm-pipeline-empty-drop {
+    background-color: rgba(255, 255, 255, 0.02) !important;
+    border-color: #363d45 !important;
+    color: #94a3b8 !important;
+  }
+
+  .crm-pipeline-card,
+  div[draggable="true"] > .bg-white,
+  div[draggable="true"] .bg-white {
+    background-color: #262a2f !important;
+    border-color: #363d45 !important;
+    color: #cbd5e1 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+
+    .text-dark {
+      color: #f1f5f9 !important;
+    }
+
+    .crm-pipeline-card-title,
+    a[style*="475569"] {
+      color: #94a3b8 !important;
+
+      &:hover {
+        color: #fca5a5 !important;
+      }
+    }
+
+    .border-top {
+      border-color: #363d45 !important;
+    }
+
+    .badge {
+      &[style*="d1fae5"] {
+        background-color: rgba(5, 150, 105, 0.2) !important;
+        color: #34d399 !important;
+        border: 1px solid rgba(5, 150, 105, 0.4) !important;
+      }
+      &[style*="ffe4e6"] {
+        background-color: rgba(225, 29, 72, 0.2) !important;
+        color: #fb7185 !important;
+        border: 1px solid rgba(225, 29, 72, 0.4) !important;
+      }
+    }
+  }
+
+  .crm-pipeline-add-btn {
+    color: #fca5a5 !important;
+    &:hover {
+      color: #fecaca !important;
+    }
+  }
+
+  .crm-pipeline-col-link {
+    color: #94a3b8 !important;
+    &:hover {
+      color: #cbd5e1 !important;
+    }
+  }
+
+  .crm-pipeline-summary-card {
+    background-color: #212529 !important;
+    border-color: #32383e !important;
+
+    .border-bottom {
+      border-color: #32383e !important;
+    }
+  }
+
+  .crm-pipeline-summary-icon {
+    background-color: rgba(127, 29, 29, 0.2) !important;
+    color: #fca5a5 !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  }
+
+  .crm-accent-value {
+    color: #fca5a5 !important;
+  }
+
+  .crm-pipeline-weighted-box {
+    background-color: #262a2f !important;
+    border: 1px solid #363d45 !important;
+
+    span.fw-bold {
+      color: #fca5a5 !important;
+    }
+  }
+
+  .crm-pipeline-bar-track {
+    background-color: #262a2f !important;
+  }
+
+  .crm-pipeline-stage-card {
+    background-color: #262a2f !important;
+    border-color: #363d45 !important;
+
+    .text-dark {
+      color: #f1f5f9 !important;
+    }
+
+    .crm-pipeline-stage-badge {
+      background-color: #1e2227 !important;
+      color: #cbd5e1 !important;
+      border: 1px solid #363d45 !important;
+    }
+
+    .crm-pipeline-stage-amt {
+      color: #f8fafc !important;
+    }
+
+    .crm-pipeline-stage-pct {
+      color: #94a3b8 !important;
+    }
+  }
+
+  .crm-pipeline-modal-header {
+    background-color: #262a2f !important;
+    border-color: #363d45 !important;
+
+    div {
+      color: #fca5a5 !important;
+    }
+  }
+
+  /* ── 13. Calendar Module (/crm/calendar) ── */
+  .fc-theme-standard th,
+  .fc-theme-standard td,
+  .fc-scrollgrid {
+    border-color: #32383e !important;
+  }
+
+  .fc-col-header-cell {
+    background-color: #1e2227 !important;
+    color: #cbd5e1 !important;
+  }
+
+  .fc-daygrid-day-number {
+    color: #cbd5e1 !important;
+  }
+
+  .fc-day-other .fc-daygrid-day-number {
+    color: #64748b !important;
+  }
+
+  .fc-day-today {
+    background-color: rgba(127, 29, 29, 0.16) !important;
+  }
+
+  .fc-timegrid-slot-minor {
+    border-color: #2a3036 !important;
+  }
+
+  .fc-timegrid-slot-label-cushion {
+    color: #94a3b8 !important;
+  }
+
+  /* ── 14. Documents Module (/crm/documents) ── */
+  .doc-folder-item {
+    background-color: #262a2f !important;
+    border-color: #363d45 !important;
+    color: #cbd5e1 !important;
+
+    &:hover {
+      background-color: #2f343a !important;
+      color: #f1f5f9 !important;
+    }
+  }
+
+  /* ── 15. Badges & Soft Tints (Dark Mode Luminance) ── */
+  .badge-soft-primary {
+    background-color: rgba(127, 29, 29, 0.3) !important;
+    color: #fca5a5 !important;
+  }
+
+  .badge-soft-success {
+    background-color: rgba(16, 185, 129, 0.2) !important;
+    color: #6ee7b7 !important;
+  }
+
+  .badge-soft-warning {
+    background-color: rgba(245, 158, 11, 0.2) !important;
+    color: #fcd34d !important;
+  }
+
+  .badge-soft-danger {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    color: #fca5a5 !important;
+  }
+
+  .badge-soft-info {
+    background-color: rgba(59, 130, 246, 0.2) !important;
+    color: #93c5fd !important;
+  }
+
+  /* ── 16. Nav Tabs & Pills in Dark Mode ── */
+  .nav-tabs {
+    border-color: #32383e !important;
+
+    .nav-link {
+      color: #94a3b8 !important;
+
+      &.active,
+      &:hover {
+        background-color: #212529 !important;
+        border-color: #32383e #32383e transparent !important;
+        color: #f1f5f9 !important;
+      }
+    }
+  }
+
+  /* ── 17. Alert Overrides ── */
+  .alert-info {
+    background-color: rgba(59, 130, 246, 0.15) !important;
+    border-color: rgba(59, 130, 246, 0.3) !important;
+    color: #93c5fd !important;
+  }
+
+  .alert-danger {
+    background-color: rgba(239, 68, 68, 0.15) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+    color: #fca5a5 !important;
+  }
+
+  .alert-success {
+    background-color: rgba(16, 185, 129, 0.15) !important;
+    border-color: rgba(16, 185, 129, 0.3) !important;
+    color: #6ee7b7 !important;
+  }
+
+  /* ── 18. General Inlined Light Containers Override ── */
+  .border {
+    border-color: #32383e !important;
+  }
+
+  .border-top {
+    border-top-color: #32383e !important;
+  }
+
+  .border-bottom {
+    border-bottom-color: #32383e !important;
+  }
+
+  .border-start {
+    border-left-color: #32383e !important;
+  }
+
+  .border-end {
+    border-right-color: #32383e !important;
+  }
+
+  /* ── 19. Lead Detail & 360° View Dark Theming ── */
+  .crm-back-link {
+    color: #fca5a5 !important;
+
+    &:hover {
+      color: #fecaca !important;
+    }
+  }
+
+  .crm-detail-nav-link {
+    color: #94a3b8 !important;
+    border: none !important;
+    border-bottom: 3px solid transparent !important;
+    background: transparent !important;
+
+    &:hover {
+      color: #cbd5e1 !important;
+    }
+
+    &.active {
+      color: #fca5a5 !important;
+      border-bottom: 3px solid #fca5a5 !important;
+      font-weight: 600 !important;
+    }
+  }
+
+  .crm-detail-action-link,
+  span.crm-detail-action-link,
+  a.crm-detail-action-link {
+    color: #fca5a5 !important;
+
+    &:hover {
+      color: #fecaca !important;
+      text-decoration: underline !important;
+    }
+  }
+
+  .crm-gauge-label {
+    color: #fca5a5 !important;
+  }
+
+  .crm-detail-dashed-btn {
+    background-color: #262a2f !important;
+    border-color: #363d45 !important;
+    color: #fca5a5 !important;
+
+    &:hover {
+      background-color: #32383e !important;
+      border-color: #4b5563 !important;
+      color: #ffffff !important;
+    }
+  }
+
+  .crm-detail-btn-subtle {
+    background-color: #262a2f !important;
+    border-color: #363d45 !important;
+    color: #cbd5e1 !important;
+
+    &:hover {
+      background-color: #32383e !important;
+      border-color: #4b5563 !important;
+      color: #ffffff !important;
+    }
+  }
+
+  .crm-detail-top-btn {
+    background-color: #262a2f !important;
+    border-color: #363d45 !important;
+    color: #e2e8f0 !important;
+
+    &:hover {
+      background-color: #32383e !important;
+      border-color: #4b5563 !important;
+      color: #ffffff !important;
+    }
+  }
+
+  .crm-lead-note-card {
+    background-color: rgba(245, 158, 11, 0.12) !important;
+    border-color: rgba(245, 158, 11, 0.3) !important;
+    color: #fef08a !important;
+
+    div {
+      color: #fef08a !important;
+    }
+
+    .opacity-75 {
+      color: #fde68a !important;
+    }
+  }
+
+  /* ── 20. Subtle Badges and Text Accents ── */
+  .bg-primary-subtle {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    border-color: rgba(239, 68, 68, 0.4) !important;
+    color: #fca5a5 !important;
+  }
+
+  .text-primary {
+    color: #fca5a5 !important;
+  }
+
+  .bg-info-subtle {
+    background-color: rgba(59, 130, 246, 0.2) !important;
+    border-color: rgba(59, 130, 246, 0.4) !important;
+    color: #93c5fd !important;
+  }
+
+  .text-info {
+    color: #93c5fd !important;
+  }
+
+  .bg-success-subtle {
+    background-color: rgba(16, 185, 129, 0.2) !important;
+    border-color: rgba(16, 185, 129, 0.4) !important;
+    color: #6ee7b7 !important;
+  }
+
+  .text-success {
+    color: #6ee7b7 !important;
+  }
+
+  .bg-warning-subtle {
+    background-color: rgba(245, 158, 11, 0.2) !important;
+    border-color: rgba(245, 158, 11, 0.4) !important;
+    color: #fcd34d !important;
+  }
+
+  .text-warning {
+    color: #fcd34d !important;
+  }
+
+  .bg-danger-subtle {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    border-color: rgba(239, 68, 68, 0.4) !important;
+    color: #fca5a5 !important;
+  }
+
+  .text-danger {
+    color: #fca5a5 !important;
+  }
+
+  .bg-secondary-subtle {
+    background-color: rgba(148, 163, 184, 0.2) !important;
+    border-color: rgba(148, 163, 184, 0.4) !important;
+    color: #cbd5e1 !important;
+  }
+
+  /* ── 21. Sales Dashboard Module (100% Square Geometry & Dark Contrast) ── */
+  .crm-sales-kpi-card {
+    background-color: #212529 !important;
+    border-color: #32383e !important;
+  }
+
+  .crm-sales-kpi-icon-box {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border-color: #363d45 !important;
+  }
+
+  .crm-sales-activity-tile {
+    background-color: #262a2f !important;
+    border-color: #363d45 !important;
+  }
+
+  /* ApexCharts theme adjustments in Dark Mode */
+  .apexcharts-canvas {
+    .apexcharts-text tspan {
+      fill: #cbd5e1 !important;
+    }
+    .apexcharts-legend-text {
+      color: #cbd5e1 !important;
+    }
+    .apexcharts-tooltip {
+      background: #212529 !important;
+      border-color: #363d45 !important;
+      color: #f1f5f9 !important;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4) !important;
+
+      .apexcharts-tooltip-title {
+        background: #1a1d21 !important;
+        border-color: #363d45 !important;
+        color: #f8fafc !important;
+      }
+    }
+  }
+
+}

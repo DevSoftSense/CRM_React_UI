@@ -30,8 +30,7 @@ const QuickActionsCard = ({ actions = [] }) => {
             Quick Actions
           </h5>
         </div>
-        <span
-          className="rounded-0 px-2 py-1 fw-semibold"
+        <span className="rounded-0 px-2 py-1 fw-semibold crm-header-badge"
           style={{
             backgroundColor: "#f8fafc",
             color: "#64748b",

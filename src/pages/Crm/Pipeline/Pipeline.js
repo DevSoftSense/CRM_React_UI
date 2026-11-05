@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   Alert,
   Badge,
@@ -135,6 +136,14 @@ const getStageTheme = (code) => {
 const Pipeline = () => {
   document.title = "Sales Pipeline | SoftOnCloud CRM";
 
+  const layoutModeType = useSelector((state) => state.Layout?.layoutModeType);
+  const isDark = layoutModeType === "dark" || (
+    typeof document !== "undefined" && (
+      document.documentElement.getAttribute("data-bs-theme") === "dark" ||
+      document.documentElement.getAttribute("data-layout-mode") === "dark"
+    )
+  );
+
   // Board Data
   const [stages, setStages] = useState([]);
   const [serverSummary, setServerSummary] = useState(null);
@@ -213,20 +222,31 @@ const Pipeline = () => {
       });
 
       const list = data?.stages || data?.Stages || [];
-      const summary = data?.summary || data?.Summary || null;
+      const summary = data?.summary || data?.Summary || (data?.total_opportunities != null || data?.totalOpportunities != null ? {
+        totalOpportunities: data?.total_opportunities ?? data?.totalOpportunities,
+        totalPipelineValue: data?.total_pipeline_value ?? data?.totalPipelineValue,
+        weightedValue: data?.weighted_pipeline_value ?? data?.weightedPipelineValue ?? data?.weightedValue,
+        avgWinProbability: data?.avg_win_probability ?? data?.avgWinProbability ?? 0,
+        wonCount: data?.won_count ?? data?.wonCount ?? 0,
+        wonAmount: data?.won_amount ?? data?.wonAmount ?? 0,
+        lostCount: data?.lost_count ?? data?.lostCount ?? 0,
+        lostAmount: data?.lost_amount ?? data?.lostAmount ?? 0,
+      } : null);
 
       setServerSummary(summary);
       setStages(
-        list.map((s) => ({
-          ...s,
-          stageId: s.stageId ?? s.stage_id,
-          stageCode: s.stageCode ?? s.stage_code,
-          stageName: s.stageName ?? s.stage_name,
-          sortOrder: s.sortOrder ?? s.sort_order,
-          totalCount: s.totalCount ?? s.total_count,
-          totalAmount: s.totalAmount ?? s.total_amount,
-          percentage: s.percentage,
-          opportunities: (s.opportunities || s.Opportunities || []).map((card) => ({
+        list.map((s) => {
+          const oppsList = s.opportunities || s.Opportunities || s.cards || s.Cards || [];
+          return {
+            ...s,
+            stageId: s.stageId ?? s.stage_id,
+            stageCode: s.stageCode ?? s.stage_code,
+            stageName: s.stageName ?? s.stage_name,
+            sortOrder: s.sortOrder ?? s.sort_order,
+            totalCount: s.totalCount ?? s.total_count ?? s.opportunity_count ?? oppsList.length,
+            totalAmount: s.totalAmount ?? s.total_amount,
+            percentage: s.percentage,
+            opportunities: oppsList.map((card) => ({
             ...card,
             opportunityId: card.opportunityId ?? card.opportunity_id,
             name: card.name,
@@ -242,7 +262,7 @@ const Pipeline = () => {
             priorityName: card.priorityName ?? card.priority_name,
             stageCode: card.stageCode ?? card.stage_code ?? s.stageCode ?? s.stage_code,
           })),
-        }))
+        };})
       );
     } catch (err) {
       setStages([]);
@@ -439,7 +459,8 @@ const Pipeline = () => {
   };
 
   return (
-    <div className="page-content" style={{ backgroundColor: "#f8fafc", minHeight: "100vh" }}>
+    <div className="page-content" style={{ backgroundColor: isDark ? "#212529" : "#f8fafc",
+                        borderColor: isDark ? "#32383e" : "#e2e8f0", minHeight: "100vh" }}>
       <Container fluid className="px-4">
         {/* Top Header Section */}
         <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pt-2">
@@ -456,7 +477,7 @@ const Pipeline = () => {
             <div className="search-box position-relative" style={{ minWidth: 200 }}>
               <Input
                 type="text"
-                className="form-control form-control-sm bg-white"
+                className="form-control form-control-sm crm-pipeline-search"
                 placeholder="Search pipeline…"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
@@ -488,13 +509,13 @@ const Pipeline = () => {
             {/* Filters Toggle Button (Themed) */}
             <Button
               size="sm"
-              className={`d-flex align-items-center gap-1 border ${
-                showFilters ? "text-white" : "text-dark"
+              className={`d-flex align-items-center gap-1 border crm-pipeline-filter-btn ${
+                showFilters ? "text-white active" : "text-dark"
               }`}
               onClick={() => setShowFilters((v) => !v)}
               style={{
-                backgroundColor: showFilters ? THEME.primary : "#ffffff",
-                borderColor: showFilters ? THEME.primary : "#e2e8f0",
+                backgroundColor: showFilters ? THEME.primary : undefined,
+                borderColor: showFilters ? THEME.primary : undefined,
                 borderRadius: 0,
                 padding: "6px 12px",
                 fontSize: "13px",
@@ -508,7 +529,7 @@ const Pipeline = () => {
               <Input
                 type="select"
                 bsSize="sm"
-                className="form-select form-select-sm bg-white border"
+                className="form-select form-select-sm border crm-pipeline-select"
                 value={selectedOwner}
                 onChange={(e) => setSelectedOwner(e.target.value)}
                 style={{ borderRadius: 0, fontSize: "13px", cursor: "pointer" }}
@@ -525,8 +546,8 @@ const Pipeline = () => {
             {/* Opportunities List View Link */}
             <Link
               to="/crm/opportunities"
-              className="btn btn-sm btn-white border d-flex align-items-center gap-1"
-              style={{ borderRadius: 0, padding: "6px 12px", fontSize: "13px", backgroundColor: "#fff" }}
+              className="btn btn-sm border d-flex align-items-center gap-1 crm-pipeline-view-btn"
+              style={{ borderRadius: 0, padding: "6px 12px", fontSize: "13px" }}
               title="Switch to List View"
             >
               <i className="ri-list-check fs-14 text-muted" /> List View
@@ -536,7 +557,7 @@ const Pipeline = () => {
 
         {/* Collapsible Dynamic Date Range Filter Strip */}
         {showFilters && (
-          <Card className="border shadow-none mb-4" style={{ borderRadius: 0, backgroundColor: "#ffffff" }}>
+          <Card className="border shadow-none mb-4 crm-pipeline-filter-card" style={{ borderRadius: 0 }}>
             <CardBody className="py-2 px-3">
               <Row className="g-2 align-items-center">
                 <Col md={3}>
@@ -654,15 +675,14 @@ const Pipeline = () => {
         <Row className="g-3 mb-4">
           {/* Card 1: Total Opportunities */}
           <Col xl={2} md={4} sm={6}>
-            <Card className="border shadow-none h-100 mb-0" style={{ borderRadius: 0, borderColor: "#e2e8f0", backgroundColor: "#ffffff" }}>
+            <Card className="border shadow-none h-100 mb-0 crm-pipeline-kpi-card" style={{ borderRadius: 0, borderColor: "#e2e8f0" }}>
               <CardBody className="p-3">
                 <div className="d-flex align-items-center justify-content-between mb-2">
                   <span className="text-muted fw-semibold fs-12 text-uppercase letter-spacing">
                     Total Opportunities
                   </span>
                   <div
-                    className="d-flex align-items-center justify-content-center"
-                    style={{ width: 34, height: 34, backgroundColor: THEME.lightBg, color: THEME.primary, borderRadius: 0 }}
+                    className="d-flex align-items-center justify-content-center crm-pipeline-kpi-icon" style={{ width: 34, height: 34, backgroundColor: THEME.lightBg, color: THEME.primary, borderRadius: 0 }}
                   >
                     <i className="ri-briefcase-line fs-16" />
                   </div>
@@ -681,15 +701,14 @@ const Pipeline = () => {
 
           {/* Card 2: Total Pipeline Value */}
           <Col xl={2} md={4} sm={6}>
-            <Card className="border shadow-none h-100 mb-0" style={{ borderRadius: 0, borderColor: "#e2e8f0", backgroundColor: "#ffffff" }}>
+            <Card className="border shadow-none h-100 mb-0 crm-pipeline-kpi-card" style={{ borderRadius: 0, borderColor: "#e2e8f0" }}>
               <CardBody className="p-3">
                 <div className="d-flex align-items-center justify-content-between mb-2">
                   <span className="text-muted fw-semibold fs-12 text-uppercase letter-spacing">
                     Total Pipeline Value
                   </span>
                   <div
-                    className="d-flex align-items-center justify-content-center"
-                    style={{ width: 34, height: 34, backgroundColor: THEME.lightBg, color: THEME.primary, borderRadius: 0 }}
+                    className="d-flex align-items-center justify-content-center crm-pipeline-kpi-icon" style={{ width: 34, height: 34, backgroundColor: THEME.lightBg, color: THEME.primary, borderRadius: 0 }}
                   >
                     <i className="ri-money-dollar-circle-line fs-16" />
                   </div>
@@ -708,15 +727,14 @@ const Pipeline = () => {
 
           {/* Card 3: Weighted Value */}
           <Col xl={2} md={4} sm={6}>
-            <Card className="border shadow-none h-100 mb-0" style={{ borderRadius: 0, borderColor: "#e2e8f0", backgroundColor: "#ffffff" }}>
+            <Card className="border shadow-none h-100 mb-0 crm-pipeline-kpi-card" style={{ borderRadius: 0, borderColor: "#e2e8f0" }}>
               <CardBody className="p-3">
                 <div className="d-flex align-items-center justify-content-between mb-2">
                   <span className="text-muted fw-semibold fs-12 text-uppercase letter-spacing">
                     Weighted Value
                   </span>
                   <div
-                    className="d-flex align-items-center justify-content-center"
-                    style={{ width: 34, height: 34, backgroundColor: THEME.lightBg, color: THEME.primary, borderRadius: 0 }}
+                    className="d-flex align-items-center justify-content-center crm-pipeline-kpi-icon" style={{ width: 34, height: 34, backgroundColor: THEME.lightBg, color: THEME.primary, borderRadius: 0 }}
                   >
                     <i className="ri-focus-3-line fs-16" />
                   </div>
@@ -735,15 +753,14 @@ const Pipeline = () => {
 
           {/* Card 4: Avg. Win Probability */}
           <Col xl={2} md={4} sm={6}>
-            <Card className="border shadow-none h-100 mb-0" style={{ borderRadius: 0, borderColor: "#e2e8f0", backgroundColor: "#ffffff" }}>
+            <Card className="border shadow-none h-100 mb-0 crm-pipeline-kpi-card" style={{ borderRadius: 0, borderColor: "#e2e8f0" }}>
               <CardBody className="p-3">
                 <div className="d-flex align-items-center justify-content-between mb-2">
                   <span className="text-muted fw-semibold fs-12 text-uppercase letter-spacing">
                     Avg. Win Probability
                   </span>
                   <div
-                    className="d-flex align-items-center justify-content-center"
-                    style={{ width: 34, height: 34, backgroundColor: THEME.lightBg, color: THEME.primary, borderRadius: 0 }}
+                    className="d-flex align-items-center justify-content-center crm-pipeline-kpi-icon" style={{ width: 34, height: 34, backgroundColor: THEME.lightBg, color: THEME.primary, borderRadius: 0 }}
                   >
                     <i className="ri-bar-chart-box-line fs-16" />
                   </div>
@@ -760,7 +777,7 @@ const Pipeline = () => {
 
           {/* Card 5: Won Deals */}
           <Col xl={2} md={4} sm={6}>
-            <Card className="border shadow-none h-100 mb-0" style={{ borderRadius: 0, borderColor: "#e2e8f0", backgroundColor: "#ffffff" }}>
+            <Card className="border shadow-none h-100 mb-0 crm-pipeline-kpi-card" style={{ borderRadius: 0, borderColor: "#e2e8f0" }}>
               <CardBody className="p-3">
                 <div className="d-flex align-items-center justify-content-between mb-2">
                   <span className="text-muted fw-semibold fs-12 text-uppercase letter-spacing">
@@ -785,7 +802,7 @@ const Pipeline = () => {
 
           {/* Card 6: Lost Deals */}
           <Col xl={2} md={4} sm={6}>
-            <Card className="border shadow-none h-100 mb-0" style={{ borderRadius: 0, borderColor: "#e2e8f0", backgroundColor: "#ffffff" }}>
+            <Card className="border shadow-none h-100 mb-0 crm-pipeline-kpi-card" style={{ borderRadius: 0, borderColor: "#e2e8f0" }}>
               <CardBody className="p-3">
                 <div className="d-flex align-items-center justify-content-between mb-2">
                   <span className="text-muted fw-semibold fs-12 text-uppercase letter-spacing">
@@ -859,7 +876,7 @@ const Pipeline = () => {
                     }}
                   >
                     <Card
-                      className="border shadow-none mb-0"
+                      className="border shadow-none mb-0 crm-pipeline-column-card"
                       style={{
                         borderRadius: 0,
                         backgroundColor: "#f8fafc",
@@ -918,14 +935,15 @@ const Pipeline = () => {
                                       ref={dragProvided.innerRef}
                                       {...dragProvided.draggableProps}
                                       {...dragProvided.dragHandleProps}
-                                      className="border p-3 mb-2 bg-white"
+                                      className="border p-3 mb-2 crm-pipeline-card"
                                       style={{
                                         ...dragProvided.draggableProps.style,
                                         borderRadius: 0,
                                         boxShadow: dragSnapshot.isDragging
                                           ? "0 14px 28px rgba(0,0,0,0.15), 0 10px 10px rgba(0,0,0,0.08)"
                                           : "0 1px 3px rgba(0,0,0,0.04)",
-                                        border: "1px solid #e2e8f0",
+                                        border: isDark ? "1px solid #363d45" : "1px solid #e2e8f0",
+                                        backgroundColor: isDark ? "#262a2f" : "#ffffff",
                                         cursor: "grab",
                                         transition: "box-shadow 0.15s ease",
                                       }}
@@ -1030,8 +1048,8 @@ const Pipeline = () => {
 
                               {opps.length === 0 && (
                                 <div
-                                  className="text-muted fs-12 text-center py-5 border border-dashed"
-                                  style={{ backgroundColor: "#ffffff", borderRadius: 0 }}
+                                  className="text-muted fs-12 text-center py-5 border border-dashed crm-pipeline-empty-drop"
+                                  style={{ borderRadius: 0 }}
                                 >
                                   Drop deals here
                                 </div>
@@ -1045,21 +1063,21 @@ const Pipeline = () => {
                           {isWon ? (
                             <Link
                               to="/crm/opportunities"
-                              className="text-muted fs-12 fw-medium text-decoration-none py-1 d-block"
+                              className="text-muted fs-12 fw-medium text-decoration-none py-1 d-block crm-pipeline-col-link"
                             >
                               View All Won →
                             </Link>
                           ) : isLost ? (
                             <Link
                               to="/crm/opportunities"
-                              className="text-danger fs-12 fw-medium text-decoration-none py-1 d-block"
+                              className="text-danger fs-12 fw-medium text-decoration-none py-1 d-block crm-pipeline-col-link"
                             >
                               View All Lost →
                             </Link>
                           ) : (
                             <button
                               type="button"
-                              className="btn btn-sm btn-link text-decoration-none fs-12 fw-medium w-100 py-1"
+                              className="btn btn-sm btn-link text-decoration-none fs-12 fw-medium w-100 py-1 crm-pipeline-add-btn"
                               onClick={() => openQuickCreate(stage)}
                               style={{ color: THEME.primary }}
                             >
@@ -1078,7 +1096,7 @@ const Pipeline = () => {
 
         {/* Bottom Pipeline Summary & Funnel Distribution Card */}
         <Card
-          className="border shadow-none mt-3 mb-4 bg-white"
+          className="border shadow-none mt-3 mb-4 crm-pipeline-summary-card"
           style={{ borderRadius: 0, borderColor: "#e2e8f0" }}
         >
           <CardBody className="p-3 p-md-4">
@@ -1086,7 +1104,7 @@ const Pipeline = () => {
             <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-3 border-bottom">
               <div className="d-flex align-items-center gap-3">
                 <div
-                  className="d-flex align-items-center justify-content-center flex-shrink-0"
+                  className="d-flex align-items-center justify-content-center flex-shrink-0 crm-pipeline-summary-icon"
                   style={{
                     width: 38,
                     height: 38,
@@ -1112,13 +1130,17 @@ const Pipeline = () => {
                   <span className="text-muted fs-11 text-uppercase fw-semibold d-block">
                     Total Pipeline Value
                   </span>
-                  <span className="fw-bold fs-18" style={{ color: THEME.primary }}>
+                  <span className="fw-bold fs-18 crm-accent-value" style={{ color: THEME.primary }}>
                     {formatInr(computedStats.totalPipelineValue)}
                   </span>
                 </div>
                 <div
-                  className="px-3 py-1 d-flex flex-column align-items-center justify-content-center"
-                  style={{ backgroundColor: THEME.lightBg, border: `1px solid ${THEME.borderTint}`, borderRadius: 0 }}
+                  className="px-3 py-1 d-flex flex-column align-items-center justify-content-center crm-pipeline-weighted-box"
+                  style={{
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "#262a2f" : "#fef2f2",
+                    borderColor: isDark ? "#363d45" : "#fee2e2",
+                  }}
                 >
                   <span className="text-muted fs-10 text-uppercase fw-semibold">Weighted</span>
                   <span className="fw-bold fs-13" style={{ color: THEME.primary }}>
@@ -1130,8 +1152,8 @@ const Pipeline = () => {
 
             {/* Visual Funnel Stacked Distribution Bar */}
             <div
-              className="w-100 overflow-hidden d-flex mb-3 shadow-none"
-              style={{ height: "7px", backgroundColor: "#f1f5f9", borderRadius: 0 }}
+              className="w-100 overflow-hidden d-flex mb-3 shadow-none crm-pipeline-bar-track"
+              style={{ height: "7px", borderRadius: 0 }}
             >
               {stages.map((stage) => {
                 const opps = stage.opportunities || [];
@@ -1180,10 +1202,11 @@ const Pipeline = () => {
                 return (
                   <Col key={stage.stageId} lg={2} md={4} sm={6}>
                     <div
-                      className="p-2 px-3 border h-100 d-flex flex-column justify-content-between"
+                      className="p-2 px-3 border h-100 d-flex flex-column justify-content-between crm-pipeline-stage-card"
                       style={{
                         borderRadius: 0,
-                        backgroundColor: stageCount > 0 ? theme.lightBg : "#ffffff",
+                        backgroundColor: isDark ? "#262a2f" : (stageCount > 0 ? theme.lightBg : "#ffffff"),
+                        borderColor: isDark ? "#363d45" : (stageCount > 0 ? (theme.accentColor === THEME.primary ? THEME.borderTint : theme.accentColor + "40") : "#e2e8f0"),
                         borderColor:
                           stageCount > 0
                             ? theme.accentColor === THEME.primary
@@ -1212,7 +1235,7 @@ const Pipeline = () => {
                           </span>
                         </div>
                         <span
-                          className="badge flex-shrink-0"
+                          className="badge flex-shrink-0 crm-pipeline-stage-badge"
                           style={{
                             borderRadius: 0,
                             backgroundColor: theme.badgeBg,
@@ -1228,7 +1251,7 @@ const Pipeline = () => {
 
                       <div className="d-flex align-items-baseline justify-content-between mt-1">
                         <span
-                          className="fw-bold fs-13"
+                          className="fw-bold fs-13 crm-pipeline-stage-amt"
                           style={{
                             color:
                               stageCount > 0
@@ -1241,7 +1264,7 @@ const Pipeline = () => {
                           {formatInr(stageAmt)}
                         </span>
                         <span
-                          className="fs-11 fw-semibold"
+                          className="fs-11 fw-semibold crm-pipeline-stage-pct"
                           style={{
                             color:
                               stageCount > 0

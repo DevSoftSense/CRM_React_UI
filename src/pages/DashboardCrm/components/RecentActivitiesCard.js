@@ -199,8 +199,7 @@ const RecentActivitiesCard = ({ activities = [] }) => {
           )}
 
           <Link
-            to="/crm/activities"
-            className="text-decoration-none fw-medium d-inline-flex align-items-center"
+            to="/crm/activities" className="text-decoration-none fw-medium d-inline-flex align-items-center crm-card-header-link"
             style={{ fontSize: "0.75rem", color: "#7f1d1d" }}
           >
             View All <i className="ri-arrow-right-s-line ms-1" style={{ fontSize: "0.85rem" }} />
@@ -389,7 +388,7 @@ const RecentActivitiesCard = ({ activities = [] }) => {
 
               {/* Pill Box Below Bell: Count + "New Activities" (100% Inside Borders, Perfectly Centered) */}
               <div
-                className="mt-2"
+                className="mt-2 crm-activity-bell-pill"
                 style={{
                   width: "100%",
                   background: "linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)",
@@ -405,6 +404,7 @@ const RecentActivitiesCard = ({ activities = [] }) => {
                 }}
               >
                 <span
+                  className="crm-activity-count"
                   style={{
                     fontSize: "1.2rem",
                     fontWeight: 800,
@@ -416,6 +416,7 @@ const RecentActivitiesCard = ({ activities = [] }) => {
                   {displayCount}
                 </span>
                 <span
+                  className="crm-activity-label"
                   style={{
                     fontSize: "0.72rem",
                     fontWeight: 700,
@@ -445,6 +446,7 @@ const RecentActivitiesCard = ({ activities = [] }) => {
             >
               {/* Continuous vertical timeline connector line in background */}
               <div
+                className="crm-activity-connector-line"
                 style={{
                   position: "absolute",
                   top: "0px",
@@ -498,7 +500,7 @@ const RecentActivitiesCard = ({ activities = [] }) => {
 
                       {/* Activity Pill Card */}
                       <div
-                        className="flex-grow-1 d-flex align-items-center justify-content-between"
+                        className="flex-grow-1 d-flex align-items-center justify-content-between crm-activity-pill"
                         style={{
                           height: "48px",
                           backgroundColor: "#ffffff",
@@ -547,6 +549,7 @@ const RecentActivitiesCard = ({ activities = [] }) => {
                             {a.title}
                           </div>
                           <div
+                            className="crm-activity-author"
                             style={{
                               fontSize: "0.6875rem",
                               lineHeight: 1.2,

@@ -173,7 +173,7 @@ const LeadSourcesChart = ({ data = [] }) => {
           </h5>
         </div>
         <span
-          className="rounded-0 px-2 py-1 fw-semibold"
+          className="rounded-0 px-2 py-1 fw-semibold crm-header-badge"
           style={{
             backgroundColor: "#f8fafc",
             color: "#64748b",
@@ -325,7 +325,7 @@ const LeadSourcesChart = ({ data = [] }) => {
                 cx="150"
                 cy="145"
                 r="71"
-                fill="#ffffff"
+                fill="#ffffff" className="crm-lead-source-center"
                 style={{
                   filter: "drop-shadow(inset 0 2px 6px rgba(15,23,42,0.12))",
                 }}
@@ -340,7 +340,7 @@ const LeadSourcesChart = ({ data = [] }) => {
               />
 
               {/* 6. Center 3-People Team / Group Icon */}
-              <g filter="url(#team-icon-shadow)" transform="translate(150, 145)">
+              <g className="crm-lead-source-team-icon" filter="url(#team-icon-shadow)" transform="translate(150, 145)">
                 {/* Center Leader Figure */}
                 <circle cx="0" cy="-9" r="7.5" fill="#0f172a" />
                 <path
@@ -409,12 +409,13 @@ const LeadSourcesChart = ({ data = [] }) => {
               >
                 {/* Neumorphic Circular Icon Button */}
                 <div
+                  className="crm-lead-source-icon-btn"
                   style={{
                     width: "42px",
                     height: "42px",
                     borderRadius: "50%",
-                    backgroundColor: "#ffffff",
-                    border: `1.5px solid ${isHovered ? item.color : "rgba(226, 232, 240, 0.9)"}`,
+                    backgroundColor: "var(--vz-card-bg-fill, #ffffff)",
+                    border: `1.5px solid ${isHovered ? item.color : "var(--vz-border-color, rgba(226, 232, 240, 0.9))"}`,
                     boxShadow: isHovered
                       ? `0 6px 16px ${item.color}40, 0 2px 4px rgba(15,23,42,0.08)`
                       : "0 4px 12px rgba(15,23,42,0.08), 0 1px 3px rgba(15,23,42,0.04), inset 0 1px 1px #ffffff",
@@ -438,10 +439,11 @@ const LeadSourcesChart = ({ data = [] }) => {
                 {/* Typography: Channel Name & Percentage */}
                 <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
                   <span
+                    className="crm-lead-source-name"
                     style={{
                       fontSize: "0.875rem",
                       fontWeight: 600,
-                      color: isHovered ? item.color : "#1e293b",
+                      color: isHovered ? item.color : "var(--vz-heading-color, #1e293b)",
                       transition: "color 0.18s ease",
                       letterSpacing: "-0.01em",
                       whiteSpace: "nowrap",
@@ -450,10 +452,11 @@ const LeadSourcesChart = ({ data = [] }) => {
                     {item.name}
                   </span>
                   <span
+                    className="crm-lead-source-pct"
                     style={{
                       fontSize: "1.05rem",
                       fontWeight: 800,
-                      color: "#0f172a",
+                      color: "var(--vz-heading-color, #0f172a)",
                       letterSpacing: "-0.02em",
                     }}
                   >
