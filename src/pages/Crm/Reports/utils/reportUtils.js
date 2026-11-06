@@ -66,6 +66,19 @@ export const getDateRangeFromPreset = (preset) => {
 };
 
 /**
+ * Alias helper returning { from, to, dateFrom, dateTo }
+ */
+export const getDatePresetRange = (preset) => {
+  const range = getDateRangeFromPreset(preset);
+  return {
+    from: range.dateFrom,
+    to: range.dateTo,
+    dateFrom: range.dateFrom,
+    dateTo: range.dateTo,
+  };
+};
+
+/**
  * Converts snake_case key to Title Case
  */
 export const humanizeKey = (key = "") => {
@@ -145,10 +158,136 @@ export const getKpiConfig = (key, value) => {
   }
 
   // Specific overrides for key metric polish
-  if (k === "total_pipeline_value") {
+  if (k === "won_revenue") {
+    label = "Won Revenue";
+    displayVal = formatCurrency(value);
+    color = "#15803d"; // Forest Green
+    bg = "rgba(21, 128, 61, 0.08)";
+    icon = "ri-money-dollar-circle-line";
+  } else if (k === "lost_revenue") {
+    label = "Lost Revenue";
+    displayVal = formatCurrency(value);
+    color = "#dc2626"; // Red
+    bg = "rgba(220, 38, 38, 0.08)";
+    icon = "ri-close-circle-line";
+  } else if (k === "won_deals_count") {
+    label = "Won Deals Count";
+    displayVal = formatNumber(value);
+    color = "#15803d";
+    bg = "rgba(21, 128, 61, 0.08)";
+    icon = "ri-trophy-line";
+  } else if (k === "lost_deals_count") {
+    label = "Lost Deals Count";
+    displayVal = formatNumber(value);
+    color = "#dc2626";
+    bg = "rgba(220, 38, 38, 0.08)";
+    icon = "ri-close-line";
+  } else if (k === "stuck_deals_count") {
+    label = "Stuck Deals Count";
+    displayVal = formatNumber(value);
+    color = "#dc2626";
+    bg = "rgba(220, 38, 38, 0.08)";
+    icon = "ri-alarm-warning-line";
+  } else if (k === "pipeline_at_risk") {
+    label = "Pipeline at Risk";
+    displayVal = formatCurrency(value);
+    color = "#dc2626"; // Risk is Danger Red
+    bg = "rgba(220, 38, 38, 0.08)";
+    icon = "ri-alarm-warning-line";
+  } else if (k === "uncontacted_leads_count") {
+    label = "Uncontacted Leads";
+    displayVal = formatNumber(value);
+    color = "#ea580c";
+    bg = "rgba(234, 88, 12, 0.08)";
+    icon = "ri-user-unfollow-line";
+  } else if (k === "critical_stale_leads") {
+    label = "Critical Stale (> 7d)";
+    displayVal = formatNumber(value);
+    color = "#7f1d1d";
+    bg = "rgba(127, 29, 29, 0.08)";
+    icon = "ri-error-warning-line";
+  } else if (k === "avg_neglect_days") {
+    label = "Avg Time Neglected";
+    displayVal = `${Number(value || 0).toFixed(1)} days`;
+    color = "#b45309";
+    bg = "rgba(180, 83, 9, 0.08)";
+    icon = "ri-time-line";
+  } else if (k === "total_leads") {
+    label = "Total Leads";
+    displayVal = formatNumber(value);
+    color = "#475569";
+    bg = "rgba(71, 85, 105, 0.08)";
+    icon = "ri-user-shared-line";
+  } else if (k === "converted_leads") {
+    label = "Converted Leads";
+    displayVal = formatNumber(value);
+    color = "#16a34a";
+    bg = "rgba(22, 163, 74, 0.08)";
+    icon = "ri-checkbox-circle-line";
+  } else if (k === "conversion_rate") {
+    label = "Lead Conversion Rate";
+    displayVal = formatPercent(value);
+    color = "#15803d";
+    bg = "rgba(21, 128, 61, 0.08)";
+    icon = "ri-percent-line";
+  } else if (k === "estimated_pipeline_value") {
+    label = "Pipeline Generated";
+    displayVal = formatCurrency(value);
+    color = "#7f1d1d";
+    bg = "rgba(127, 29, 29, 0.08)";
+    icon = "ri-funds-line";
+  } else if (k === "gross_pipeline") {
+    label = "Gross Pipeline";
+    displayVal = formatCurrency(value);
+    color = "#475569";
+    bg = "rgba(71, 85, 105, 0.08)";
+    icon = "ri-funds-line";
+  } else if (k === "weighted_forecast") {
+    label = "Weighted Forecast";
+    displayVal = formatCurrency(value);
+    color = "#7f1d1d";
+    bg = "rgba(127, 29, 29, 0.08)";
+    icon = "ri-line-chart-line";
+  } else if (k === "forecast_realization_rate") {
+    label = "Confidence / Realization";
+    displayVal = formatPercent(value);
+    color = "#15803d";
+    bg = "rgba(21, 128, 61, 0.08)";
+    icon = "ri-percent-line";
+  } else if (k === "active_deals_count") {
+    label = "Active Pipeline Deals";
+    displayVal = formatNumber(value);
+    color = "#0284c7";
+    bg = "rgba(2, 132, 199, 0.08)";
+    icon = "ri-briefcase-line";
+  } else if (k === "total_pipeline_value") {
     label = "Total Pipeline Value";
     color = "#7f1d1d";
     bg = "rgba(127, 29, 29, 0.08)";
+    icon = "ri-funds-line";
+  } else if (k === "total_target_amount") {
+    label = "Total Target Quota";
+    displayVal = formatCurrency(value);
+    color = "#475569";
+    bg = "rgba(71, 85, 105, 0.08)";
+    icon = "ri-flag-line";
+  } else if (k === "total_won_achieved" || k === "total_won_revenue") {
+    label = "Won Revenue Achieved";
+    displayVal = formatCurrency(value);
+    color = "#16a34a";
+    bg = "rgba(22, 163, 74, 0.08)";
+    icon = "ri-trophy-line";
+  } else if (k === "team_attainment_pct") {
+    label = "Quota Attainment";
+    displayVal = formatPercent(value);
+    color = "#15803d";
+    bg = "rgba(21, 128, 61, 0.08)";
+    icon = "ri-percent-line";
+  } else if (k === "quota_gap_amount") {
+    label = "Quota Shortfall / Gap";
+    displayVal = formatCurrency(value);
+    color = "#b45309";
+    bg = "rgba(180, 83, 9, 0.08)";
     icon = "ri-funds-line";
   } else if (k === "active_deals_count") {
     label = "Active Pipeline Deals";
