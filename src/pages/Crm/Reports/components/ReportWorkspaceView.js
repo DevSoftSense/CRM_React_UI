@@ -3,54 +3,49 @@ import {
   Card,
   CardBody,
   Button,
+  Input,
   Spinner,
   Alert,
-  Input,
-  ButtonGroup,
 } from "reactstrap";
 import { runReport } from "../../../../helpers/crmReportApi";
-import { getDateRangeFromPreset, exportToCsv } from "../utils/reportUtils";
-
+import { getDatePresetRange, exportToCsv } from "../utils/reportUtils";
 import ReportKpiCards from "./ReportKpiCards";
 import ReportChartRenderer from "./ReportChartRenderer";
 import ReportDataTable from "./ReportDataTable";
 
-const ReportWorkspaceView = ({
-  report,
-  owners,
-  onBackToCatalog,
-}) => {
+const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
+  // Filters state
   const [datePreset, setDatePreset] = useState("this_year");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [dateFrom, setDateFrom] = useState(() => {
+    const range = getDatePresetRange("this_year");
+    return range.from;
+  });
+  const [dateTo, setDateTo] = useState(() => {
+    const range = getDatePresetRange("this_year");
+    return range.to;
+  });
   const [selectedOwnerId, setSelectedOwnerId] = useState("");
   const [isCustomDate, setIsCustomDate] = useState(false);
 
-  const [loading, setLoading] = useState(true);
+  // Data fetching state
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [reportResult, setReportResult] = useState(null);
 
-  // Initialize dates based on default preset
-  useEffect(() => {
-    const range = getDateRangeFromPreset("this_year");
-    setDateFrom(range.dateFrom);
-    setDateTo(range.dateTo);
-  }, []);
-
-  // Handler for preset button clicks
-  const handlePresetChange = (preset) => {
-    setDatePreset(preset);
-    if (preset === "custom") {
+  // Handle Preset Change
+  const handlePresetChange = (presetId) => {
+    setDatePreset(presetId);
+    if (presetId === "custom") {
       setIsCustomDate(true);
-      return;
+    } else {
+      setIsCustomDate(false);
+      const range = getDatePresetRange(presetId);
+      setDateFrom(range.from);
+      setDateTo(range.to);
     }
-    setIsCustomDate(false);
-    const range = getDateRangeFromPreset(preset);
-    setDateFrom(range.dateFrom);
-    setDateTo(range.dateTo);
   };
 
-  // Execute report
+  // Run Report from API
   const executeReport = useCallback(async () => {
     if (!report?.code) return;
 
@@ -92,7 +87,14 @@ const ReportWorkspaceView = ({
   return (
     <div>
       {/* Top Workspace Action & Filter Bar */}
-      <Card className="shadow-sm border-0 mb-4" style={{ borderRadius: "12px" }}>
+      <Card
+        className="bg-white mb-4"
+        style={{
+          borderRadius: "4px",
+          border: "1px solid #e2e8f0",
+          boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+        }}
+      >
         <CardBody className="p-3">
           <div className="d-flex flex-wrap align-items-center justify-content-between gap-3">
             {/* Left: Back button & Title */}
@@ -100,42 +102,28 @@ const ReportWorkspaceView = ({
               <Button
                 color="light"
                 size="sm"
-                className="border d-flex align-items-center justify-content-center"
+                className="border d-flex align-items-center gap-1"
                 style={{
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "8px",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                  fontWeight: 500,
                   color: "#475569",
+                  borderColor: "#e2e8f0",
+                  backgroundColor: "#ffffff",
+                  padding: "5px 10px",
                 }}
                 onClick={onBackToCatalog}
                 title="Back to Reports Catalog"
               >
-                <i className="ri-arrow-left-line fs-16"></i>
+                <i className="ri-arrow-left-line"></i>
+                <span className="d-none d-sm-inline">All Reports</span>
               </Button>
 
               <div>
-                <div className="d-flex align-items-center gap-2 mb-1">
-                  <span
-                    className="badge text-uppercase"
-                    style={{
-                      backgroundColor: "rgba(127, 29, 29, 0.08)",
-                      color: "#7f1d1d",
-                      fontSize: "10px",
-                      fontWeight: 600,
-                      padding: "3px 8px",
-                      borderRadius: "6px",
-                    }}
-                  >
-                    {report?.category_name}
-                  </span>
-                  <span
-                    className="text-muted"
-                    style={{ fontFamily: "monospace", fontSize: "11px" }}
-                  >
-                    {report?.code}
-                  </span>
-                </div>
-                <h5 className="fw-bold mb-0 text-dark" style={{ fontSize: "18px" }}>
+                <h5
+                  className="fw-bold mb-0 text-dark"
+                  style={{ fontSize: "17px", letterSpacing: "-0.3px" }}
+                >
                   {report?.name}
                 </h5>
               </div>
@@ -165,6 +153,7 @@ const ReportWorkspaceView = ({
                         fontSize: "12px",
                         fontWeight: 500,
                         border: "1px solid",
+                        padding: "4px 10px",
                       }}
                       onClick={() => handlePresetChange(p.id)}
                     >
@@ -182,7 +171,7 @@ const ReportWorkspaceView = ({
                     bsSize="sm"
                     value={dateFrom}
                     onChange={(e) => setDateFrom(e.target.value)}
-                    style={{ width: "130px", fontSize: "12px" }}
+                    style={{ width: "130px", fontSize: "12px", borderRadius: "4px" }}
                   />
                   <span className="text-muted small">to</span>
                   <Input
@@ -190,7 +179,7 @@ const ReportWorkspaceView = ({
                     bsSize="sm"
                     value={dateTo}
                     onChange={(e) => setDateTo(e.target.value)}
-                    style={{ width: "130px", fontSize: "12px" }}
+                    style={{ width: "130px", fontSize: "12px", borderRadius: "4px" }}
                   />
                 </div>
               )}
@@ -200,9 +189,9 @@ const ReportWorkspaceView = ({
                 className="form-select form-select-sm"
                 style={{
                   width: "160px",
-                  borderRadius: "6px",
+                  borderRadius: "4px",
                   fontSize: "12px",
-                  borderColor: "#e2e8f0",
+                  borderColor: "#cbd5e1",
                 }}
                 value={selectedOwnerId}
                 onChange={(e) => setSelectedOwnerId(e.target.value)}
@@ -223,7 +212,14 @@ const ReportWorkspaceView = ({
                 color="light"
                 size="sm"
                 className="border d-flex align-items-center gap-1"
-                style={{ borderRadius: "6px", fontSize: "12px", color: "#475569" }}
+                style={{
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                  color: "#475569",
+                  borderColor: "#e2e8f0",
+                  backgroundColor: "#ffffff",
+                  padding: "5px 9px",
+                }}
                 onClick={executeReport}
                 disabled={loading}
                 title="Refresh Report Data"
@@ -236,7 +232,14 @@ const ReportWorkspaceView = ({
                 color="light"
                 size="sm"
                 className="border d-flex align-items-center gap-1"
-                style={{ borderRadius: "6px", fontSize: "12px", color: "#475569" }}
+                style={{
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                  color: "#475569",
+                  borderColor: "#e2e8f0",
+                  backgroundColor: "#ffffff",
+                  padding: "5px 9px",
+                }}
                 onClick={() => window.print()}
                 title="Print Report"
               >
@@ -248,12 +251,13 @@ const ReportWorkspaceView = ({
                 type="button"
                 className="btn btn-sm d-flex align-items-center gap-1"
                 style={{
-                  borderRadius: "6px",
+                  borderRadius: "4px",
                   fontSize: "12px",
                   fontWeight: 500,
                   backgroundColor: "#7f1d1d",
                   borderColor: "#7f1d1d",
                   color: "#ffffff",
+                  padding: "5px 12px",
                 }}
                 onClick={() => exportToCsv(report?.code, rows)}
                 disabled={rows.length === 0}
@@ -270,7 +274,7 @@ const ReportWorkspaceView = ({
         <Alert
           color="danger"
           className="mb-4 d-flex align-items-center justify-content-between"
-          style={{ borderRadius: "8px" }}
+          style={{ borderRadius: "4px" }}
         >
           <div className="d-flex align-items-center gap-2">
             <i className="ri-error-warning-line fs-18"></i>
@@ -281,7 +285,7 @@ const ReportWorkspaceView = ({
             size="sm"
             outline
             onClick={executeReport}
-            style={{ borderRadius: "6px", fontSize: "12px" }}
+            style={{ borderRadius: "4px", fontSize: "12px" }}
           >
             Retry
           </Button>
@@ -321,4 +325,3 @@ const ReportWorkspaceView = ({
 };
 
 export default ReportWorkspaceView;
-

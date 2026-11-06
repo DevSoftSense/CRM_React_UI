@@ -201,17 +201,17 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                 <Card
                   className="h-100 border-0 d-flex flex-column"
                   style={{
-                    borderRadius: "10px",
+                    borderRadius: "4px",
                     background: "#ffffff",
                     border: isHovered
                       ? "1px solid #fca5a5"
                       : "1px solid #e2e8f0",
                     boxShadow: isHovered
-                      ? "0 10px 25px -4px rgba(127, 29, 29, 0.09), 0 4px 6px -2px rgba(0, 0, 0, 0.04)"
-                      : "0 1px 3px rgba(0, 0, 0, 0.05)",
-                    transform: isHovered ? "translateY(-3px)" : "translateY(0)",
+                      ? "0 4px 12px rgba(127, 29, 29, 0.08)"
+                      : "0 1px 3px rgba(0, 0, 0, 0.04)",
+                    transform: isHovered ? "translateY(-2px)" : "translateY(0)",
                     transition:
-                      "transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease",
+                      "transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease",
                     cursor: "pointer",
                   }}
                   onMouseEnter={() => setHoveredCode(report.code)}
@@ -219,82 +219,32 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                   onClick={() => onSelectReport(report)}
                 >
                   <CardBody className="p-4 d-flex flex-column">
-                    {/* Header: Category Tag & Report Code */}
-                    <div className="d-flex align-items-center justify-content-between mb-3">
-                      <span
+                    {/* Title & Badge */}
+                    <div className="mb-3">
+                      <h6
+                        className="fw-bold mb-1"
                         style={{
-                          backgroundColor: "#fef2f2",
-                          color: "#7f1d1d",
-                          border: "1px solid #fecaca",
-                          fontSize: "10.5px",
-                          fontWeight: 700,
-                          letterSpacing: "0.5px",
-                          padding: "3px 8px",
-                          borderRadius: "4px",
-                          textTransform: "uppercase",
+                          color: "#0f172a",
+                          fontSize: "15px",
+                          lineHeight: "1.35",
                         }}
                       >
-                        {report.category_name}
-                      </span>
+                        {report.name}
+                      </h6>
                       <span
                         style={{
+                          display: "inline-block",
                           backgroundColor: "#f8fafc",
-                          color: "#475569",
                           border: "1px solid #e2e8f0",
-                          fontFamily: "monospace",
-                          fontSize: "11px",
+                          color: "#475569",
+                          fontSize: "10.5px",
                           fontWeight: 600,
-                          padding: "2px 7px",
+                          padding: "2px 6px",
                           borderRadius: "4px",
                         }}
                       >
-                        {report.code.split("_")[0]}
+                        {report.badge || "Analytics"}
                       </span>
-                    </div>
-
-                    {/* Hero: Icon, Title & Badge */}
-                    <div className="d-flex align-items-start gap-3 mb-3">
-                      <div
-                        className="d-flex align-items-center justify-content-center flex-shrink-0"
-                        style={{
-                          width: "44px",
-                          height: "44px",
-                          borderRadius: "8px",
-                          background:
-                            "linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%)",
-                          color: "#ffffff",
-                          fontSize: "20px",
-                          boxShadow: "0 4px 10px rgba(127, 29, 29, 0.2)",
-                        }}
-                      >
-                        <i className={report.icon || "ri-bar-chart-2-line"}></i>
-                      </div>
-                      <div className="flex-grow-1">
-                        <h6
-                          className="fw-bold mb-1"
-                          style={{
-                            color: "#0f172a",
-                            fontSize: "15px",
-                            lineHeight: "1.35",
-                          }}
-                        >
-                          {report.name}
-                        </h6>
-                        <span
-                          style={{
-                            display: "inline-block",
-                            backgroundColor: "#f8fafc",
-                            border: "1px solid #e2e8f0",
-                            color: "#475569",
-                            fontSize: "10.5px",
-                            fontWeight: 600,
-                            padding: "2px 6px",
-                            borderRadius: "4px",
-                          }}
-                        >
-                          {report.badge || "Analytics"}
-                        </span>
-                      </div>
                     </div>
 
                     {/* Description */}
@@ -337,7 +287,7 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                         type="button"
                         className="btn btn-sm d-flex align-items-center gap-1"
                         style={{
-                          borderRadius: "6px",
+                          borderRadius: "4px",
                           fontSize: "12px",
                           fontWeight: 600,
                           backgroundColor: isHovered ? "#7f1d1d" : "#ffffff",
