@@ -6,7 +6,7 @@ const ReportKpiCards = ({ summary }) => {
   if (!summary || typeof summary !== "object") return null;
 
   const entries = Object.entries(summary).filter(
-    ([, val]) => val !== null && val !== undefined
+    ([, val]) => val !== null && val !== undefined && typeof val !== "object"
   );
 
   if (entries.length === 0) return null;

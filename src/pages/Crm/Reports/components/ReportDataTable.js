@@ -35,6 +35,10 @@ const ReportDataTable = ({ rows, reportTitle, reportCode }) => {
     "employee",
     "campaign_name",
     "file_name",
+    "file_type",
+    "folder_name",
+    "file_size",
+    "related_to",
     "stage_name",
     "status",
     "status_name",
@@ -287,6 +291,155 @@ const ReportDataTable = ({ rows, reportTitle, reportCode }) => {
       return (
         <span className="fw-bold text-dark font-monospace" style={{ fontSize: "12.5px" }}>
           {formatCurrency(value)}
+        </span>
+      );
+    }
+
+    // File Format / Type Badge
+    if (k === "file_type") {
+      const type = String(value || "FILE").toUpperCase();
+      let badgeBg = "#f8fafc";
+      let badgeColor = "#475569";
+      let badgeBorder = "#e2e8f0";
+      let icon = "ri-file-line";
+
+      if (type.includes("PDF")) {
+        badgeBg = "#fef2f2";
+        badgeColor = "#dc2626";
+        badgeBorder = "#fecaca";
+        icon = "ri-file-pdf-line";
+      } else if (
+        type.includes("XLS") ||
+        type.includes("CSV") ||
+        type.includes("SHEET")
+      ) {
+        badgeBg = "#f0fdf4";
+        badgeColor = "#16a34a";
+        badgeBorder = "#bbf7d0";
+        icon = "ri-file-excel-line";
+      } else if (type.includes("DOC")) {
+        badgeBg = "#eff6ff";
+        badgeColor = "#2563eb";
+        badgeBorder = "#bfdbfe";
+        icon = "ri-file-word-line";
+      } else if (type.includes("PPT")) {
+        badgeBg = "#fff7ed";
+        badgeColor = "#ea580c";
+        badgeBorder = "#fed7aa";
+        icon = "ri-file-ppt-line";
+      } else if (type.includes("ZIP") || type.includes("RAR")) {
+        badgeBg = "#faf5ff";
+        badgeColor = "#9333ea";
+        badgeBorder = "#e9d5ff";
+        icon = "ri-file-zip-line";
+      } else if (
+        type.includes("IMAGE") ||
+        type.includes("PNG") ||
+        type.includes("JPG")
+      ) {
+        badgeBg = "#ecfeff";
+        badgeColor = "#0891b2";
+        badgeBorder = "#a5f3fc";
+        icon = "ri-image-line";
+      }
+
+      return (
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "4px",
+            backgroundColor: badgeBg,
+            color: badgeColor,
+            border: `1px solid ${badgeBorder}`,
+            fontSize: "11px",
+            fontWeight: 700,
+            padding: "2px 8px",
+            borderRadius: "4px",
+            letterSpacing: "0.3px",
+          }}
+        >
+          <i className={icon} style={{ fontSize: "12px" }}></i>
+          {type}
+        </span>
+      );
+    }
+
+    // Folder Name Badge
+    if (k === "folder_name" || k === "folder") {
+      return (
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "5px",
+            fontSize: "12px",
+            fontWeight: 600,
+            color: "#7f1d1d",
+            backgroundColor: "rgba(127, 29, 29, 0.06)",
+            padding: "2px 8px",
+            borderRadius: "4px",
+            border: "1px solid rgba(127, 29, 29, 0.15)",
+          }}
+        >
+          <i
+            className="ri-folder-2-fill"
+            style={{ color: "#7f1d1d", fontSize: "13px" }}
+          ></i>
+          {String(value)}
+        </span>
+      );
+    }
+
+    // File Name with Icon
+    if (k === "file_name") {
+      return (
+        <div className="d-flex align-items-center gap-2">
+          <i
+            className="ri-file-3-line"
+            style={{ color: "#7f1d1d", fontSize: "15px" }}
+          ></i>
+          <span className="fw-semibold text-dark" style={{ fontSize: "13px" }}>
+            {String(value)}
+          </span>
+        </div>
+      );
+    }
+
+    // Related To / Linked Entity Badge
+    if (k === "related_to") {
+      return (
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "4px",
+            backgroundColor: "#f8fafc",
+            color: "#475569",
+            border: "1px solid #e2e8f0",
+            fontSize: "11px",
+            fontWeight: 600,
+            padding: "2px 8px",
+            borderRadius: "4px",
+          }}
+        >
+          <i
+            className="ri-link"
+            style={{ fontSize: "11px", color: "#94a3b8" }}
+          ></i>
+          {String(value)}
+        </span>
+      );
+    }
+
+    // File Size
+    if (k === "file_size") {
+      return (
+        <span
+          className="fw-bold text-dark font-monospace"
+          style={{ fontSize: "12px" }}
+        >
+          {String(value)}
         </span>
       );
     }
