@@ -305,8 +305,29 @@ export const getKpiConfig = (key, value) => {
     label = "Follow-up Compliance Rate";
     icon = "ri-checkbox-circle-line";
   } else if (k === "quota_used_percentage") {
-    label = "Cloud Storage Used";
+    label = "Cloud Quota Used";
+    displayVal = formatPercent(value);
+    color = "#15803d";
+    bg = "rgba(21, 128, 61, 0.08)";
+    icon = "ri-pie-chart-line";
+  } else if (k === "total_documents") {
+    label = "Total Repository Files";
+    displayVal = `${formatNumber(value)} files`;
+    color = "#7f1d1d";
+    bg = "rgba(127, 29, 29, 0.08)";
+    icon = "ri-file-text-line";
+  } else if (k === "total_storage_mb") {
+    label = "Total Storage Used";
+    displayVal = `${Number(value || 0).toFixed(2)} MB`;
+    color = "#16a34a";
+    bg = "rgba(22, 163, 74, 0.08)";
     icon = "ri-hard-drive-2-line";
+  } else if (k === "active_folders_count") {
+    label = "Active Folders";
+    displayVal = `${formatNumber(value)} folders`;
+    color = "#0284c7";
+    bg = "rgba(2, 132, 199, 0.08)";
+    icon = "ri-folder-open-line";
   }
 
   return { label, displayVal, icon, color, bg };

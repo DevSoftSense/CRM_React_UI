@@ -301,7 +301,7 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                           onSelectReport(report);
                         }}
                       >
-                        Run Report <i className="ri-arrow-right-line"></i>
+                        View Report <i className="ri-arrow-right-line"></i>
                       </button>
                     </div>
                   </CardBody>

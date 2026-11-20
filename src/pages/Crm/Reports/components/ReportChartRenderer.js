@@ -3,7 +3,7 @@ import ReactApexChart from "react-apexcharts";
 import { Card, CardHeader, CardBody, Row, Col } from "reactstrap";
 import { formatCurrency, formatNumber } from "../utils/reportUtils";
 
-const ReportChartRenderer = ({ chartType, chartData, title }) => {
+const ReportChartRenderer = ({ chartType, chartData, title, summary }) => {
   const data = Array.isArray(chartData) ? chartData : [];
 
   // Default executive color palette
@@ -25,9 +25,14 @@ const ReportChartRenderer = ({ chartType, chartData, title }) => {
     fontSize: "12px",
   };
 
-  // 1. Compute Breakdown Items for Donut / Pie
+  // 1. Compute Breakdown Items for Donut / Pie / Storage Gauge
   const donutBreakdown = useMemo(() => {
-    if (chartType !== "donut" && chartType !== "pie") return [];
+    if (
+      chartType !== "donut" &&
+      chartType !== "pie" &&
+      chartType !== "storage_gauge"
+    )
+      return [];
 
     const total = data.reduce(
       (sum, d) =>
@@ -49,9 +54,11 @@ const ReportChartRenderer = ({ chartType, chartData, title }) => {
         d.value !== undefined ||
         d.won_revenue !== undefined
     );
+    const isStorage = chartType === "storage_gauge";
 
     return data.map((d, i) => {
       const label =
+        d.file_type ||
         d.outcome ||
         d.source_name ||
         d.type ||
@@ -67,16 +74,31 @@ const ReportChartRenderer = ({ chartType, chartData, title }) => {
           0
       );
       const pct = total > 0 ? ((rawVal / total) * 100).toFixed(0) : "0";
-      const color = d.color || defaultColors[i % defaultColors.length];
+
+      let color = d.color || defaultColors[i % defaultColors.length];
+      if (isStorage) {
+        const lbl = String(label).toUpperCase();
+        if (lbl.includes("PDF")) color = "#ef4444";
+        else if (lbl.includes("XLS") || lbl.includes("CSV") || lbl.includes("SHEET")) color = "#10b981";
+        else if (lbl.includes("DOC")) color = "#3b82f6";
+        else if (lbl.includes("PPT")) color = "#f97316";
+        else if (lbl.includes("ZIP") || lbl.includes("RAR")) color = "#8b5cf6";
+        else if (lbl.includes("IMAGE") || lbl.includes("PNG") || lbl.includes("JPG")) color = "#06b6d4";
+        else color = "#64748b";
+      }
+
+      const displayValue = isStorage
+        ? `${formatNumber(rawVal)} ${rawVal === 1 ? "file" : "files"}${d.size_display ? ` • ${d.size_display}` : ""}`
+        : isRevenue
+        ? formatCurrency(rawVal)
+        : `${formatNumber(rawVal)} records`;
 
       return {
         label,
         value: rawVal,
         percentage: pct,
         color,
-        displayValue: isRevenue
-          ? formatCurrency(rawVal)
-          : `${formatNumber(rawVal)} records`,
+        displayValue,
       };
     });
   }, [data, chartType]);
@@ -282,8 +304,12 @@ const ReportChartRenderer = ({ chartType, chartData, title }) => {
       };
     }
 
-    // B. Donut / Pie (Win/Loss, Lead Source)
-    if (chartType === "donut" || chartType === "pie") {
+    // B. Donut / Pie / Storage Gauge (Win/Loss, Lead Source, Document Storage)
+    if (
+      chartType === "donut" ||
+      chartType === "pie" ||
+      chartType === "storage_gauge"
+    ) {
       const labels = donutBreakdown.map((b) => b.label);
       const series = donutBreakdown.map((b) => b.value);
       const colors = donutBreakdown.map((b) => b.color);
@@ -295,6 +321,7 @@ const ReportChartRenderer = ({ chartType, chartData, title }) => {
           d.value !== undefined ||
           d.won_revenue !== undefined
       );
+      const isStorage = chartType === "storage_gauge";
 
       return {
         type: "donut",
@@ -325,18 +352,26 @@ const ReportChartRenderer = ({ chartType, chartData, title }) => {
                     color: "#0f172a",
                     offsetY: 5,
                     formatter: () =>
-                      isRevenue
+                      isStorage
+                        ? `${formatNumber(totalVal)} Files`
+                        : isRevenue
                         ? formatCurrency(totalVal)
                         : formatNumber(totalVal),
                   },
                   total: {
                     show: true,
-                    label: isRevenue ? "Total Revenue" : "Total Count",
+                    label: isStorage
+                      ? "Repository Files"
+                      : isRevenue
+                      ? "Total Revenue"
+                      : "Total Count",
                     fontSize: "11px",
                     fontWeight: 600,
                     color: "#64748b",
                     formatter: () =>
-                      isRevenue
+                      isStorage
+                        ? `${formatNumber(totalVal)} Files`
+                        : isRevenue
                         ? formatCurrency(totalVal)
                         : formatNumber(totalVal),
                   },
@@ -354,8 +389,14 @@ const ReportChartRenderer = ({ chartType, chartData, title }) => {
           tooltip: {
             theme: "dark",
             y: {
-              formatter: (val) =>
-                isRevenue ? formatCurrency(val) : `${val} records`,
+              formatter: (val, opts) => {
+                const idx = opts.seriesIndex;
+                const item = donutBreakdown[idx];
+                if (isStorage && item) {
+                  return `${val} files (${item.displayValue})`;
+                }
+                return isRevenue ? formatCurrency(val) : `${val} records`;
+              },
             },
           },
         },
@@ -703,6 +744,8 @@ const ReportChartRenderer = ({ chartType, chartData, title }) => {
 
   const isBulletBarLayout =
     chartType === "bullet_bar" && quotaLeaderboard.length > 0;
+  const isStorageLayout =
+    chartType === "storage_gauge" && data.length > 0;
 
   return (
     <Card
@@ -1144,6 +1187,214 @@ const ReportChartRenderer = ({ chartType, chartData, title }) => {
                     </div>
                   );
                 })}
+              </div>
+            </Col>
+          </Row>
+        ) : isStorageLayout ? (
+          /* Case 4: Storage Gauge 2-Column Split Layout (Donut + Folder Allocation Cockpit) */
+          <Row className="g-4 align-items-center">
+            {/* Left: Donut Chart of File Formats */}
+            <Col lg={5} md={12} className="d-flex justify-content-center">
+              <div style={{ width: "100%", maxWidth: "340px" }}>
+                <ReactApexChart
+                  options={chartConfig.options}
+                  series={chartConfig.series}
+                  type="donut"
+                  height={290}
+                />
+              </div>
+            </Col>
+
+            {/* Right: Storage Cockpit (Cloud Quota + Folder Breakdown) */}
+            <Col lg={7} md={12}>
+              {/* Cloud Quota Progress Card */}
+              <div
+                className="p-3 mb-3 border"
+                style={{
+                  borderRadius: "4px",
+                  borderColor: "#e2e8f0",
+                  backgroundColor: "#f8fafc",
+                }}
+              >
+                <div className="d-flex align-items-center justify-content-between mb-2">
+                  <div className="d-flex align-items-center gap-2">
+                    <i
+                      className="ri-cloud-line fs-16"
+                      style={{ color: "#7f1d1d" }}
+                    ></i>
+                    <span
+                      className="fw-bold text-dark"
+                      style={{ fontSize: "12.5px" }}
+                    >
+                      Cloud Storage Capacity (20 GB Quota)
+                    </span>
+                  </div>
+                  <span
+                    className="fw-bold text-dark font-monospace"
+                    style={{ fontSize: "12px" }}
+                  >
+                    {summary?.total_storage_mb || 0.21} MB / 20,480 MB
+                  </span>
+                </div>
+
+                <div
+                  style={{
+                    height: "8px",
+                    backgroundColor: "#e2e8f0",
+                    borderRadius: "4px",
+                    overflow: "hidden",
+                    marginBottom: "4px",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${Math.max(summary?.quota_used_percentage || 0.1, 1)}%`,
+                      height: "100%",
+                      backgroundColor: "#7f1d1d",
+                      borderRadius: "4px",
+                    }}
+                  ></div>
+                </div>
+
+                <div
+                  className="d-flex align-items-center justify-content-between text-muted"
+                  style={{ fontSize: "11px" }}
+                >
+                  <span>
+                    Used: {summary?.quota_used_percentage || 0.1}% of Quota
+                  </span>
+                  <span>Available: ~20.0 GB</span>
+                </div>
+              </div>
+
+              {/* Folder Breakdown Header */}
+              <div className="d-flex align-items-center justify-content-between mb-2 pb-1 border-bottom">
+                <span
+                  className="fw-semibold text-uppercase text-muted"
+                  style={{ fontSize: "11px", letterSpacing: "0.5px" }}
+                >
+                  <i
+                    className="ri-folder-2-line me-1"
+                    style={{ color: "#7f1d1d" }}
+                  ></i>
+                  Storage Folders
+                </span>
+                <span
+                  className="fw-semibold text-muted"
+                  style={{ fontSize: "11px" }}
+                >
+                  Files & Volume
+                </span>
+              </div>
+
+              {/* Folders List */}
+              <div className="d-flex flex-column gap-2">
+                {Array.isArray(summary?.folders) && summary.folders.length > 0
+                  ? summary.folders.map((f, idx) => (
+                      <div
+                        key={idx}
+                        className="p-2 px-3 border bg-white"
+                        style={{
+                          borderRadius: "4px",
+                          borderColor: "#e2e8f0",
+                          boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
+                        }}
+                      >
+                        <div className="d-flex align-items-center justify-content-between mb-1">
+                          <div className="d-flex align-items-center gap-2">
+                            <i
+                              className="ri-folder-2-fill"
+                              style={{ color: "#7f1d1d", fontSize: "15px" }}
+                            ></i>
+                            <span
+                              className="fw-bold text-dark"
+                              style={{ fontSize: "13px" }}
+                            >
+                              {f.folder_name}
+                            </span>
+                          </div>
+
+                          <div className="d-flex align-items-center gap-2">
+                            <span
+                              style={{
+                                backgroundColor: "#f8fafc",
+                                border: "1px solid #e2e8f0",
+                                color: "#475569",
+                                fontSize: "11px",
+                                fontWeight: 600,
+                                padding: "1px 6px",
+                                borderRadius: "4px",
+                              }}
+                            >
+                              {f.doc_count}{" "}
+                              {f.doc_count === 1 ? "file" : "files"}
+                            </span>
+                            <span
+                              className="fw-bold text-dark font-monospace"
+                              style={{ fontSize: "12.5px" }}
+                            >
+                              {f.size_display}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Mini Progress Bar */}
+                        <div
+                          style={{
+                            height: "4px",
+                            backgroundColor: "#f1f5f9",
+                            borderRadius: "2px",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: `${f.percentage || 50}%`,
+                              height: "100%",
+                              backgroundColor: "#7f1d1d",
+                              borderRadius: "2px",
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    ))
+                  : donutBreakdown.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="p-2 px-3 border bg-white"
+                        style={{
+                          borderRadius: "4px",
+                          borderColor: "#e2e8f0",
+                          boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
+                        }}
+                      >
+                        <div className="d-flex align-items-center justify-content-between">
+                          <div className="d-flex align-items-center gap-2">
+                            <span
+                              style={{
+                                width: "10px",
+                                height: "10px",
+                                borderRadius: "50%",
+                                backgroundColor: item.color,
+                                display: "inline-block",
+                              }}
+                            ></span>
+                            <span
+                              className="fw-bold text-dark"
+                              style={{ fontSize: "13px" }}
+                            >
+                              {item.label}
+                            </span>
+                          </div>
+                          <span
+                            className="fw-bold text-dark font-monospace"
+                            style={{ fontSize: "12.5px" }}
+                          >
+                            {item.displayValue}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
               </div>
             </Col>
           </Row>

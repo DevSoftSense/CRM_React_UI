@@ -12,6 +12,20 @@ import { getDatePresetRange, exportToCsv } from "../utils/reportUtils";
 import ReportKpiCards from "./ReportKpiCards";
 import ReportChartRenderer from "./ReportChartRenderer";
 import ReportDataTable from "./ReportDataTable";
+import DocumentStorageAuditView from "./DocumentStorageAuditView";
+import CampaignRoiReportView from "./CampaignRoiReportView";
+import OverdueTasksComplianceView from "./OverdueTasksComplianceView";
+import SalesEffortTouchpointView from "./SalesEffortTouchpointView";
+import DormantAccountsReportView from "./DormantAccountsReportView";
+import TopCustomersClvReportView from "./TopCustomersClvReportView";
+import RepProductivityScorecardView from "./RepProductivityScorecardView";
+import TargetAchievementReportView from "./TargetAchievementReportView";
+import UncontactedLeadsReportView from "./UncontactedLeadsReportView";
+import LeadBySourceReportView from "./LeadBySourceReportView";
+import LeadConversionFunnelView from "./LeadConversionFunnelView";
+import RevenueForecastReportView from "./RevenueForecastReportView";
+import WinLossAnalysisReportView from "./WinLossAnalysisReportView";
+import SalesPipelineAgingReportView from "./SalesPipelineAgingReportView";
 
 const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
   // Filters state
@@ -84,6 +98,32 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
   const chartData = reportResult?.chart_data || [];
   const rows = reportResult?.rows || [];
 
+  const isDocumentAudit =
+    report?.code === "R14_DOCUMENT_AUDIT" ||
+    report?.code === "R14_DOC_STORAGE";
+
+  const isCampaignRoi = report?.code === "R13_CAMPAIGN_ROI";
+  const isOverdueTasks = report?.code === "R12_OVERDUE_TASKS";
+  const isActivityEffort = report?.code === "R11_ACTIVITY_EFFORT";
+  const isDormantAccounts = report?.code === "R10_DORMANT_ACCOUNTS";
+  const isTopCustomersClv = report?.code === "R09_TOP_CUSTOMERS_CLV";
+  const isRepProductivity = report?.code === "R08_REP_PRODUCTIVITY";
+  const isTargetAchievement =
+    report?.code === "R07_TARGET_ACHIEVEMENT" ||
+    report?.code === "R07_TARGET_ACHIEVE";
+  const isUncontactedLeads = report?.code === "R06_UNCONTACTED_LEADS";
+  const isLeadBySource = report?.code === "R05_LEAD_BY_SOURCE";
+  const isLeadConversion =
+    report?.code === "R04_LEAD_CONVERSION" ||
+    report?.code === "R04_LEAD_FUNNEL";
+  const isRevenueForecast =
+    report?.code === "R03_REVENUE_FORECAST" ||
+    report?.code === "R03_WEIGHTED_PIPELINE";
+  const isWinLoss = report?.code === "R02_WIN_LOSS";
+  const isPipelineAging =
+    report?.code === "R01_PIPELINE_AGING" ||
+    report?.code === "R01_PIPELINE_AGE";
+
   return (
     <div>
       {/* Top Workspace Action & Filter Bar */}
@@ -126,42 +166,40 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
                 >
                   {report?.name}
                 </h5>
+                {report?.description && (
+                  <p
+                    className="text-muted small mb-0 mt-1"
+                    style={{ fontSize: "12px" }}
+                  >
+                    {report.description}
+                  </p>
+                )}
               </div>
             </div>
 
             {/* Right: Filters & Action Buttons */}
             <div className="d-flex flex-wrap align-items-center gap-2">
-              {/* Date Presets */}
-              <div className="btn-group btn-group-sm" role="group">
-                {[
-                  { id: "this_month", label: "Month" },
-                  { id: "this_quarter", label: "Quarter" },
-                  { id: "this_year", label: "Year" },
-                  { id: "all_time", label: "All Time" },
-                  { id: "custom", label: "Custom" },
-                ].map((p) => {
-                  const isActive = datePreset === p.id;
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      className="btn btn-sm"
-                      style={{
-                        backgroundColor: isActive ? "#7f1d1d" : "#ffffff",
-                        borderColor: isActive ? "#7f1d1d" : "#e2e8f0",
-                        color: isActive ? "#ffffff" : "#475569",
-                        fontSize: "12px",
-                        fontWeight: 500,
-                        border: "1px solid",
-                        padding: "4px 10px",
-                      }}
-                      onClick={() => handlePresetChange(p.id)}
-                    >
-                      {p.label}
-                    </button>
-                  );
-                })}
-              </div>
+              {/* Date Presets Dropdown */}
+              <select
+                className="form-select form-select-sm"
+                style={{
+                  width: "135px",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                  borderColor: "#cbd5e1",
+                  color: "#0f172a",
+                  fontWeight: 500,
+                  backgroundColor: "#ffffff",
+                }}
+                value={datePreset}
+                onChange={(e) => handlePresetChange(e.target.value)}
+              >
+                <option value="this_month">This Month</option>
+                <option value="this_quarter">This Quarter</option>
+                <option value="this_year">This Year</option>
+                <option value="all_time">All Time</option>
+                <option value="custom">Custom Range...</option>
+              </select>
 
               {/* Custom Date Pickers */}
               {isCustomDate && (
@@ -300,7 +338,161 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
             Calculating report analytics and executing database queries...
           </p>
         </div>
-      ) : error ? null : (
+      ) : error ? null : isDocumentAudit ? (
+        <DocumentStorageAuditView
+          reportResult={reportResult}
+          report={report}
+          datePreset={datePreset}
+          onPresetChange={handlePresetChange}
+          owners={owners}
+          selectedOwnerId={selectedOwnerId}
+          onOwnerChange={setSelectedOwnerId}
+          onExport={() => exportToCsv(report?.code, rows)}
+        />
+      ) : isCampaignRoi ? (
+        <CampaignRoiReportView
+          reportResult={reportResult}
+          report={report}
+          datePreset={datePreset}
+          onPresetChange={handlePresetChange}
+          owners={owners}
+          selectedOwnerId={selectedOwnerId}
+          onOwnerChange={setSelectedOwnerId}
+          onExport={() => exportToCsv(report?.code, rows)}
+        />
+      ) : isOverdueTasks ? (
+        <OverdueTasksComplianceView
+          reportResult={reportResult}
+          report={report}
+          datePreset={datePreset}
+          onPresetChange={handlePresetChange}
+          owners={owners}
+          selectedOwnerId={selectedOwnerId}
+          onOwnerChange={setSelectedOwnerId}
+          onExport={() => exportToCsv(report?.code, rows)}
+        />
+      ) : isActivityEffort ? (
+        <SalesEffortTouchpointView
+          reportResult={reportResult}
+          report={report}
+          datePreset={datePreset}
+          onPresetChange={handlePresetChange}
+          owners={owners}
+          selectedOwnerId={selectedOwnerId}
+          onOwnerChange={setSelectedOwnerId}
+          onExport={() => exportToCsv(report?.code, rows)}
+        />
+      ) : isDormantAccounts ? (
+        <DormantAccountsReportView
+          reportResult={reportResult}
+          report={report}
+          datePreset={datePreset}
+          onPresetChange={handlePresetChange}
+          owners={owners}
+          selectedOwnerId={selectedOwnerId}
+          onOwnerChange={setSelectedOwnerId}
+          onExport={() => exportToCsv(report?.code, rows)}
+        />
+      ) : isTopCustomersClv ? (
+        <TopCustomersClvReportView
+          reportResult={reportResult}
+          report={report}
+          datePreset={datePreset}
+          onPresetChange={handlePresetChange}
+          owners={owners}
+          selectedOwnerId={selectedOwnerId}
+          onOwnerChange={setSelectedOwnerId}
+          onExport={() => exportToCsv(report?.code, rows)}
+        />
+      ) : isRepProductivity ? (
+        <RepProductivityScorecardView
+          reportResult={reportResult}
+          report={report}
+          datePreset={datePreset}
+          onPresetChange={handlePresetChange}
+          owners={owners}
+          selectedOwnerId={selectedOwnerId}
+          onOwnerChange={setSelectedOwnerId}
+          onExport={() => exportToCsv(report?.code, rows)}
+        />
+      ) : isTargetAchievement ? (
+        <TargetAchievementReportView
+          reportResult={reportResult}
+          report={report}
+          datePreset={datePreset}
+          onPresetChange={handlePresetChange}
+          owners={owners}
+          selectedOwnerId={selectedOwnerId}
+          onOwnerChange={setSelectedOwnerId}
+          onExport={() => exportToCsv(report?.code, rows)}
+        />
+      ) : isUncontactedLeads ? (
+        <UncontactedLeadsReportView
+          reportResult={reportResult}
+          report={report}
+          datePreset={datePreset}
+          onPresetChange={handlePresetChange}
+          owners={owners}
+          selectedOwnerId={selectedOwnerId}
+          onOwnerChange={setSelectedOwnerId}
+          onExport={() => exportToCsv(report?.code, rows)}
+        />
+      ) : isLeadBySource ? (
+        <LeadBySourceReportView
+          reportResult={reportResult}
+          report={report}
+          datePreset={datePreset}
+          onPresetChange={handlePresetChange}
+          owners={owners}
+          selectedOwnerId={selectedOwnerId}
+          onOwnerChange={setSelectedOwnerId}
+          onExport={() => exportToCsv(report?.code, rows)}
+        />
+      ) : isLeadConversion ? (
+        <LeadConversionFunnelView
+          reportResult={reportResult}
+          report={report}
+          datePreset={datePreset}
+          onPresetChange={handlePresetChange}
+          owners={owners}
+          selectedOwnerId={selectedOwnerId}
+          onOwnerChange={setSelectedOwnerId}
+          onExport={() => exportToCsv(report?.code, rows)}
+        />
+      ) : isRevenueForecast ? (
+        <RevenueForecastReportView
+          reportResult={reportResult}
+          report={report}
+          datePreset={datePreset}
+          onPresetChange={handlePresetChange}
+          owners={owners}
+          selectedOwnerId={selectedOwnerId}
+          onOwnerChange={setSelectedOwnerId}
+          onExport={() => exportToCsv(report?.code, rows)}
+        />
+      ) : isWinLoss ? (
+        <WinLossAnalysisReportView
+          reportResult={reportResult}
+          report={report}
+          datePreset={datePreset}
+          onPresetChange={handlePresetChange}
+          owners={owners}
+          selectedOwnerId={selectedOwnerId}
+          onOwnerChange={setSelectedOwnerId}
+          onExport={() => exportToCsv(report?.code, rows)}
+        />
+      ) : isPipelineAging ? (
+        <SalesPipelineAgingReportView
+          reportResult={reportResult}
+          report={report}
+          datePreset={datePreset}
+          onPresetChange={handlePresetChange}
+          owners={owners}
+          selectedOwnerId={selectedOwnerId}
+          onOwnerChange={setSelectedOwnerId}
+          onExport={() => exportToCsv(report?.code, rows)}
+        />
+      ) : (
         <>
           {/* 1. Summary KPI Cards */}
           <ReportKpiCards summary={summary} />
@@ -310,6 +502,7 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
             chartType={report?.chart_type}
             chartData={chartData}
             title={report?.name}
+            summary={summary}
           />
 
           {/* 3. Detailed Data Ledger Table */}
