@@ -186,12 +186,12 @@ const PendingFollowupsCard = ({ tasks = [], onTaskCompleted }) => {
             <div className="d-flex align-items-center me-2 gap-1">
               <button
                 type="button"
-                className="btn btn-sm p-0 rounded-circle border-0 d-flex align-items-center justify-content-center"
+                className="btn btn-sm p-0 rounded-0 border-0 d-flex align-items-center justify-content-center"
                 style={{
                   width: "22px",
                   height: "22px",
-                  backgroundColor: "#f1f5f9",
-                  color: "#475569",
+                  backgroundColor: "var(--vz-card-bg-fill, #f1f5f9)",
+                  color: "var(--vz-body-color, #475569)",
                   cursor: "pointer",
                   transition: "all 0.15s ease",
                 }}
@@ -202,12 +202,12 @@ const PendingFollowupsCard = ({ tasks = [], onTaskCompleted }) => {
               </button>
               <button
                 type="button"
-                className="btn btn-sm p-0 rounded-circle border-0 d-flex align-items-center justify-content-center"
+                className="btn btn-sm p-0 rounded-0 border-0 d-flex align-items-center justify-content-center"
                 style={{
                   width: "22px",
                   height: "22px",
-                  backgroundColor: "#f1f5f9",
-                  color: "#475569",
+                  backgroundColor: "var(--vz-card-bg-fill, #f1f5f9)",
+                  color: "var(--vz-body-color, #475569)",
                   cursor: "pointer",
                   transition: "all 0.15s ease",
                 }}
@@ -281,7 +281,7 @@ const PendingFollowupsCard = ({ tasks = [], onTaskCompleted }) => {
                     minWidth: "128px",
                     maxWidth: "135px",
                     height: "96px",
-                    borderRadius: "12px",
+                    borderRadius: 0,
                     borderLeft: theme.borderLeft,
                     background: theme.background,
                     padding: "9px 10px 8px 10px",
@@ -330,14 +330,14 @@ const PendingFollowupsCard = ({ tasks = [], onTaskCompleted }) => {
                     </span>
                   </div>
 
-                  {/* Row 3: Priority Pill Badge + White Circular Action Arrow Button */}
+                  {/* Row 3: Priority Pill Badge + Action Arrow Button */}
                   <div className="d-flex align-items-center justify-content-between">
                     <span
-                      className="fw-bold text-capitalize"
+                      className="fw-bold text-capitalize crm-priority-badge"
                       style={{
                         backgroundColor: theme.badgeBg,
                         color: theme.badgeColor,
-                        borderRadius: "12px",
+                        borderRadius: 0,
                         padding: "1.5px 8px",
                         fontSize: "0.68rem",
                         lineHeight: 1.2,
@@ -348,11 +348,10 @@ const PendingFollowupsCard = ({ tasks = [], onTaskCompleted }) => {
                     </span>
 
                     <div
-                      className="rounded-circle d-flex align-items-center justify-content-center crm-arrow-btn"
+                      className="rounded-0 d-flex align-items-center justify-content-center crm-arrow-btn"
                       style={{
                         width: "24px",
                         height: "24px",
-                        backgroundColor: "#ffffff",
                         boxShadow: "0 2px 5px rgba(15,23,42,0.12)",
                         flexShrink: 0,
                         transition: "transform 0.15s ease, box-shadow 0.15s ease",
@@ -362,7 +361,7 @@ const PendingFollowupsCard = ({ tasks = [], onTaskCompleted }) => {
                     >
                       <i
                         className="ri-arrow-right-line"
-                        style={{ color: "#0f172a", fontSize: "0.8125rem", fontWeight: 700 }}
+                        style={{ fontSize: "0.8125rem", fontWeight: 700 }}
                       />
                     </div>
                   </div>

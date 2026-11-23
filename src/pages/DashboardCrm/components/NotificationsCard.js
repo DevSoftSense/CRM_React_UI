@@ -264,7 +264,7 @@ const NotificationsCard = ({ notifications = {} }) => {
                         style={{
                           width: "26px",
                           height: "26px",
-                          borderRadius: "50%",
+                          borderRadius: 0,
                           backgroundColor: item.bg,
                           color: item.color,
                           fontSize: "0.85rem",
@@ -347,7 +347,7 @@ const NotificationsCard = ({ notifications = {} }) => {
               >
                 <div className="d-flex align-items-center gap-3">
                   <div
-                    className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+                    className="d-flex align-items-center justify-content-center rounded-0 flex-shrink-0"
                     style={{
                       width: "36px",
                       height: "36px",

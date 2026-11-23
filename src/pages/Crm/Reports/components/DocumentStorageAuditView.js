@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useSelector } from "react-redux";
 import ReactApexChart from "react-apexcharts";
 import {
   Row,
@@ -22,6 +23,16 @@ const DocumentStorageAuditView = ({
   onOwnerChange,
   onExport,
 }) => {
+  const layoutMode = useSelector((state) => state.Layout?.layoutModeType);
+  const isDark = layoutMode === "dark";
+
+  const cardBg = isDark ? "#161b22" : "#ffffff";
+  const cardBorder = isDark ? "#21262d" : "#e2e8f0";
+  const subtleBg = isDark ? "#0d1117" : "#f8fafc";
+  const subtleBorder = isDark ? "#30363d" : "#e2e8f0";
+  const textTitle = isDark ? "#f0f6fc" : "#0f172a";
+  const textSub = isDark ? "#8b949e" : "#64748b";
+
   const [trendMetric, setTrendMetric] = useState("documents"); // "documents" | "storage"
   const [viewMode, setViewMode] = useState("list"); // "list" | "grid"
   const [searchTerm, setSearchTerm] = useState("");
@@ -120,9 +131,9 @@ const DocumentStorageAuditView = ({
           },
           background: {
             enabled: true,
-            foreColor: "#ffffff",
+            foreColor: isDark ? "#161b22" : "#ffffff",
             padding: 4,
-            borderRadius: 2,
+            borderRadius: 0,
             borderWidth: 1,
             borderColor: "#7f1d1d",
             opacity: 0.9,
@@ -150,12 +161,12 @@ const DocumentStorageAuditView = ({
         markers: {
           size: 4.5,
           colors: ["#7f1d1d"],
-          strokeColors: "#ffffff",
+          strokeColors: cardBg,
           strokeWidth: 2,
           hover: { size: 6 },
         },
         grid: {
-          borderColor: "#f1f5f9",
+          borderColor: cardBorder,
           strokeDashArray: 3,
           xaxis: { lines: { show: false } },
           yaxis: { lines: { show: true } },
@@ -164,12 +175,12 @@ const DocumentStorageAuditView = ({
           categories,
           labels: {
             style: {
-              colors: "#64748b",
+              colors: textSub,
               fontSize: "11.5px",
               fontFamily: "Inter, sans-serif",
             },
           },
-          axisBorder: { show: true, color: "#e2e8f0" },
+          axisBorder: { show: true, color: cardBorder },
           axisTicks: { show: false },
         },
         yaxis: {
@@ -177,7 +188,7 @@ const DocumentStorageAuditView = ({
           tickAmount: 3,
           labels: {
             style: {
-              colors: "#64748b",
+              colors: textSub,
               fontSize: "11.5px",
               fontFamily: "Inter, sans-serif",
             },
@@ -192,7 +203,7 @@ const DocumentStorageAuditView = ({
         },
       },
     };
-  }, [trendMetric]);
+  }, [trendMetric, isDark, cardBg, cardBorder, textSub]);
 
   // 2. Storage Breakdown Donut Chart
   const donutChartConfig = useMemo(() => {
@@ -247,14 +258,14 @@ const DocumentStorageAuditView = ({
                   show: true,
                   fontSize: "11px",
                   fontWeight: 600,
-                  color: "#64748b",
+                  color: textSub,
                   offsetY: -4,
                 },
                 value: {
                   show: true,
                   fontSize: "17px",
                   fontWeight: 700,
-                  color: "#0f172a",
+                  color: textTitle,
                   offsetY: 4,
                   formatter: () => `${totalStorageMb} MB`,
                 },
@@ -263,7 +274,7 @@ const DocumentStorageAuditView = ({
                   label: "Total",
                   fontSize: "11px",
                   fontWeight: 600,
-                  color: "#64748b",
+                  color: textSub,
                   formatter: () => `${totalStorageMb} MB`,
                 },
               },
@@ -271,7 +282,7 @@ const DocumentStorageAuditView = ({
           },
         },
         dataLabels: { enabled: false },
-        stroke: { width: 2, colors: ["#ffffff"] },
+        stroke: { width: 2, colors: [cardBg] },
         tooltip: {
           theme: "dark",
           y: {
@@ -280,7 +291,7 @@ const DocumentStorageAuditView = ({
         },
       },
     };
-  }, [chartData, totalDocuments, totalStorageMb]);
+  }, [chartData, totalDocuments, totalStorageMb, cardBg, textTitle, textSub]);
 
   return (
     <div className="document-storage-audit-view">
@@ -289,10 +300,11 @@ const DocumentStorageAuditView = ({
         {/* Card 1: Total Documents */}
         <Col lg={4} md={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
+              backgroundColor: cardBg,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               transition: "all 0.15s ease",
             }}
@@ -303,7 +315,7 @@ const DocumentStorageAuditView = ({
                   style={{
                     width: "48px",
                     height: "48px",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     backgroundColor: "rgba(127, 29, 29, 0.08)",
                     color: "#7f1d1d",
                     display: "flex",
@@ -317,17 +329,18 @@ const DocumentStorageAuditView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "11.5px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "11.5px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Total Documents
                   </span>
                   <div
-                    className="fw-bold text-dark"
+                    className="fw-bold"
                     style={{
                       fontSize: "26px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {totalDocuments}
@@ -345,13 +358,13 @@ const DocumentStorageAuditView = ({
                 style={{
                   width: "28px",
                   height: "28px",
-                  borderRadius: "50%",
-                  backgroundColor: "#f8fafc",
-                  border: "1px solid #e2e8f0",
+                  borderRadius: 0,
+                  backgroundColor: subtleBg,
+                  border: `1px solid ${cardBorder}`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "#64748b",
+                  color: textSub,
                   fontSize: "14px",
                 }}
               >
@@ -364,10 +377,11 @@ const DocumentStorageAuditView = ({
         {/* Card 2: Total Storage Used */}
         <Col lg={4} md={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
+              backgroundColor: cardBg,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               transition: "all 0.15s ease",
             }}
@@ -378,7 +392,7 @@ const DocumentStorageAuditView = ({
                   style={{
                     width: "48px",
                     height: "48px",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     backgroundColor: "rgba(127, 29, 29, 0.08)",
                     color: "#7f1d1d",
                     display: "flex",
@@ -392,17 +406,18 @@ const DocumentStorageAuditView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "11.5px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "11.5px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Total Storage Used
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "26px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {totalStorageMb} MB
@@ -420,13 +435,13 @@ const DocumentStorageAuditView = ({
                 style={{
                   width: "28px",
                   height: "28px",
-                  borderRadius: "50%",
-                  backgroundColor: "#f8fafc",
-                  border: "1px solid #e2e8f0",
+                  borderRadius: 0,
+                  backgroundColor: subtleBg,
+                  border: `1px solid ${cardBorder}`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "#64748b",
+                  color: textSub,
                   fontSize: "14px",
                 }}
               >
@@ -439,10 +454,11 @@ const DocumentStorageAuditView = ({
         {/* Card 3: Quick Insights & Storage Quota */}
         <Col lg={4} md={12}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
+              backgroundColor: cardBg,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
@@ -452,8 +468,8 @@ const DocumentStorageAuditView = ({
                   style={{
                     width: "32px",
                     height: "32px",
-                    borderRadius: "4px",
-                    backgroundColor: "#fffbeb",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(217, 119, 6, 0.15)" : "#fffbeb",
                     color: "#d97706",
                     display: "flex",
                     alignItems: "center",
@@ -467,14 +483,14 @@ const DocumentStorageAuditView = ({
                 </div>
                 <div>
                   <span
-                    className="fw-bold text-dark d-block mb-1"
-                    style={{ fontSize: "13px" }}
+                    className="fw-bold d-block mb-1"
+                    style={{ fontSize: "13px", color: textTitle }}
                   >
                     Quick Insights
                   </span>
                   <p
-                    className="text-muted mb-0"
-                    style={{ fontSize: "12px", lineHeight: "1.4" }}
+                    className="mb-0"
+                    style={{ fontSize: "12px", lineHeight: "1.4", color: textSub }}
                   >
                     Your repository is using very low storage space. 100% capacity available.
                   </p>
@@ -482,20 +498,21 @@ const DocumentStorageAuditView = ({
               </div>
 
               <div
-                className="text-end px-3 py-2 border bg-light"
+                className="text-end px-3 py-2 border"
                 style={{
-                  borderRadius: "4px",
-                  borderColor: "#e2e8f0",
+                  borderRadius: 0,
+                  borderColor: cardBorder,
+                  backgroundColor: subtleBg,
                   flexShrink: 0,
                 }}
               >
                 <div
-                  className="fw-bold text-dark font-monospace"
-                  style={{ fontSize: "16px" }}
+                  className="fw-bold font-monospace"
+                  style={{ fontSize: "16px", color: textTitle }}
                 >
                   {totalStorageMb} MB
                 </div>
-                <div className="text-muted" style={{ fontSize: "10.5px" }}>
+                <div style={{ fontSize: "10.5px", color: textSub }}>
                   Total Storage
                 </div>
               </div>
@@ -509,23 +526,28 @@ const DocumentStorageAuditView = ({
         {/* Middle Col 1: Document Trends (Area Spline) */}
         <Col lg={5} md={12}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
+              backgroundColor: cardBg,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 border-bottom d-flex align-items-center justify-content-between bg-white"
-              style={{ borderRadius: "4px 4px 0 0" }}
+              className="p-3 border-bottom d-flex align-items-center justify-content-between"
+              style={{
+                borderRadius: 0,
+                borderColor: cardBorder,
+                backgroundColor: cardBg,
+              }}
             >
               <div className="d-flex align-items-center gap-2">
                 <i
                   className="ri-bar-chart-fill"
                   style={{ color: "#7f1d1d", fontSize: "16px" }}
                 ></i>
-                <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+                <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                   Document Trends
                 </span>
               </div>
@@ -533,18 +555,22 @@ const DocumentStorageAuditView = ({
               {/* Metric Toggle */}
               <div
                 className="btn-group btn-group-sm p-0 border"
-                style={{ borderRadius: "4px", backgroundColor: "#f8fafc" }}
+                style={{
+                  borderRadius: 0,
+                  backgroundColor: subtleBg,
+                  borderColor: cardBorder,
+                }}
               >
                 <button
                   type="button"
                   className="btn btn-sm px-2 py-1"
                   style={{
-                    borderRadius: "3px",
+                    borderRadius: 0,
                     fontSize: "11px",
                     fontWeight: 600,
                     backgroundColor:
                       trendMetric === "documents" ? "#7f1d1d" : "transparent",
-                    color: trendMetric === "documents" ? "#ffffff" : "#64748b",
+                    color: trendMetric === "documents" ? "#ffffff" : textSub,
                     border: "none",
                   }}
                   onClick={() => setTrendMetric("documents")}
@@ -555,12 +581,12 @@ const DocumentStorageAuditView = ({
                   type="button"
                   className="btn btn-sm px-2 py-1"
                   style={{
-                    borderRadius: "3px",
+                    borderRadius: 0,
                     fontSize: "11px",
                     fontWeight: 600,
                     backgroundColor:
                       trendMetric === "storage" ? "#7f1d1d" : "transparent",
-                    color: trendMetric === "storage" ? "#ffffff" : "#64748b",
+                    color: trendMetric === "storage" ? "#ffffff" : textSub,
                     border: "none",
                   }}
                   onClick={() => setTrendMetric("storage")}
@@ -584,23 +610,28 @@ const DocumentStorageAuditView = ({
         {/* Middle Col 2: Storage Breakdown (Donut + Side Legend) */}
         <Col lg={4} md={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
+              backgroundColor: cardBg,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 border-bottom d-flex align-items-center justify-content-between bg-white"
-              style={{ borderRadius: "4px 4px 0 0" }}
+              className="p-3 border-bottom d-flex align-items-center justify-content-between"
+              style={{
+                borderRadius: 0,
+                borderColor: cardBorder,
+                backgroundColor: cardBg,
+              }}
             >
               <div className="d-flex align-items-center gap-2">
                 <i
                   className="ri-pie-chart-2-fill"
                   style={{ color: "#7f1d1d", fontSize: "16px" }}
                 ></i>
-                <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+                <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                   Storage Breakdown
                 </span>
               </div>
@@ -622,10 +653,11 @@ const DocumentStorageAuditView = ({
                 {donutChartConfig.details.map((item, idx) => (
                   <div
                     key={idx}
-                    className="d-flex align-items-center justify-content-between p-2 px-3 border bg-white"
+                    className="d-flex align-items-center justify-content-between p-2 px-3 border"
                     style={{
-                      borderRadius: "4px",
-                      borderColor: "#e2e8f0",
+                      borderRadius: 0,
+                      borderColor: cardBorder,
+                      backgroundColor: subtleBg,
                     }}
                   >
                     <div className="d-flex align-items-center gap-2">
@@ -633,21 +665,21 @@ const DocumentStorageAuditView = ({
                         style={{
                           width: "9px",
                           height: "9px",
-                          borderRadius: "50%",
+                          borderRadius: 0,
                           backgroundColor: item.color,
                           display: "inline-block",
                         }}
                       ></span>
                       <span
-                        className="fw-bold text-dark"
-                        style={{ fontSize: "12px" }}
+                        className="fw-bold"
+                        style={{ fontSize: "12px", color: textTitle }}
                       >
                         {item.label}
                       </span>
                     </div>
                     <span
-                      className="fw-bold text-dark font-monospace"
-                      style={{ fontSize: "12px" }}
+                      className="fw-bold font-monospace"
+                      style={{ fontSize: "12px", color: textTitle }}
                     >
                       {item.percentage}%
                     </span>
@@ -661,23 +693,28 @@ const DocumentStorageAuditView = ({
         {/* Middle Col 3: Repository Details */}
         <Col lg={3} md={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
+              backgroundColor: cardBg,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 border-bottom d-flex align-items-center justify-content-between bg-white"
-              style={{ borderRadius: "4px 4px 0 0" }}
+              className="p-3 border-bottom d-flex align-items-center justify-content-between"
+              style={{
+                borderRadius: 0,
+                borderColor: cardBorder,
+                backgroundColor: cardBg,
+              }}
             >
               <div className="d-flex align-items-center gap-2">
                 <i
                   className="ri-stack-line"
                   style={{ color: "#7f1d1d", fontSize: "16px" }}
                 ></i>
-                <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+                <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                   Repository Details
                 </span>
               </div>
@@ -687,46 +724,46 @@ const DocumentStorageAuditView = ({
               <div className="d-flex flex-column gap-3">
                 {/* Metric 1: Files */}
                 <div className="d-flex align-items-center justify-content-between">
-                  <div className="d-flex align-items-center gap-2 text-muted" style={{ fontSize: "12px" }}>
+                  <div className="d-flex align-items-center gap-2" style={{ fontSize: "12px", color: textSub }}>
                     <i className="ri-file-text-line" style={{ color: "#7f1d1d" }}></i>
                     <span>Files</span>
                   </div>
-                  <span className="fw-bold text-dark" style={{ fontSize: "13px" }}>
+                  <span className="fw-bold" style={{ fontSize: "13px", color: textTitle }}>
                     {totalDocuments}
                   </span>
                 </div>
 
                 {/* Metric 2: Total Size */}
                 <div className="d-flex align-items-center justify-content-between">
-                  <div className="d-flex align-items-center gap-2 text-muted" style={{ fontSize: "12px" }}>
+                  <div className="d-flex align-items-center gap-2" style={{ fontSize: "12px", color: textSub }}>
                     <i className="ri-database-2-line" style={{ color: "#7f1d1d" }}></i>
                     <span>Total Size</span>
                   </div>
-                  <span className="fw-bold text-dark font-monospace" style={{ fontSize: "13px" }}>
+                  <span className="fw-bold font-monospace" style={{ fontSize: "13px", color: textTitle }}>
                     {totalStorageMb} MB
                   </span>
                 </div>
 
                 {/* Metric 3: Avg Size */}
                 <div className="d-flex align-items-center justify-content-between">
-                  <div className="d-flex align-items-center gap-2 text-muted" style={{ fontSize: "12px" }}>
+                  <div className="d-flex align-items-center gap-2" style={{ fontSize: "12px", color: textSub }}>
                     <i className="ri-dashboard-2-line" style={{ color: "#7f1d1d" }}></i>
                     <span>Avg Size</span>
                   </div>
-                  <span className="fw-bold text-dark font-monospace" style={{ fontSize: "13px" }}>
+                  <span className="fw-bold font-monospace" style={{ fontSize: "13px", color: textTitle }}>
                     {avgSizeBytes}
                   </span>
                 </div>
 
                 {/* Metric 4: Last Upload */}
                 <div className="d-flex align-items-center justify-content-between">
-                  <div className="d-flex align-items-center gap-2 text-muted" style={{ fontSize: "12px" }}>
+                  <div className="d-flex align-items-center gap-2" style={{ fontSize: "12px", color: textSub }}>
                     <i className="ri-calendar-event-line" style={{ color: "#7f1d1d" }}></i>
                     <span>Last Upload</span>
                   </div>
                   <span
-                    className="fw-semibold text-dark text-end"
-                    style={{ fontSize: "11px", maxWidth: "130px" }}
+                    className="fw-semibold text-end"
+                    style={{ fontSize: "11px", maxWidth: "130px", color: textTitle }}
                   >
                     {lastUploadDate}
                   </span>
@@ -739,22 +776,25 @@ const DocumentStorageAuditView = ({
 
       {/* ─── ROW 3: REPOSITORY LEDGER (TABLE & GRID) ─────────────────────────── */}
       <Card
-        className="bg-white mb-4"
+        className="mb-4"
         style={{
-          borderRadius: "4px",
-          border: "1px solid #e2e8f0",
+          borderRadius: 0,
+          border: `1px solid ${cardBorder}`,
+          backgroundColor: cardBg,
           boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
       >
         <div
-          className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2 bg-white"
+          className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
           style={{
-            borderRadius: "4px 4px 0 0",
+            borderRadius: 0,
+            borderColor: cardBorder,
+            backgroundColor: cardBg,
           }}
         >
           <div className="d-flex align-items-center gap-2">
             <i className="ri-file-list-3-line" style={{ color: "#7f1d1d", fontSize: "16px" }}></i>
-            <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+            <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
               Repository Ledger
             </span>
           </div>
@@ -767,11 +807,11 @@ const DocumentStorageAuditView = ({
                 placeholder="Search files..."
                 className="form-control-sm ps-4"
                 style={{
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
-                  borderColor: "#cbd5e1",
-                  backgroundColor: "#ffffff",
-                  color: "#0f172a",
+                  borderColor: subtleBorder,
+                  backgroundColor: subtleBg,
+                  color: textTitle,
                 }}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -787,11 +827,11 @@ const DocumentStorageAuditView = ({
               className="form-select form-select-sm"
               style={{
                 width: "120px",
-                borderRadius: "4px",
+                borderRadius: 0,
                 fontSize: "12px",
-                backgroundColor: "#ffffff",
-                borderColor: "#cbd5e1",
-                color: "#0f172a",
+                backgroundColor: subtleBg,
+                borderColor: subtleBorder,
+                color: textTitle,
               }}
               value={selectedTypeFilter}
               onChange={(e) => setSelectedTypeFilter(e.target.value)}
@@ -807,16 +847,21 @@ const DocumentStorageAuditView = ({
             {/* List / Grid Toggle */}
             <div
               className="btn-group btn-group-sm border"
-              style={{ borderRadius: "4px", overflow: "hidden" }}
+              style={{
+                borderRadius: 0,
+                overflow: "hidden",
+                borderColor: cardBorder,
+              }}
             >
               <button
                 type="button"
                 className="btn btn-sm d-flex align-items-center gap-1"
                 style={{
-                  backgroundColor: viewMode === "list" ? "#f1f5f9" : "#ffffff",
-                  color: viewMode === "list" ? "#0f172a" : "#64748b",
+                  backgroundColor: viewMode === "list" ? (isDark ? "rgba(127, 29, 29, 0.2)" : "#f1f5f9") : subtleBg,
+                  color: viewMode === "list" ? (isDark ? "#f87171" : "#0f172a") : textSub,
                   border: "none",
-                  borderRight: "1px solid #e2e8f0",
+                  borderRight: `1px solid ${cardBorder}`,
+                  borderRadius: 0,
                   fontSize: "11px",
                   fontWeight: viewMode === "list" ? 600 : 500,
                   padding: "4px 8px",
@@ -829,9 +874,10 @@ const DocumentStorageAuditView = ({
                 type="button"
                 className="btn btn-sm d-flex align-items-center gap-1"
                 style={{
-                  backgroundColor: viewMode === "grid" ? "#f1f5f9" : "#ffffff",
-                  color: viewMode === "grid" ? "#0f172a" : "#64748b",
+                  backgroundColor: viewMode === "grid" ? (isDark ? "rgba(127, 29, 29, 0.2)" : "#f1f5f9") : subtleBg,
+                  color: viewMode === "grid" ? (isDark ? "#f87171" : "#0f172a") : textSub,
                   border: "none",
+                  borderRadius: 0,
                   fontSize: "11px",
                   fontWeight: viewMode === "grid" ? 600 : 500,
                   padding: "4px 8px",
@@ -851,25 +897,25 @@ const DocumentStorageAuditView = ({
                 className="ri-file-search-line fs-36 text-muted mb-2 d-block"
                 style={{ opacity: 0.5 }}
               ></i>
-              <h6 className="fw-semibold text-dark mb-1">No Documents Found</h6>
-              <p className="text-muted small mb-0">
+              <h6 className="fw-semibold mb-1" style={{ color: textTitle }}>No Documents Found</h6>
+              <p className="small mb-0" style={{ color: textSub }}>
                 No repository files match the selected search or filter criteria.
               </p>
             </div>
           ) : viewMode === "list" ? (
             /* List View Table */
             <div className="table-responsive">
-              <Table className="align-middle table-nowrap mb-0" hover>
-                <thead style={{ backgroundColor: "#f8fafc" }}>
-                  <tr style={{ fontSize: "11.5px", color: "#64748b" }}>
-                    <th style={{ width: "40px" }} className="text-center">#</th>
-                    <th>FILE NAME</th>
-                    <th>UPLOADED BY</th>
-                    <th>UPLOADED ON</th>
-                    <th>FILE SIZE</th>
-                    <th>TYPE</th>
-                    <th>STATUS</th>
-                    <th className="text-end pe-3">ACTION</th>
+              <Table className="align-middle table-nowrap mb-0" hover style={{ borderColor: cardBorder }}>
+                <thead style={{ backgroundColor: subtleBg, borderBottom: `1px solid ${cardBorder}` }}>
+                  <tr style={{ fontSize: "11.5px", color: textSub }}>
+                    <th style={{ width: "40px", backgroundColor: "transparent", color: textSub }} className="text-center">#</th>
+                    <th style={{ backgroundColor: "transparent", color: textSub }}>FILE NAME</th>
+                    <th style={{ backgroundColor: "transparent", color: textSub }}>UPLOADED BY</th>
+                    <th style={{ backgroundColor: "transparent", color: textSub }}>UPLOADED ON</th>
+                    <th style={{ backgroundColor: "transparent", color: textSub }}>FILE SIZE</th>
+                    <th style={{ backgroundColor: "transparent", color: textSub }}>TYPE</th>
+                    <th style={{ backgroundColor: "transparent", color: textSub }}>STATUS</th>
+                    <th style={{ backgroundColor: "transparent", color: textSub }} className="text-end pe-3">ACTION</th>
                   </tr>
                 </thead>
                 <tbody style={{ fontSize: "12.5px" }}>
@@ -884,8 +930,8 @@ const DocumentStorageAuditView = ({
                       .toUpperCase();
 
                     return (
-                      <tr key={file.file_id || idx}>
-                        <td className="text-center text-muted" style={{ fontSize: "11px" }}>
+                      <tr key={file.file_id || idx} style={{ borderBottom: `1px solid ${cardBorder}` }}>
+                        <td className="text-center" style={{ fontSize: "11px", color: textSub }}>
                           {idx + 1}
                         </td>
                         <td>
@@ -894,8 +940,12 @@ const DocumentStorageAuditView = ({
                               style={{
                                 width: "24px",
                                 height: "24px",
-                                borderRadius: "3px",
-                                backgroundColor: isPdf ? "#fef2f2" : isDocx ? "#eff6ff" : "#f0fdf4",
+                                borderRadius: 0,
+                                backgroundColor: isPdf
+                                  ? (isDark ? "rgba(220, 38, 38, 0.15)" : "#fef2f2")
+                                  : isDocx
+                                  ? (isDark ? "rgba(37, 99, 235, 0.15)" : "#eff6ff")
+                                  : (isDark ? "rgba(22, 101, 52, 0.15)" : "#f0fdf4"),
                                 color: isPdf ? "#dc2626" : isDocx ? "#2563eb" : "#16a34a",
                                 display: "inline-flex",
                                 alignItems: "center",
@@ -906,7 +956,7 @@ const DocumentStorageAuditView = ({
                             >
                               <i className={isPdf ? "ri-file-pdf-fill" : isDocx ? "ri-file-word-fill" : "ri-file-excel-fill"}></i>
                             </span>
-                            <span className="fw-semibold text-dark">
+                            <span className="fw-semibold" style={{ color: textTitle }}>
                               {file.file_name}
                             </span>
                           </div>
@@ -917,7 +967,7 @@ const DocumentStorageAuditView = ({
                               style={{
                                 width: "24px",
                                 height: "24px",
-                                borderRadius: "50%",
+                                borderRadius: 0,
                                 backgroundColor: "rgba(127, 29, 29, 0.1)",
                                 color: "#7f1d1d",
                                 fontWeight: 700,
@@ -929,25 +979,31 @@ const DocumentStorageAuditView = ({
                             >
                               {initials}
                             </div>
-                            <span className="text-dark">{file.uploaded_by || "Admin"}</span>
+                            <span style={{ color: textTitle }}>{file.uploaded_by || "Admin"}</span>
                           </div>
                         </td>
-                        <td className="text-muted" style={{ fontSize: "12px" }}>
+                        <td style={{ fontSize: "12px", color: textSub }}>
                           {file.uploaded_on}
                         </td>
-                        <td className="fw-bold text-dark font-monospace" style={{ fontSize: "12px" }}>
+                        <td className="fw-bold font-monospace" style={{ fontSize: "12px", color: textTitle }}>
                           {file.file_size || "850 KB"}
                         </td>
                         <td>
                           <span
                             style={{
-                              backgroundColor: isPdf ? "#fef2f2" : "#eff6ff",
-                              color: isPdf ? "#dc2626" : "#2563eb",
-                              border: `1px solid ${isPdf ? "#fecaca" : "#bfdbfe"}`,
+                              backgroundColor: isPdf
+                                ? (isDark ? "rgba(220, 38, 38, 0.15)" : "#fef2f2")
+                                : (isDark ? "rgba(37, 99, 235, 0.15)" : "#eff6ff"),
+                              color: isPdf ? (isDark ? "#f87171" : "#dc2626") : (isDark ? "#60a5fa" : "#2563eb"),
+                              border: `1px solid ${
+                                isPdf
+                                  ? (isDark ? "rgba(248, 113, 113, 0.3)" : "#fecaca")
+                                  : (isDark ? "rgba(96, 165, 250, 0.3)" : "#bfdbfe")
+                              }`,
                               fontSize: "11px",
                               fontWeight: 700,
                               padding: "2px 8px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                             }}
                           >
                             {file.file_type || (isPdf ? "PDF" : "DOCX")}
@@ -956,13 +1012,13 @@ const DocumentStorageAuditView = ({
                         <td>
                           <span
                             style={{
-                              backgroundColor: "#f0fdf4",
-                              color: "#166534",
-                              border: "1px solid #bbf7d0",
+                              backgroundColor: isDark ? "rgba(22, 101, 52, 0.2)" : "#f0fdf4",
+                              color: isDark ? "#4ade80" : "#166534",
+                              border: `1px solid ${isDark ? "rgba(74, 222, 128, 0.3)" : "#bbf7d0"}`,
                               fontSize: "11px",
                               fontWeight: 600,
                               padding: "2px 8px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               display: "inline-flex",
                               alignItems: "center",
                               gap: "4px",
@@ -972,7 +1028,7 @@ const DocumentStorageAuditView = ({
                               style={{
                                 width: "6px",
                                 height: "6px",
-                                borderRadius: "50%",
+                                borderRadius: 0,
                                 backgroundColor: "#16a34a",
                               }}
                             ></span>
@@ -983,27 +1039,48 @@ const DocumentStorageAuditView = ({
                           <div className="d-flex align-items-center justify-content-end gap-1">
                             <button
                               type="button"
-                              className="btn btn-sm btn-icon btn-light"
-                              style={{ borderRadius: "4px", width: "28px", height: "28px" }}
+                              className="btn btn-sm btn-icon"
+                              style={{
+                                borderRadius: 0,
+                                width: "28px",
+                                height: "28px",
+                                backgroundColor: subtleBg,
+                                border: `1px solid ${cardBorder}`,
+                                color: textSub,
+                              }}
                               title="View Document"
                             >
-                              <i className="ri-eye-line text-muted"></i>
+                              <i className="ri-eye-line"></i>
                             </button>
                             <button
                               type="button"
-                              className="btn btn-sm btn-icon btn-light"
-                              style={{ borderRadius: "4px", width: "28px", height: "28px" }}
+                              className="btn btn-sm btn-icon"
+                              style={{
+                                borderRadius: 0,
+                                width: "28px",
+                                height: "28px",
+                                backgroundColor: subtleBg,
+                                border: `1px solid ${cardBorder}`,
+                                color: textSub,
+                              }}
                               title="Download Document"
                             >
-                              <i className="ri-download-2-line text-muted"></i>
+                              <i className="ri-download-2-line"></i>
                             </button>
                             <button
                               type="button"
-                              className="btn btn-sm btn-icon btn-light"
-                              style={{ borderRadius: "4px", width: "28px", height: "28px" }}
+                              className="btn btn-sm btn-icon"
+                              style={{
+                                borderRadius: 0,
+                                width: "28px",
+                                height: "28px",
+                                backgroundColor: subtleBg,
+                                border: `1px solid ${cardBorder}`,
+                                color: textSub,
+                              }}
                               title="More Options"
                             >
-                              <i className="ri-more-2-fill text-muted"></i>
+                              <i className="ri-more-2-fill"></i>
                             </button>
                           </div>
                         </td>
@@ -1023,10 +1100,11 @@ const DocumentStorageAuditView = ({
                   return (
                     <Col lg={4} md={6} key={file.file_id || idx}>
                       <div
-                        className="p-3 border bg-white h-100 d-flex flex-column justify-content-between"
+                        className="p-3 border h-100 d-flex flex-column justify-content-between"
                         style={{
-                          borderRadius: "4px",
-                          borderColor: "#e2e8f0",
+                          borderRadius: 0,
+                          borderColor: cardBorder,
+                          backgroundColor: subtleBg,
                           boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
                         }}
                       >
@@ -1036,8 +1114,12 @@ const DocumentStorageAuditView = ({
                               style={{
                                 width: "32px",
                                 height: "32px",
-                                borderRadius: "4px",
-                                backgroundColor: isPdf ? "#fef2f2" : isDocx ? "#eff6ff" : "#f0fdf4",
+                                borderRadius: 0,
+                                backgroundColor: isPdf
+                                  ? (isDark ? "rgba(220, 38, 38, 0.15)" : "#fef2f2")
+                                  : isDocx
+                                  ? (isDark ? "rgba(37, 99, 235, 0.15)" : "#eff6ff")
+                                  : (isDark ? "rgba(22, 101, 52, 0.15)" : "#f0fdf4"),
                                 color: isPdf ? "#dc2626" : isDocx ? "#2563eb" : "#16a34a",
                                 display: "inline-flex",
                                 alignItems: "center",
@@ -1049,35 +1131,50 @@ const DocumentStorageAuditView = ({
                             </span>
                             <span
                               style={{
-                                backgroundColor: isPdf ? "#fef2f2" : "#eff6ff",
-                                color: isPdf ? "#dc2626" : "#2563eb",
-                                border: `1px solid ${isPdf ? "#fecaca" : "#bfdbfe"}`,
+                                backgroundColor: isPdf
+                                  ? (isDark ? "rgba(220, 38, 38, 0.15)" : "#fef2f2")
+                                  : (isDark ? "rgba(37, 99, 235, 0.15)" : "#eff6ff"),
+                                color: isPdf ? (isDark ? "#f87171" : "#dc2626") : (isDark ? "#60a5fa" : "#2563eb"),
+                                border: `1px solid ${
+                                  isPdf
+                                    ? (isDark ? "rgba(248, 113, 113, 0.3)" : "#fecaca")
+                                    : (isDark ? "rgba(96, 165, 250, 0.3)" : "#bfdbfe")
+                                }`,
                                 fontSize: "10.5px",
                                 fontWeight: 700,
                                 padding: "1px 6px",
-                                borderRadius: "4px",
+                                borderRadius: 0,
                               }}
                             >
                               {file.file_type || (isPdf ? "PDF" : "DOCX")}
                             </span>
                           </div>
 
-                          <h6 className="fw-bold text-dark text-truncate mb-1" style={{ fontSize: "13px" }}>
+                          <h6 className="fw-bold text-truncate mb-1" style={{ fontSize: "13px", color: textTitle }}>
                             {file.file_name}
                           </h6>
-                          <div className="text-muted small mb-2" style={{ fontSize: "11px" }}>
+                          <div className="small mb-2" style={{ fontSize: "11px", color: textSub }}>
                             {file.folder_name || "General"} • {file.file_size || "850 KB"}
                           </div>
                         </div>
 
-                        <div className="pt-2 border-top d-flex align-items-center justify-content-between">
-                          <span className="text-muted" style={{ fontSize: "11px" }}>
+                        <div
+                          className="pt-2 border-top d-flex align-items-center justify-content-between"
+                          style={{ borderColor: cardBorder }}
+                        >
+                          <span style={{ fontSize: "11px", color: textSub }}>
                             {file.uploaded_by || "Admin"}
                           </span>
                           <button
                             type="button"
-                            className="btn btn-sm btn-light border py-1 px-2"
-                            style={{ borderRadius: "4px", fontSize: "11px" }}
+                            className="btn btn-sm border py-1 px-2"
+                            style={{
+                              borderRadius: 0,
+                              fontSize: "11px",
+                              backgroundColor: cardBg,
+                              borderColor: cardBorder,
+                              color: textTitle,
+                            }}
                           >
                             <i className="ri-download-2-line me-1"></i> Download
                           </button>
@@ -1094,10 +1191,11 @@ const DocumentStorageAuditView = ({
 
       {/* ─── ROW 4: KEY SUMMARY FOOTER BANNER ─────────────────────────────────── */}
       <div
-        className="p-3 border bg-white d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4"
+        className="p-3 border d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4"
         style={{
-          borderRadius: "4px",
-          borderColor: "#e2e8f0",
+          borderRadius: 0,
+          borderColor: cardBorder,
+          backgroundColor: cardBg,
           boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
       >
@@ -1108,13 +1206,13 @@ const DocumentStorageAuditView = ({
               className="ri-bar-chart-2-fill"
               style={{ color: "#7f1d1d", fontSize: "18px" }}
             ></i>
-            <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+            <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
               Key Summary
             </span>
           </div>
 
           <div
-            style={{ width: "1px", height: "20px", backgroundColor: "#e2e8f0" }}
+            style={{ width: "1px", height: "20px", backgroundColor: cardBorder }}
           ></div>
 
           {/* Metric 1 */}
@@ -1124,17 +1222,17 @@ const DocumentStorageAuditView = ({
               style={{ color: "#7f1d1d", fontSize: "16px" }}
             ></i>
             <div>
-              <span className="fw-bold text-dark me-1" style={{ fontSize: "13px" }}>
+              <span className="fw-bold me-1" style={{ fontSize: "13px", color: textTitle }}>
                 {totalDocuments}
               </span>
-              <span className="text-muted" style={{ fontSize: "12px" }}>
+              <span style={{ fontSize: "12px", color: textSub }}>
                 Total Documents
               </span>
             </div>
           </div>
 
           <div
-            style={{ width: "1px", height: "20px", backgroundColor: "#e2e8f0" }}
+            style={{ width: "1px", height: "20px", backgroundColor: cardBorder }}
           ></div>
 
           {/* Metric 2 */}
@@ -1145,19 +1243,19 @@ const DocumentStorageAuditView = ({
             ></i>
             <div>
               <span
-                className="fw-bold text-dark font-monospace me-1"
-                style={{ fontSize: "13px" }}
+                className="fw-bold font-monospace me-1"
+                style={{ fontSize: "13px", color: textTitle }}
               >
                 {totalStorageMb} MB
               </span>
-              <span className="text-muted" style={{ fontSize: "12px" }}>
+              <span style={{ fontSize: "12px", color: textSub }}>
                 Total Storage
               </span>
             </div>
           </div>
 
           <div
-            style={{ width: "1px", height: "20px", backgroundColor: "#e2e8f0" }}
+            style={{ width: "1px", height: "20px", backgroundColor: cardBorder }}
           ></div>
 
           {/* Metric 3 */}
@@ -1166,14 +1264,14 @@ const DocumentStorageAuditView = ({
               className="ri-checkbox-circle-fill text-success"
               style={{ fontSize: "16px" }}
             ></i>
-            <span className="fw-bold text-dark" style={{ fontSize: "12.5px" }}>
+            <span className="fw-bold" style={{ fontSize: "12.5px", color: textTitle }}>
               100% Availability
             </span>
           </div>
         </div>
 
         {/* Right Quote */}
-        <div className="d-flex align-items-center gap-2 text-muted" style={{ fontSize: "12px" }}>
+        <div className="d-flex align-items-center gap-2" style={{ fontSize: "12px", color: textSub }}>
           <i className="ri-shield-check-line text-success fs-15"></i>
           <span>Stay organized. Keep your documents secure.</span>
         </div>
@@ -1183,4 +1281,3 @@ const DocumentStorageAuditView = ({
 };
 
 export default DocumentStorageAuditView;
-

@@ -44,12 +44,12 @@ const AiInsightsCard = ({ insights = [] }) => {
                 }}
               >
                 <div
-                  className="d-flex align-items-center justify-content-center flex-shrink-0 mt-1"
+                  className="d-flex align-items-center justify-content-center flex-shrink-0 mt-1 crm-insight-icon-circle"
                   style={{
                     width: "26px",
                     height: "26px",
-                    borderRadius: "50%",
-                    backgroundColor: "#ffffff",
+                    borderRadius: 0,
+                    backgroundColor: "var(--vz-card-bg-fill, #ffffff)",
                     color: item.icon_color || "#7f1d1d",
                     fontSize: "0.85rem",
                     boxShadow: "0 1px 3px rgba(0,0,0,0.1)",

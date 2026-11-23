@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   Alert,
   Badge,
@@ -84,48 +85,48 @@ const SORT_COLUMNS = [
   },
 ];
 
-const getStageBadgeStyle = (name) => {
+const getStageBadgeStyle = (name, isDark = false) => {
   const s = String(name || "").toLowerCase();
   if (s.includes("won")) {
     return {
-      backgroundColor: "#f0fdf4",
-      color: "#15803d",
-      border: "1px solid #bbf7d0",
+      backgroundColor: isDark ? "rgba(16, 185, 129, 0.2)" : "#f0fdf4",
+      color: isDark ? "#34d399" : "#15803d",
+      border: isDark ? "1px solid rgba(16, 185, 129, 0.35)" : "1px solid #bbf7d0",
     };
   }
   if (s.includes("lost")) {
     return {
-      backgroundColor: "#fef2f2",
-      color: "#b91c1c",
-      border: "1px solid #fecaca",
+      backgroundColor: isDark ? "rgba(239, 68, 68, 0.2)" : "#fef2f2",
+      color: isDark ? "#f87171" : "#b91c1c",
+      border: isDark ? "1px solid rgba(239, 68, 68, 0.35)" : "1px solid #fecaca",
     };
   }
   if (s.includes("proposal")) {
     return {
-      backgroundColor: "#fffbeb",
-      color: "#b45309",
-      border: "1px solid #fde68a",
+      backgroundColor: isDark ? "rgba(245, 158, 11, 0.2)" : "#fffbeb",
+      color: isDark ? "#fbbf24" : "#b45309",
+      border: isDark ? "1px solid rgba(245, 158, 11, 0.35)" : "1px solid #fde68a",
     };
   }
   if (s.includes("negot")) {
     return {
-      backgroundColor: "#faf5ff",
-      color: "#7e22ce",
-      border: "1px solid #e9d5ff",
+      backgroundColor: isDark ? "rgba(168, 85, 247, 0.2)" : "#faf5ff",
+      color: isDark ? "#c084fc" : "#7e22ce",
+      border: isDark ? "1px solid rgba(168, 85, 247, 0.35)" : "1px solid #e9d5ff",
     };
   }
   if (s.includes("qualif")) {
     return {
-      backgroundColor: "#fef2f2",
-      color: "#7f1d1d", // SoftOnCloud Primary Maroon
-      border: "1px solid #fecaca",
+      backgroundColor: isDark ? "rgba(244, 63, 94, 0.2)" : "#fef2f2",
+      color: isDark ? "#fb7185" : "#7f1d1d", // SoftOnCloud Primary Maroon
+      border: isDark ? "1px solid rgba(244, 63, 94, 0.35)" : "1px solid #fecaca",
     };
   }
   // Default / Prospecting
   return {
-    backgroundColor: "#f8fafc",
-    color: "#475569",
-    border: "1px solid #cbd5e1",
+    backgroundColor: isDark ? "rgba(148, 163, 184, 0.15)" : "#f8fafc",
+    color: isDark ? "#cbd5e1" : "#475569",
+    border: isDark ? "1px solid rgba(148, 163, 184, 0.3)" : "1px solid #cbd5e1",
   };
 };
 
@@ -136,6 +137,13 @@ const formatAmount = (opp) => {
 
 const Opportunities = () => {
   document.title = "Opportunities | SoftOnCloud CRM";
+
+  const layoutModeType = useSelector((state) => state.Layout?.layoutModeType);
+  const isDark =
+    layoutModeType === "dark" ||
+    (typeof document !== "undefined" &&
+      (document.documentElement.getAttribute("data-bs-theme") === "dark" ||
+        document.documentElement.getAttribute("data-layout-mode") === "dark"));
 
   // View mode: 'list' | 'create' | 'edit' (In-page view without opening a new tab)
   const [viewMode, setViewMode] = useState("list");
@@ -522,7 +530,7 @@ const Opportunities = () => {
 
         {listError ? <Alert color="danger" className="mb-3 rounded-0">{listError}</Alert> : null}
 
-        <Card className="apt-list-card mb-0 rounded-0 border" style={{ borderColor: "#e2e8f0" }}>
+        <Card className="apt-list-card mb-0 rounded-0 border" style={{ borderColor: isDark ? "#21262d" : "#e2e8f0" }}>
           <CardBody className="p-0">
             <div className="apt-list-toolbar">
               <div className="apt-list-toolbar__left">
@@ -564,9 +572,9 @@ const Opportunities = () => {
               <Button
                 className={`apt-list-toolbar__filter-btn rounded-0 ${hasAdvancedFilters ? "is-active" : ""}`}
                 style={{
-                  backgroundColor: hasAdvancedFilters ? "#7f1d1d" : "#ffffff",
-                  color: hasAdvancedFilters ? "#ffffff" : "#475569",
-                  borderColor: "#cbd5e1",
+                  backgroundColor: hasAdvancedFilters ? "#7f1d1d" : (isDark ? "#21262d" : "#ffffff"),
+                  color: hasAdvancedFilters ? "#ffffff" : (isDark ? "#f0f6fc" : "#475569"),
+                  borderColor: isDark ? "#30363d" : "#cbd5e1",
                 }}
                 onClick={openFilters}
               >
@@ -613,12 +621,12 @@ const Opportunities = () => {
                           <button
                             type="button"
                             className="btn btn-link btn-sm p-0 align-baseline"
-                            style={{ color: "#7f1d1d" }}
+                            style={{ color: isDark ? "#fca5a5" : "#7f1d1d" }}
                             onClick={displayAll}
                           >
                             Display All
                           </button>{" "}
-                          or click <strong style={{ color: "#7f1d1d" }}>New Opportunity</strong>.
+                          or click <strong style={{ color: isDark ? "#fca5a5" : "#7f1d1d" }}>New Opportunity</strong>.
                         </div>
                       </td>
                     </tr>
@@ -629,15 +637,24 @@ const Opportunities = () => {
                           <div className="d-flex align-items-center justify-content-center gap-1 flex-nowrap">
                             <Link
                               to={`/crm/opportunities/${opp.opportunityId}`}
-                              className="btn btn-sm btn-light border rounded-0"
+                              className="btn btn-sm border rounded-0"
+                              style={{
+                                backgroundColor: isDark ? "#21262d" : "#f8fafc",
+                                borderColor: isDark ? "#30363d" : "#e2e8f0",
+                                color: isDark ? "#c9d1d9" : "#475569",
+                              }}
                               title="View 360° Profile"
                             >
                               <i className="ri-eye-line" />
                             </Link>
                             <Button
-                              color="light"
                               size="sm"
                               className="border rounded-0"
+                              style={{
+                                backgroundColor: isDark ? "#21262d" : "#f8fafc",
+                                borderColor: isDark ? "#30363d" : "#e2e8f0",
+                                color: isDark ? "#c9d1d9" : "#475569",
+                              }}
                               onClick={() => openEdit(opp.opportunityId)}
                               disabled={deleting}
                               title="Edit Opportunity"
@@ -645,9 +662,13 @@ const Opportunities = () => {
                               <i className="ri-pencil-line" />
                             </Button>
                             <Button
-                              color="light"
                               size="sm"
-                              className="border rounded-0 text-danger"
+                              className="border rounded-0"
+                              style={{
+                                backgroundColor: isDark ? "#21262d" : "#f8fafc",
+                                borderColor: isDark ? "#30363d" : "#e2e8f0",
+                                color: isDark ? "#f87171" : "#dc2626",
+                              }}
                               onClick={() => {
                                 setDeleteTarget(opp);
                                 setDeleteModal(true);
@@ -663,7 +684,7 @@ const Opportunities = () => {
                           <Link
                             to={`/crm/opportunities/${opp.opportunityId}`}
                             className="fw-semibold text-decoration-none"
-                            style={{ color: "#7f1d1d" }}
+                            style={{ color: isDark ? "#fca5a5" : "#7f1d1d" }}
                           >
                             {opp.name}
                           </Link>
@@ -673,7 +694,7 @@ const Opportunities = () => {
                             <Link
                               to={`/crm/customers/${opp.accountId}`}
                               className="fw-medium text-decoration-none"
-                              style={{ color: "#7f1d1d" }}
+                              style={{ color: isDark ? "#fca5a5" : "#7f1d1d" }}
                               title="View Customer Details"
                             >
                               {opp.accountName || `Customer #${opp.accountId}`}
@@ -687,7 +708,7 @@ const Opportunities = () => {
                         </td>
                         <td>
                           {(() => {
-                            const badge = getStageBadgeStyle(opp.stageName);
+                            const badge = getStageBadgeStyle(opp.stageName, isDark);
                             return (
                               <span
                                 className="badge rounded-0 fs-11 fw-semibold px-2.5 py-1"

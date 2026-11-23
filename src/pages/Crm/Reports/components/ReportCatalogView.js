@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useSelector } from "react-redux";
 import {
   Row,
   Col,
@@ -35,6 +36,18 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [hoveredCode, setHoveredCode] = useState(null);
 
+  const layoutModeType = useSelector((state) => state.Layout.layoutModeType);
+  const isDark = layoutModeType === "dark";
+
+  // Dynamic Theme Palette
+  const cardBg = isDark ? "#121212" : "#ffffff";
+  const cardBorder = isDark ? "#2d3748" : "#e2e8f0";
+  const subtleBg = isDark ? "#1a202c" : "#f8fafc";
+  const subtleBorder = isDark ? "#334155" : "#cbd5e1";
+  const textTitle = isDark ? "#f8fafc" : "#0f172a";
+  const textSub = isDark ? "#94a3b8" : "#64748b";
+  const primaryColor = isDark ? "#fca5a5" : "#7f1d1d";
+
   const rawCategories = Array.isArray(categories) ? categories : [];
   const rawReports = Array.isArray(reports) ? reports : [];
 
@@ -67,8 +80,8 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
         className="shadow-sm border-0 mb-4 rounded-0"
         style={{
           borderRadius: 0,
-          background: "#ffffff",
-          border: "1px solid #e2e8f0",
+          background: cardBg,
+          border: `1px solid ${cardBorder}`,
         }}
       >
         <CardBody className="p-3">
@@ -91,20 +104,20 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                       fontWeight: isActive ? 600 : 500,
                       padding: "7px 14px",
                       backgroundColor: isActive ? "#7f1d1d" : "transparent",
-                      color: isActive ? "#ffffff" : "#475569",
+                      color: isActive ? "#ffffff" : textSub,
                       transition: "all 0.15s ease",
                     }}
                     onClick={() => setActiveCategory(cat.id)}
                     onMouseEnter={(e) => {
                       if (!isActive) {
-                        e.currentTarget.style.backgroundColor = "#f8fafc";
-                        e.currentTarget.style.color = "#0f172a";
+                        e.currentTarget.style.backgroundColor = isDark ? "#21262d" : "#f8fafc";
+                        e.currentTarget.style.color = textTitle;
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!isActive) {
                         e.currentTarget.style.backgroundColor = "transparent";
-                        e.currentTarget.style.color = "#475569";
+                        e.currentTarget.style.color = textSub;
                       }
                     }}
                   >
@@ -121,11 +134,11 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                         borderRadius: 0,
                         backgroundColor: isActive
                           ? "rgba(255, 255, 255, 0.22)"
-                          : "#f1f5f9",
-                        color: isActive ? "#ffffff" : "#64748b",
+                          : (isDark ? "#21262d" : "#f1f5f9"),
+                        color: isActive ? "#ffffff" : textTitle,
                         fontSize: "11px",
                         fontWeight: 600,
-                        border: isActive ? "none" : "1px solid #e2e8f0",
+                        border: isActive ? "none" : (isDark ? "1px solid #334155" : "1px solid #e2e8f0"),
                       }}
                     >
                       {cat.count}
@@ -145,7 +158,9 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                   borderRadius: 0,
                   fontSize: "13px",
                   height: "38px",
-                  borderColor: "#cbd5e1",
+                  borderColor: subtleBorder,
+                  backgroundColor: isDark ? "#121212" : "#ffffff",
+                  color: textTitle,
                   boxShadow: "none",
                 }}
                 value={searchTerm}
@@ -157,7 +172,7 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                   left: "12px",
                   top: "50%",
                   transform: "translateY(-50%)",
-                  color: "#94a3b8",
+                  color: textSub,
                   fontSize: "14px",
                 }}
               ></i>
@@ -167,7 +182,7 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                   className="btn btn-sm btn-link position-absolute end-0 top-50 translate-middle-y text-muted p-1 me-2"
                   onClick={() => setSearchTerm("")}
                 >
-                  <i className="ri-close-line"></i>
+                  <i className="ri-close-line" style={{ color: textSub }}></i>
                 </button>
               )}
             </div>
@@ -179,7 +194,7 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
       {filteredReports.length === 0 ? (
         <Card
           className="shadow-sm border-0 py-5 rounded-0"
-          style={{ borderRadius: 0, border: "1px solid #e2e8f0" }}
+          style={{ borderRadius: 0, background: cardBg, border: `1px solid ${cardBorder}` }}
         >
           <CardBody className="text-center">
             <div
@@ -188,22 +203,26 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                 width: "56px",
                 height: "56px",
                 borderRadius: 0,
-                backgroundColor: "rgba(127, 29, 29, 0.08)",
-                color: "#7f1d1d",
+                backgroundColor: isDark ? "rgba(239, 68, 68, 0.15)" : "rgba(127, 29, 29, 0.08)",
+                color: isDark ? "#f87171" : "#7f1d1d",
                 fontSize: "24px",
               }}
             >
               <i className="ri-file-search-line"></i>
             </div>
-            <h5 className="fw-semibold text-dark mb-1">No Matching Reports Found</h5>
-            <p className="text-muted small mb-3">
+            <h5 className="fw-semibold mb-1" style={{ color: textTitle }}>No Matching Reports Found</h5>
+            <p className="small mb-3" style={{ color: textSub }}>
               No reports match your query "{searchTerm}". Try clearing your filters.
             </p>
             <Button
-              color="light"
               size="sm"
               className="border px-3 rounded-0"
-              style={{ borderRadius: 0 }}
+              style={{
+                borderRadius: 0,
+                backgroundColor: subtleBg,
+                borderColor: subtleBorder,
+                color: textTitle,
+              }}
               onClick={() => {
                 setActiveCategory("all");
                 setSearchTerm("");
@@ -225,12 +244,12 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                   className="h-100 border-0 d-flex flex-column rounded-0"
                   style={{
                     borderRadius: 0,
-                    background: "#ffffff",
+                    background: cardBg,
                     border: isHovered
-                      ? "1px solid #fca5a5"
-                      : "1px solid #e2e8f0",
+                      ? (isDark ? "1px solid #f87171" : "1px solid #fca5a5")
+                      : `1px solid ${cardBorder}`,
                     boxShadow: isHovered
-                      ? "0 4px 12px rgba(127, 29, 29, 0.08)"
+                      ? (isDark ? "0 4px 16px rgba(0, 0, 0, 0.45)" : "0 4px 12px rgba(127, 29, 29, 0.08)")
                       : "0 1px 3px rgba(0, 0, 0, 0.04)",
                     transform: isHovered ? "translateY(-2px)" : "translateY(0)",
                     transition:
@@ -250,9 +269,16 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                           width: "38px",
                           height: "38px",
                           borderRadius: 0,
-                          backgroundColor: isHovered ? "#7f1d1d" : "rgba(127, 29, 29, 0.08)",
-                          color: isHovered ? "#ffffff" : "#7f1d1d",
+                          backgroundColor: isHovered
+                            ? "#7f1d1d"
+                            : (isDark ? "rgba(239, 68, 68, 0.18)" : "rgba(127, 29, 29, 0.08)"),
+                          color: isHovered
+                            ? "#ffffff"
+                            : (isDark ? "#f87171" : "#7f1d1d"),
                           fontSize: "18px",
+                          border: isHovered
+                            ? "1px solid #7f1d1d"
+                            : (isDark ? "1px solid rgba(239, 68, 68, 0.25)" : "none"),
                           transition: "all 0.15s ease",
                         }}
                       >
@@ -262,7 +288,7 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                         <h6
                           className="fw-bold mb-1"
                           style={{
-                            color: "#0f172a",
+                            color: textTitle,
                             fontSize: "15px",
                             lineHeight: "1.35",
                           }}
@@ -272,9 +298,9 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                         <span
                           style={{
                             display: "inline-block",
-                            backgroundColor: "#f8fafc",
-                            border: "1px solid #e2e8f0",
-                            color: "#475569",
+                            backgroundColor: isDark ? "#21262d" : "#f8fafc",
+                            border: isDark ? "1px solid #334155" : "1px solid #e2e8f0",
+                            color: isDark ? "#cbd5e1" : "#475569",
                             fontSize: "10.5px",
                             fontWeight: 600,
                             padding: "2px 6px",
@@ -288,11 +314,11 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
 
                     {/* Description */}
                     <p
-                      className="text-muted small mb-4 flex-grow-1"
+                      className="small mb-4 flex-grow-1"
                       style={{
                         fontSize: "12.5px",
                         lineHeight: "1.55",
-                        color: "#64748b",
+                        color: textSub,
                         display: "-webkit-box",
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: "vertical",
@@ -305,19 +331,19 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                     {/* Footer: Chart Indicator & Action Button */}
                     <div
                       className="d-flex align-items-center justify-content-between pt-3 mt-auto"
-                      style={{ borderTop: "1px solid #f1f5f9" }}
+                      style={{ borderTop: isDark ? "1px solid #262626" : "1px solid #f1f5f9" }}
                     >
                       <span
                         className="d-flex align-items-center gap-1.5"
                         style={{
                           fontSize: "11.5px",
-                          color: "#64748b",
+                          color: textSub,
                           fontWeight: 500,
                         }}
                       >
                         <i
                           className={chartMeta.icon}
-                          style={{ color: "#7f1d1d", fontSize: "14px" }}
+                          style={{ color: isDark ? "#f87171" : "#7f1d1d", fontSize: "14px" }}
                         ></i>
                         <span>{chartMeta.label}</span>
                       </span>
@@ -329,9 +355,15 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                           borderRadius: 0,
                           fontSize: "12px",
                           fontWeight: 600,
-                          backgroundColor: isHovered ? "#7f1d1d" : "#ffffff",
-                          color: isHovered ? "#ffffff" : "#7f1d1d",
-                          border: "1px solid #7f1d1d",
+                          backgroundColor: isHovered
+                            ? "#7f1d1d"
+                            : (isDark ? "rgba(127, 29, 29, 0.15)" : "#ffffff"),
+                          color: isHovered
+                            ? "#ffffff"
+                            : (isDark ? "#fca5a5" : "#7f1d1d"),
+                          border: isHovered
+                            ? "1px solid #7f1d1d"
+                            : (isDark ? "1px solid #991b1b" : "1px solid #7f1d1d"),
                           padding: "5px 12px",
                           transition: "all 0.15s ease",
                         }}

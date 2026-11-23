@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { useSelector } from "react-redux";
 import {
   Container,
   Row,
@@ -47,6 +48,24 @@ const SoftOnCloudTimeline = () => {
   const [bannerLogType, setBannerLogType] = useState(null);
 
   document.title = "Communication Timeline | SoftOnCloud CRM";
+
+  // Redux Dark Mode detection
+  const { layoutModeType } = useSelector((state) => ({
+    layoutModeType: state.Layout.layoutModeType,
+  }));
+  const isDark =
+    layoutModeType === "dark" ||
+    (typeof document !== "undefined" &&
+      (document.documentElement.getAttribute("data-bs-theme") === "dark" ||
+        document.documentElement.getAttribute("data-layout-mode") === "dark"));
+
+  const primaryColor = isDark ? "#fca5a5" : THEME.primary;
+  const cardBg = isDark ? "#121212" : "#ffffff";
+  const cardBorder = isDark ? "#262626" : THEME.cardBorder;
+  const subtleBg = isDark ? "#161b22" : "#f8fafc";
+  const subtleBorder = isDark ? "#2d3748" : "#cbd5e1";
+  const textTitle = isDark ? "#f1f5f9" : THEME.textDark;
+  const textSub = isDark ? "#94a3b8" : THEME.textMuted;
 
   // Load Customers for Dropdown Picker
   useEffect(() => {
@@ -104,22 +123,22 @@ const SoftOnCloudTimeline = () => {
   };
 
   return (
-    <div className="page-content" style={{ backgroundColor: "#f8fafc", minHeight: "100vh" }}>
+    <div className="page-content" style={{ minHeight: "100vh" }}>
       <Container fluid className="px-4">
         {/* ======================================================== */}
         {/* Top Header Breadcrumb & Customer Selector                */}
         {/* ======================================================== */}
         <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pt-2">
           <div>
-            <h4 className="fw-bold text-dark mb-0 fs-20">Communication Timeline</h4>
-            <div className="text-muted fs-12 mt-1">
+            <h4 className="fw-bold mb-0 fs-20" style={{ color: textTitle }}>Communication Timeline</h4>
+            <div className="fs-12 mt-1" style={{ color: textSub }}>
               All interactions and touchpoints in chronological order
             </div>
           </div>
 
           {/* Customer Selector Dropdown */}
           <div className="d-flex align-items-center gap-2">
-            <span className="fs-13 fw-semibold text-muted">Customer:</span>
+            <span className="fs-13 fw-semibold" style={{ color: textSub }}>Customer:</span>
             <div style={{ minWidth: "260px" }}>
               <Input
                 type="select"
@@ -128,7 +147,9 @@ const SoftOnCloudTimeline = () => {
                 onChange={(e) => handleCustomerChange(e.target.value)}
                 style={{
                   borderRadius: 0,
-                  borderColor: "#cbd5e1",
+                  borderColor: subtleBorder,
+                  backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                  color: textTitle,
                   fontWeight: 600,
                   height: "34px",
                 }}
@@ -149,9 +170,15 @@ const SoftOnCloudTimeline = () => {
               <Button
                 color="light"
                 size="sm"
-                className="border bg-white text-dark fw-semibold"
+                className="border fw-semibold"
                 onClick={() => navigate(`/crm/customers/${customer.accountId}`)}
-                style={{ borderRadius: 0, height: "34px" }}
+                style={{
+                  borderRadius: 0,
+                  height: "34px",
+                  backgroundColor: subtleBg,
+                  borderColor: subtleBorder,
+                  color: textTitle,
+                }}
               >
                 <i className="ri-external-link-line me-1" /> View Full Account
               </Button>
@@ -164,8 +191,8 @@ const SoftOnCloudTimeline = () => {
         {/* ======================================================== */}
         {customer && (
           <Card
-            className="border shadow-none mb-3 bg-white"
-            style={{ borderRadius: 0, borderColor: THEME.cardBorder }}
+            className="border shadow-none mb-3"
+            style={{ borderRadius: 0, backgroundColor: cardBg, borderColor: cardBorder }}
           >
             <CardBody className="p-3">
               <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
@@ -173,10 +200,17 @@ const SoftOnCloudTimeline = () => {
                   <Button
                     color="light"
                     size="sm"
-                    className="border bg-white text-dark fw-semibold px-2 d-inline-flex align-items-center justify-content-center"
+                    className="border fw-semibold px-2 d-inline-flex align-items-center justify-content-center"
                     onClick={() => navigate("/crm/customers")}
                     title="Back to Customers"
-                    style={{ borderRadius: 0, borderColor: "#cbd5e1", width: "36px", height: "36px" }}
+                    style={{
+                      borderRadius: 0,
+                      borderColor: subtleBorder,
+                      backgroundColor: subtleBg,
+                      color: textTitle,
+                      width: "36px",
+                      height: "36px",
+                    }}
                   >
                     <i className="ri-arrow-left-s-line fs-18" />
                   </Button>
@@ -195,22 +229,22 @@ const SoftOnCloudTimeline = () => {
 
                   <div>
                     <div className="d-flex align-items-center gap-2 flex-wrap">
-                      <h5 className="fw-bold text-dark mb-0 fs-16">
+                      <h5 className="fw-bold mb-0 fs-16" style={{ color: textTitle }}>
                         {customer.displayName || customer.companyName}
                       </h5>
                       <span
                         className="badge px-2 py-1 fs-11"
                         style={{
                           borderRadius: 0,
-                          backgroundColor: "#f1f5f9",
-                          color: "#475569",
-                          border: "1px solid #cbd5e1",
+                          backgroundColor: subtleBg,
+                          color: textSub,
+                          border: `1px solid ${subtleBorder}`,
                         }}
                       >
                         Customer
                       </span>
                     </div>
-                    <div className="text-muted fs-12 mt-1">
+                    <div className="fs-12 mt-1" style={{ color: textSub }}>
                       {customer.placeOfSupply || "India"} &bull; Customer Since :{" "}
                       {customer.customerSince
                         ? new Date(customer.customerSince).toLocaleDateString("en-GB", {
@@ -228,13 +262,20 @@ const SoftOnCloudTimeline = () => {
                   <Button
                     color="light"
                     size="sm"
-                    className="border bg-white text-muted px-2 d-inline-flex align-items-center justify-content-center"
+                    className="border px-2 d-inline-flex align-items-center justify-content-center"
                     onClick={() => {
                       setBannerLogType(null);
                       setTimeout(() => setBannerLogType("CALL"), 10);
                     }}
                     title="Log Call"
-                    style={{ borderRadius: 0, borderColor: "#cbd5e1", width: "34px", height: "34px" }}
+                    style={{
+                      borderRadius: 0,
+                      borderColor: subtleBorder,
+                      backgroundColor: subtleBg,
+                      color: textTitle,
+                      width: "34px",
+                      height: "34px",
+                    }}
                   >
                     <i className="ri-phone-line text-success fs-15" />
                   </Button>
@@ -242,29 +283,43 @@ const SoftOnCloudTimeline = () => {
                   <Button
                     color="light"
                     size="sm"
-                    className="border bg-white text-muted px-2 d-inline-flex align-items-center justify-content-center"
+                    className="border px-2 d-inline-flex align-items-center justify-content-center"
                     onClick={() => {
                       setBannerLogType(null);
                       setTimeout(() => setBannerLogType("EMAIL"), 10);
                     }}
                     title="Log Email"
-                    style={{ borderRadius: 0, borderColor: "#cbd5e1", width: "34px", height: "34px" }}
+                    style={{
+                      borderRadius: 0,
+                      borderColor: subtleBorder,
+                      backgroundColor: subtleBg,
+                      color: textTitle,
+                      width: "34px",
+                      height: "34px",
+                    }}
                   >
-                    <i className="ri-mail-line fs-15" style={{ color: THEME.primary }} />
+                    <i className="ri-mail-line fs-15" style={{ color: primaryColor }} />
                   </Button>
 
                   <Button
                     color="light"
                     size="sm"
-                    className="border bg-white text-muted px-2 d-inline-flex align-items-center justify-content-center"
+                    className="border px-2 d-inline-flex align-items-center justify-content-center"
                     onClick={() => {
                       setBannerLogType(null);
                       setTimeout(() => setBannerLogType("MEETING"), 10);
                     }}
                     title="Log Meeting"
-                    style={{ borderRadius: 0, borderColor: "#cbd5e1", width: "34px", height: "34px" }}
+                    style={{
+                      borderRadius: 0,
+                      borderColor: subtleBorder,
+                      backgroundColor: subtleBg,
+                      color: textTitle,
+                      width: "34px",
+                      height: "34px",
+                    }}
                   >
-                    <i className="ri-calendar-event-line fs-15" style={{ color: "#7c3aed" }} />
+                    <i className="ri-calendar-event-line fs-15" style={{ color: "#a855f7" }} />
                   </Button>
 
                   <Button
@@ -294,7 +349,7 @@ const SoftOnCloudTimeline = () => {
         {/* ======================================================== */}
         <div
           className="border-bottom mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2"
-          style={{ borderColor: THEME.cardBorder }}
+          style={{ borderColor: cardBorder }}
         >
           <div className="d-flex align-items-center gap-4 overflow-auto py-1">
             {[
@@ -319,10 +374,10 @@ const SoftOnCloudTimeline = () => {
                   }}
                   className="btn btn-link p-0 text-decoration-none position-relative pb-2"
                   style={{
-                    color: isActive ? THEME.primary : "#64748b",
+                    color: isActive ? primaryColor : textSub,
                     fontWeight: isActive ? 600 : 500,
                     fontSize: "14px",
-                    borderBottom: isActive ? `2.5px solid ${THEME.primary}` : "2.5px solid transparent",
+                    borderBottom: isActive ? `2.5px solid ${primaryColor}` : "2.5px solid transparent",
                     borderRadius: 0,
                     transition: "all 0.15s ease",
                   }}
@@ -338,9 +393,9 @@ const SoftOnCloudTimeline = () => {
         {/* Main Communication Timeline Feed Component               */}
         {/* ======================================================== */}
         {loadingCustomer ? (
-          <div className="text-center py-5 bg-white border" style={{ borderRadius: 0, borderColor: THEME.cardBorder }}>
-            <Spinner size="sm" style={{ color: THEME.primary }} />
-            <div className="text-muted fs-13 mt-2">Loading customer touchpoints...</div>
+          <div className="text-center py-5 border" style={{ borderRadius: 0, backgroundColor: cardBg, borderColor: cardBorder }}>
+            <Spinner size="sm" style={{ color: primaryColor }} />
+            <div className="fs-13 mt-2" style={{ color: textSub }}>Loading customer touchpoints...</div>
           </div>
         ) : selectedCustomerId && selectedCustomerId !== "undefined" && !isNaN(Number(selectedCustomerId)) ? (
           <CommunicationTimelineTab
@@ -350,10 +405,10 @@ const SoftOnCloudTimeline = () => {
             initialLogType={bannerLogType}
           />
         ) : (
-          <div className="text-center py-5 bg-white border" style={{ borderRadius: 0, borderColor: THEME.cardBorder }}>
-            <i className="ri-history-line fs-32 text-muted mb-2 d-block" />
-            <h6 className="fw-bold text-dark">Select a Customer</h6>
-            <p className="text-muted fs-13">Choose an account above to view its unified communication timeline.</p>
+          <div className="text-center py-5 border" style={{ borderRadius: 0, backgroundColor: cardBg, borderColor: cardBorder }}>
+            <i className="ri-history-line fs-32 mb-2 d-block" style={{ color: textSub }} />
+            <h6 className="fw-bold" style={{ color: textTitle }}>Select a Customer</h6>
+            <p className="fs-13" style={{ color: textSub }}>Choose an account above to view its unified communication timeline.</p>
           </div>
         )}
       </Container>

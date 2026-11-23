@@ -559,7 +559,7 @@ a.text-primary {
       border-color: var(--vz-border-color);
       color: var(--vz-body-color);
       padding-left: 2.25rem;
-      border-radius: 0.375rem;
+      border-radius: 0;
       min-height: 38px;
     }
   }
@@ -580,7 +580,7 @@ a.text-primary {
     display: inline-block;
     width: 7px;
     height: 7px;
-    border-radius: 50%;
+    border-radius: 0;
     background: #fff;
     margin-left: 0.35rem;
     vertical-align: middle;
@@ -608,7 +608,7 @@ a.text-primary {
     padding-right: 1.75rem;
     font-size: 0.8125rem;
     font-weight: 500;
-    border-radius: 0.35rem;
+    border-radius: 0;
     border: 1px solid var(--vz-primary);
     background-color: var(--vz-secondary-bg, #f3f6f9);
     color: var(--vz-body-color);
@@ -680,7 +680,7 @@ a.text-primary {
     font-size: 0.75rem;
     font-weight: 400;
     padding: 0.3rem 0.5rem;
-    border-radius: 0.35rem;
+    border-radius: 0;
     border: 1px solid var(--vz-border-color, #e9ebec);
     background-color: var(--vz-input-bg, #fff);
     color: var(--vz-body-color);
@@ -693,6 +693,61 @@ a.text-primary {
     &:focus {
       border-color: var(--vz-primary);
       box-shadow: 0 0 0 0.15rem rgba(var(--vz-primary-rgb), 0.2);
+    }
+  }
+}
+
+// CRM List Dark Mode Overrides
+[data-bs-theme="dark"], [data-layout-mode="dark"] {
+  .apt-list-card {
+    border-color: #21262d !important;
+    background-color: #161b22 !important;
+  }
+
+  .apt-list-toolbar {
+    background: #161b22 !important;
+    border-bottom-color: #21262d !important;
+
+    &__count {
+      color: #f0f6fc !important;
+    }
+
+    &__search .form-control {
+      background-color: #0d1117 !important;
+      border-color: #30363d !important;
+      color: #f0f6fc !important;
+
+      &::placeholder {
+        color: #8b949e !important;
+      }
+    }
+  }
+
+  .apt-list-pagesize__select {
+    background-color: #0d1117 !important;
+    border-color: #30363d !important;
+    color: #f0f6fc !important;
+  }
+
+  .apt-list-colfilters__input {
+    background-color: #0d1117 !important;
+    border-color: #30363d !important;
+    color: #f0f6fc !important;
+
+    &::placeholder {
+      color: #8b949e !important;
+    }
+  }
+
+  .apt-list-table {
+    &__head th {
+      background-color: #0d1117 !important;
+      border-bottom-color: #21262d !important;
+      color: #c9d1d9 !important;
+    }
+
+    tbody td {
+      border-color: #21262d !important;
     }
   }
 }

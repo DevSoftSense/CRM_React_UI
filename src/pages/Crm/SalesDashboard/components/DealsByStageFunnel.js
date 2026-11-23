@@ -100,11 +100,11 @@ const DealsByStageFunnel = ({ data = {} }) => {
 
   return (
     <Card
-      className="border shadow-none h-100 mb-0 bg-white"
+      className="border shadow-none h-100 mb-0"
       style={{
         borderRadius: 0,
-        borderColor: isDark ? "#262626" : "#e2e8f0",
-        backgroundColor: isDark ? "#121212" : "#ffffff",
+        borderColor: isDark ? "#21262d" : "#e2e8f0",
+        backgroundColor: isDark ? "#161b22" : "#ffffff",
       }}
     >
       {/* Top Header: Title + Filter Pill */}
@@ -285,7 +285,7 @@ const DealsByStageFunnel = ({ data = {} }) => {
                         width: 8,
                         height: 8,
                         backgroundColor: item.dotColor,
-                        borderRadius: "50%",
+                        borderRadius: 0,
                         display: "inline-block",
                         flexShrink: 0,
                       }}

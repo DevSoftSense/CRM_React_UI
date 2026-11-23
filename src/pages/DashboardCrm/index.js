@@ -88,7 +88,7 @@ const DashboardCrm = () => {
   };
 
   return (
-    <div className="page-content" style={{ backgroundColor: "#f8fafc", minHeight: "100vh" }}>
+    <div className="page-content" style={{ minHeight: "100vh" }}>
       <Container fluid className="crm-dashboard-wrapper">
         {/* Header & Filter Controls */}
         <DashboardHeader

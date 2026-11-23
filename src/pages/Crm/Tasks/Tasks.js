@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   Alert,
   Badge,
@@ -69,14 +70,29 @@ const TYPE_CONFIG = {
   REVIEW: { label: "Review", icon: "ri-eye-line", color: "#6366f1", bg: "#eef2ff", text: "#3730a3" },
 };
 
-const getTypeConfig = (type) => {
+const getTypeConfig = (type, isDark = false) => {
   const key = String(type || "TASK").toUpperCase();
-  return TYPE_CONFIG[key] || {
+  const base = TYPE_CONFIG[key] || {
     label: type || "Task",
     icon: "ri-task-line",
     color: "#64748b",
     bg: "#f8fafc",
     text: "#334155",
+  };
+  if (!isDark) return base;
+  const darkMap = {
+    CALL: { color: "#34d399", bg: "rgba(16, 185, 129, 0.18)", text: "#34d399" },
+    MEETING: { color: "#c084fc", bg: "rgba(139, 92, 246, 0.18)", text: "#c084fc" },
+    EMAIL: { color: "#60a5fa", bg: "rgba(59, 130, 246, 0.18)", text: "#60a5fa" },
+    TASK: { color: "#fbbf24", bg: "rgba(245, 158, 11, 0.18)", text: "#fbbf24" },
+    FOLLOW_UP: { color: "#22d3ee", bg: "rgba(6, 182, 212, 0.18)", text: "#22d3ee" },
+    REVIEW: { color: "#a5b4fc", bg: "rgba(99, 102, 241, 0.18)", text: "#a5b4fc" },
+  };
+  return {
+    ...base,
+    color: darkMap[key]?.color || base.color,
+    bg: darkMap[key]?.bg || base.bg,
+    text: darkMap[key]?.text || base.text,
   };
 };
 
@@ -87,18 +103,26 @@ const getPriorityDot = (priority) => {
   return { color: "#f59e0b", label: "Medium" };
 };
 
-const getStatusBadge = (status, isOverdue) => {
+const getStatusBadge = (status, isOverdue, isDark = false) => {
   const s = String(status || "TO_DO").toUpperCase();
   if (s === "COMPLETED") {
-    return { bg: "#ecfdf5", text: "#065f46", border: "#a7f3d0", label: "Completed" };
+    return isDark
+      ? { bg: "rgba(16, 185, 129, 0.2)", text: "#34d399", border: "rgba(16, 185, 129, 0.35)", label: "Completed" }
+      : { bg: "#ecfdf5", text: "#065f46", border: "#a7f3d0", label: "Completed" };
   }
   if (isOverdue || s === "OVERDUE") {
-    return { bg: "#fef2f2", text: "#991b1b", border: "#fecaca", label: "Overdue" };
+    return isDark
+      ? { bg: "rgba(239, 68, 68, 0.25)", text: "#f87171", border: "rgba(239, 68, 68, 0.4)", label: "Overdue" }
+      : { bg: "#fef2f2", text: "#991b1b", border: "#fecaca", label: "Overdue" };
   }
   if (s === "IN_PROGRESS") {
-    return { bg: "#fef2f2", text: "#7f1d1d", border: "#fecaca", label: "In Progress" };
+    return isDark
+      ? { bg: "rgba(127, 29, 29, 0.25)", text: "#fca5a5", border: "rgba(127, 29, 29, 0.45)", label: "In Progress" }
+      : { bg: "#fef2f2", text: "#7f1d1d", border: "#fecaca", label: "In Progress" };
   }
-  return { bg: "#fffbeb", text: "#92400e", border: "#fde68a", label: "To Do" };
+  return isDark
+    ? { bg: "rgba(245, 158, 11, 0.2)", text: "#fbbf24", border: "rgba(245, 158, 11, 0.35)", label: "To Do" }
+    : { bg: "#fffbeb", text: "#92400e", border: "#fde68a", label: "To Do" };
 };
 
 const getInitials = (name) => {
@@ -110,6 +134,24 @@ const getInitials = (name) => {
 
 const Tasks = () => {
   document.title = "Tasks | SoftOnCloud CRM";
+
+  // Redux Dark Mode detection
+  const { layoutModeType } = useSelector((state) => ({
+    layoutModeType: state.Layout.layoutModeType,
+  }));
+  const isDark =
+    layoutModeType === "dark" ||
+    (typeof document !== "undefined" &&
+      (document.documentElement.getAttribute("data-bs-theme") === "dark" ||
+        document.documentElement.getAttribute("data-layout-mode") === "dark"));
+
+  const primaryColor = isDark ? "#fca5a5" : "#7f1d1d";
+  const cardBg = isDark ? "#121212" : "#ffffff";
+  const cardBorder = isDark ? "#262626" : "#e2e8f0";
+  const subtleBg = isDark ? "#161b22" : "#f8fafc";
+  const subtleBorder = isDark ? "#2d3748" : "#cbd5e1";
+  const textTitle = isDark ? "#f1f5f9" : "#0f172a";
+  const textSub = isDark ? "#94a3b8" : "#64748b";
 
   // Data states from DB
   const [items, setItems] = useState([]);
@@ -528,10 +570,10 @@ const Tasks = () => {
   const endItem = Math.min((page + 1) * pageSize, totalCount);
 
   return (
-    <div className="page-content" style={{ backgroundColor: "#f8fafc", minHeight: "100vh" }}>
+    <div className="page-content" style={{ minHeight: "100vh" }}>
       <style>{`
         .crm-pending-task-row {
-          border-bottom: 1px solid #f1f5f9;
+          border-bottom: 1px solid ${isDark ? "#262626" : "#f1f5f9"};
           transition: background-color 0.15s ease;
           padding: 8px 6px;
         }
@@ -539,7 +581,7 @@ const Tasks = () => {
           border-bottom: none;
         }
         .crm-pending-task-row:hover {
-          background-color: #f8fafc;
+          background-color: ${isDark ? "rgba(255, 255, 255, 0.05)" : "#f8fafc"};
         }
         .crm-custom-scroll::-webkit-scrollbar {
           width: 4px;
@@ -548,33 +590,42 @@ const Tasks = () => {
           background: transparent;
         }
         .crm-custom-scroll::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
+          background: ${isDark ? "#334155" : "#cbd5e1"};
           border-radius: 0px;
         }
         .crm-custom-scroll::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8;
+          background: ${isDark ? "#475569" : "#94a3b8"};
         }
       `}</style>
       <Container fluid>
         {/* Clean Top Header (No duplicate title) */}
         <div className="d-flex flex-wrap align-items-center justify-content-between mb-3 pb-1">
           <div>
-            <h4 className="fs-18 fw-bold mb-1 text-dark">Tasks</h4>
-            <div className="text-muted fs-12">Create, assign and track tasks across your sales pipeline</div>
+            <h4 className="fs-18 fw-bold mb-1" style={{ color: textTitle }}>Tasks</h4>
+            <div className="fs-12" style={{ color: textSub }}>Create, assign and track tasks across your sales pipeline</div>
           </div>
           <div className="d-flex align-items-center gap-2 mt-2 mt-sm-0">
             <Button
               color="secondary"
               outline
               className="rounded-0 d-flex align-items-center gap-1 fs-12"
-              style={{ borderColor: "#cbd5e1", color: "#475569" }}
+              style={{
+                borderRadius: 0,
+                borderColor: subtleBorder,
+                backgroundColor: subtleBg,
+                color: textTitle,
+              }}
               onClick={handleExportCsv}
             >
               <i className="ri-download-2-line"></i> Export CSV
             </Button>
             <Button
               className="rounded-0 d-flex align-items-center gap-1 fs-12 text-white"
-              style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d" }}
+              style={{
+                borderRadius: 0,
+                backgroundColor: primaryColor,
+                borderColor: primaryColor,
+              }}
               onClick={() => openCreateModal("TASK")}
             >
               <i className="ri-add-line"></i> New Task
@@ -582,16 +633,36 @@ const Tasks = () => {
             <UncontrolledDropdown>
               <DropdownToggle
                 tag="button"
-                className="btn btn-light rounded-0 px-2 py-1"
-                style={{ border: "1px solid #cbd5e1" }}
+                className="btn rounded-0 px-2 py-1"
+                style={{
+                  borderRadius: 0,
+                  border: `1px solid ${subtleBorder}`,
+                  backgroundColor: subtleBg,
+                  color: textTitle,
+                }}
               >
                 <i className="ri-more-2-fill fs-15"></i>
               </DropdownToggle>
-              <DropdownMenu end className="rounded-0 shadow-sm fs-12">
-                <DropdownItem onClick={() => { loadList(); loadStats(); }}>
+              <DropdownMenu
+                end
+                className="rounded-0 shadow-sm fs-12"
+                style={{
+                  borderRadius: 0,
+                  backgroundColor: cardBg,
+                  borderColor: cardBorder,
+                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.2)",
+                }}
+              >
+                <DropdownItem
+                  onClick={() => { loadList(); loadStats(); }}
+                  style={{ borderRadius: 0, color: textTitle }}
+                >
                   <i className="ri-refresh-line me-2"></i> Refresh Data
                 </DropdownItem>
-                <DropdownItem onClick={handleResetFilters}>
+                <DropdownItem
+                  onClick={handleResetFilters}
+                  style={{ borderRadius: 0, color: textTitle }}
+                >
                   <i className="ri-filter-off-line me-2"></i> Reset Filters
                 </DropdownItem>
               </DropdownMenu>
@@ -613,12 +684,18 @@ const Tasks = () => {
           {/* Card 1: All Tasks */}
           <Col xs={12} sm={6} md={4} lg={true}>
             <Card
-              className="rounded-0 shadow-sm border-0 h-100 cursor-pointer"
+              className="rounded-0 shadow-sm h-100 cursor-pointer"
               style={{
-                borderLeft: !statusFilter ? "3px solid #7f1d1d" : "3px solid #cbd5e1",
+                borderRadius: 0,
+                border: `1px solid ${cardBorder}`,
+                borderLeft: !statusFilter
+                  ? `3px solid ${primaryColor}`
+                  : `3px solid ${subtleBorder}`,
                 cursor: "pointer",
                 transition: "all 0.15s ease-in-out",
-                backgroundColor: !statusFilter ? "#fef2f2" : "#ffffff",
+                backgroundColor: !statusFilter
+                  ? (isDark ? "rgba(127, 29, 29, 0.25)" : "#fef2f2")
+                  : cardBg,
               }}
               onClick={() => handleKpiClick("")}
             >
@@ -629,19 +706,19 @@ const Tasks = () => {
                     style={{
                       width: "42px",
                       height: "42px",
-                      backgroundColor: "#fef2f2",
-                      color: "#7f1d1d",
+                      backgroundColor: isDark ? "rgba(127, 29, 29, 0.3)" : "#fef2f2",
+                      color: primaryColor,
                       borderRadius: "0px",
                     }}
                   >
                     <i className="ri-checkbox-multiple-line fs-20"></i>
                   </div>
                   <div>
-                    <h3 className="fw-bold mb-0 text-dark fs-20">
+                    <h3 className="fw-bold mb-0 fs-20" style={{ color: textTitle }}>
                       {statsLoading ? <Spinner size="sm" /> : stats.totalTasks}
                     </h3>
-                    <div className="fw-semibold text-dark fs-12">All Tasks</div>
-                    <div className="text-muted fs-11">View all tasks</div>
+                    <div className="fw-semibold fs-12" style={{ color: textTitle }}>All Tasks</div>
+                    <div className="fs-11" style={{ color: textSub }}>View all tasks</div>
                   </div>
                 </div>
               </CardBody>
@@ -651,12 +728,18 @@ const Tasks = () => {
           {/* Card 2: To Do */}
           <Col xs={12} sm={6} md={4} lg={true}>
             <Card
-              className="rounded-0 shadow-sm border-0 h-100 cursor-pointer"
+              className="rounded-0 shadow-sm h-100 cursor-pointer"
               style={{
-                borderLeft: statusFilter === "TO_DO" ? "3px solid #f59e0b" : "3px solid #fde68a",
+                borderRadius: 0,
+                border: `1px solid ${cardBorder}`,
+                borderLeft: statusFilter === "TO_DO"
+                  ? "3px solid #f59e0b"
+                  : `3px solid ${isDark ? "rgba(245, 158, 11, 0.35)" : "#fde68a"}`,
                 cursor: "pointer",
                 transition: "all 0.15s ease-in-out",
-                backgroundColor: statusFilter === "TO_DO" ? "#fffbeb" : "#ffffff",
+                backgroundColor: statusFilter === "TO_DO"
+                  ? (isDark ? "rgba(245, 158, 11, 0.2)" : "#fffbeb")
+                  : cardBg,
               }}
               onClick={() => handleKpiClick("TO_DO")}
             >
@@ -667,7 +750,7 @@ const Tasks = () => {
                     style={{
                       width: "42px",
                       height: "42px",
-                      backgroundColor: "#fffbeb",
+                      backgroundColor: isDark ? "rgba(245, 158, 11, 0.2)" : "#fffbeb",
                       color: "#f59e0b",
                       borderRadius: "0px",
                     }}
@@ -675,11 +758,11 @@ const Tasks = () => {
                     <i className="ri-time-line fs-20"></i>
                   </div>
                   <div>
-                    <h3 className="fw-bold mb-0 text-dark fs-20">
+                    <h3 className="fw-bold mb-0 fs-20" style={{ color: textTitle }}>
                       {statsLoading ? <Spinner size="sm" /> : stats.toDoTasks}
                     </h3>
-                    <div className="fw-semibold text-dark fs-12">To Do</div>
-                    <div className="text-muted fs-11">Tasks to be started</div>
+                    <div className="fw-semibold fs-12" style={{ color: textTitle }}>To Do</div>
+                    <div className="fs-11" style={{ color: textSub }}>Tasks to be started</div>
                   </div>
                 </div>
               </CardBody>
@@ -689,12 +772,18 @@ const Tasks = () => {
           {/* Card 3: In Progress */}
           <Col xs={12} sm={6} md={4} lg={true}>
             <Card
-              className="rounded-0 shadow-sm border-0 h-100 cursor-pointer"
+              className="rounded-0 shadow-sm h-100 cursor-pointer"
               style={{
-                borderLeft: statusFilter === "IN_PROGRESS" ? "3px solid #7f1d1d" : "3px solid #fecaca",
+                borderRadius: 0,
+                border: `1px solid ${cardBorder}`,
+                borderLeft: statusFilter === "IN_PROGRESS"
+                  ? `3px solid ${primaryColor}`
+                  : `3px solid ${isDark ? "rgba(127, 29, 29, 0.4)" : "#fecaca"}`,
                 cursor: "pointer",
                 transition: "all 0.15s ease-in-out",
-                backgroundColor: statusFilter === "IN_PROGRESS" ? "#fef2f2" : "#ffffff",
+                backgroundColor: statusFilter === "IN_PROGRESS"
+                  ? (isDark ? "rgba(127, 29, 29, 0.25)" : "#fef2f2")
+                  : cardBg,
               }}
               onClick={() => handleKpiClick("IN_PROGRESS")}
             >
@@ -705,19 +794,19 @@ const Tasks = () => {
                     style={{
                       width: "42px",
                       height: "42px",
-                      backgroundColor: "#fef2f2",
-                      color: "#7f1d1d",
+                      backgroundColor: isDark ? "rgba(127, 29, 29, 0.3)" : "#fef2f2",
+                      color: primaryColor,
                       borderRadius: "0px",
                     }}
                   >
                     <i className="ri-play-circle-line fs-20"></i>
                   </div>
                   <div>
-                    <h3 className="fw-bold mb-0 text-dark fs-20">
+                    <h3 className="fw-bold mb-0 fs-20" style={{ color: textTitle }}>
                       {statsLoading ? <Spinner size="sm" /> : stats.inProgressTasks}
                     </h3>
-                    <div className="fw-semibold text-dark fs-12">In Progress</div>
-                    <div className="text-muted fs-11">Tasks in progress</div>
+                    <div className="fw-semibold fs-12" style={{ color: textTitle }}>In Progress</div>
+                    <div className="fs-11" style={{ color: textSub }}>Tasks in progress</div>
                   </div>
                 </div>
               </CardBody>
@@ -727,12 +816,18 @@ const Tasks = () => {
           {/* Card 4: Completed */}
           <Col xs={12} sm={6} md={4} lg={true}>
             <Card
-              className="rounded-0 shadow-sm border-0 h-100 cursor-pointer"
+              className="rounded-0 shadow-sm h-100 cursor-pointer"
               style={{
-                borderLeft: statusFilter === "COMPLETED" ? "3px solid #10b981" : "3px solid #a7f3d0",
+                borderRadius: 0,
+                border: `1px solid ${cardBorder}`,
+                borderLeft: statusFilter === "COMPLETED"
+                  ? "3px solid #10b981"
+                  : `3px solid ${isDark ? "rgba(16, 185, 129, 0.35)" : "#a7f3d0"}`,
                 cursor: "pointer",
                 transition: "all 0.15s ease-in-out",
-                backgroundColor: statusFilter === "COMPLETED" ? "#ecfdf5" : "#ffffff",
+                backgroundColor: statusFilter === "COMPLETED"
+                  ? (isDark ? "rgba(16, 185, 129, 0.2)" : "#ecfdf5")
+                  : cardBg,
               }}
               onClick={() => handleKpiClick("COMPLETED")}
             >
@@ -743,7 +838,7 @@ const Tasks = () => {
                     style={{
                       width: "42px",
                       height: "42px",
-                      backgroundColor: "#ecfdf5",
+                      backgroundColor: isDark ? "rgba(16, 185, 129, 0.2)" : "#ecfdf5",
                       color: "#10b981",
                       borderRadius: "0px",
                     }}
@@ -751,11 +846,11 @@ const Tasks = () => {
                     <i className="ri-checkbox-circle-line fs-20"></i>
                   </div>
                   <div>
-                    <h3 className="fw-bold mb-0 text-dark fs-20">
+                    <h3 className="fw-bold mb-0 fs-20" style={{ color: textTitle }}>
                       {statsLoading ? <Spinner size="sm" /> : stats.completedTasks}
                     </h3>
-                    <div className="fw-semibold text-dark fs-12">Completed</div>
-                    <div className="text-muted fs-11">Tasks completed</div>
+                    <div className="fw-semibold fs-12" style={{ color: textTitle }}>Completed</div>
+                    <div className="fs-11" style={{ color: textSub }}>Tasks completed</div>
                   </div>
                 </div>
               </CardBody>
@@ -765,12 +860,18 @@ const Tasks = () => {
           {/* Card 5: Overdue */}
           <Col xs={12} sm={6} md={4} lg={true}>
             <Card
-              className="rounded-0 shadow-sm border-0 h-100 cursor-pointer"
+              className="rounded-0 shadow-sm h-100 cursor-pointer"
               style={{
-                borderLeft: statusFilter === "OVERDUE" ? "3px solid #ef4444" : "3px solid #fecaca",
+                borderRadius: 0,
+                border: `1px solid ${cardBorder}`,
+                borderLeft: statusFilter === "OVERDUE"
+                  ? "3px solid #ef4444"
+                  : `3px solid ${isDark ? "rgba(239, 68, 68, 0.35)" : "#fecaca"}`,
                 cursor: "pointer",
                 transition: "all 0.15s ease-in-out",
-                backgroundColor: statusFilter === "OVERDUE" ? "#fef2f2" : "#ffffff",
+                backgroundColor: statusFilter === "OVERDUE"
+                  ? (isDark ? "rgba(239, 68, 68, 0.25)" : "#fef2f2")
+                  : cardBg,
               }}
               onClick={() => handleKpiClick("OVERDUE")}
             >
@@ -781,7 +882,7 @@ const Tasks = () => {
                     style={{
                       width: "42px",
                       height: "42px",
-                      backgroundColor: "#fef2f2",
+                      backgroundColor: isDark ? "rgba(239, 68, 68, 0.25)" : "#fef2f2",
                       color: "#ef4444",
                       borderRadius: "0px",
                     }}
@@ -789,11 +890,11 @@ const Tasks = () => {
                     <i className="ri-error-warning-line fs-20"></i>
                   </div>
                   <div>
-                    <h3 className="fw-bold mb-0 text-dark fs-20">
+                    <h3 className="fw-bold mb-0 fs-20" style={{ color: textTitle }}>
                       {statsLoading ? <Spinner size="sm" /> : stats.overdueTasks}
                     </h3>
-                    <div className="fw-semibold text-dark fs-12">Overdue</div>
-                    <div className="text-muted fs-11">Past due tasks</div>
+                    <div className="fw-semibold fs-12" style={{ color: textTitle }}>Overdue</div>
+                    <div className="fs-11" style={{ color: textSub }}>Past due tasks</div>
                   </div>
                 </div>
               </CardBody>
@@ -807,12 +908,15 @@ const Tasks = () => {
         <Row className="g-3">
           {/* LEFT / CENTER COLUMN: Tabs, Filters & Tasks Table */}
           <Col lg={8} xl={9}>
-            <Card className="rounded-0 shadow-sm border-0 mb-3" style={{ backgroundColor: "#ffffff" }}>
+            <Card
+              className="rounded-0 shadow-sm border-0 mb-3"
+              style={{ borderRadius: 0, backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}
+            >
               <CardBody className="p-0">
                 {/* Clean Underline Tabs Row with Date Range Filter on Right (Exact Mockup Match) */}
                 <div
                   className="border-bottom px-3 pt-2 d-flex flex-wrap align-items-center justify-content-between gap-2"
-                  style={{ borderColor: "#e2e8f0" }}
+                  style={{ borderColor: cardBorder }}
                 >
                   <Nav className="border-bottom-0 d-flex gap-1">
                     {[
@@ -827,8 +931,8 @@ const Tasks = () => {
                           type="button"
                           className="btn btn-link text-decoration-none fw-semibold fs-13 py-2 px-3 rounded-0"
                           style={{
-                            color: activeTab === tab.key ? "#7f1d1d" : "#64748b",
-                            borderBottom: activeTab === tab.key ? "3px solid #7f1d1d" : "3px solid transparent",
+                            color: activeTab === tab.key ? primaryColor : textSub,
+                            borderBottom: activeTab === tab.key ? `3px solid ${primaryColor}` : "3px solid transparent",
                             backgroundColor: "transparent",
                           }}
                           onClick={() => handleTabChange(tab.key)}
@@ -844,55 +948,94 @@ const Tasks = () => {
                     <UncontrolledDropdown>
                       <DropdownToggle
                         tag="button"
-                        className="btn btn-white bg-white d-flex align-items-center justify-content-between px-2 py-1 fs-12 text-dark rounded-0"
-                        style={{ border: "1px solid #e2e8f0", minWidth: "190px" }}
+                        className="btn d-flex align-items-center justify-content-between px-2 py-1 fs-12 rounded-0"
+                        style={{
+                          border: `1px solid ${subtleBorder}`,
+                          minWidth: "190px",
+                          backgroundColor: subtleBg,
+                          color: textTitle,
+                        }}
                       >
                         <span className="d-flex align-items-center gap-2 text-truncate">
-                          <i className="ri-calendar-line text-secondary fs-13"></i>
-                          <span className="fw-medium text-dark">{dateRangeLabel || "All Dates"}</span>
+                          <i className="ri-calendar-line fs-13" style={{ color: textSub }}></i>
+                          <span className="fw-medium" style={{ color: textTitle }}>{dateRangeLabel || "All Dates"}</span>
                         </span>
-                        <i className="ri-arrow-down-s-line text-muted fs-12 ms-2"></i>
+                        <i className="ri-arrow-down-s-line fs-12 ms-2" style={{ color: textSub }}></i>
                       </DropdownToggle>
-                      <DropdownMenu end className="rounded-0 shadow-sm fs-12 p-2" style={{ minWidth: "260px" }}>
-                        <div className="text-muted fs-11 px-2 py-1 fw-semibold text-uppercase">Presets</div>
-                        <DropdownItem onClick={() => handlePresetRange("THIS_MONTH")}>
+                      <DropdownMenu
+                        end
+                        className="rounded-0 shadow-sm fs-12 p-2"
+                        style={{
+                          borderRadius: 0,
+                          backgroundColor: cardBg,
+                          borderColor: cardBorder,
+                          minWidth: "260px",
+                          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.2)",
+                        }}
+                      >
+                        <div className="fs-11 px-2 py-1 fw-semibold text-uppercase" style={{ color: textSub }}>Presets</div>
+                        <DropdownItem
+                          onClick={() => handlePresetRange("THIS_MONTH")}
+                          style={{ borderRadius: 0, color: textTitle }}
+                        >
                           <i className="ri-calendar-check-line me-2 text-primary"></i> This Month
                         </DropdownItem>
-                        <DropdownItem onClick={() => handlePresetRange("TODAY")}>
+                        <DropdownItem
+                          onClick={() => handlePresetRange("TODAY")}
+                          style={{ borderRadius: 0, color: textTitle }}
+                        >
                           <i className="ri-time-line me-2 text-success"></i> Today
                         </DropdownItem>
-                        <DropdownItem onClick={() => handlePresetRange("THIS_WEEK")}>
+                        <DropdownItem
+                          onClick={() => handlePresetRange("THIS_WEEK")}
+                          style={{ borderRadius: 0, color: textTitle }}
+                        >
                           <i className="ri-calendar-2-line me-2 text-info"></i> This Week
                         </DropdownItem>
-                        <DropdownItem onClick={() => handlePresetRange("NEXT_30")}>
+                        <DropdownItem
+                          onClick={() => handlePresetRange("NEXT_30")}
+                          style={{ borderRadius: 0, color: textTitle }}
+                        >
                           <i className="ri-calendar-todo-line me-2 text-warning"></i> Next 30 Days
                         </DropdownItem>
-                        <DropdownItem divider />
+                        <DropdownItem divider style={{ borderColor: cardBorder }} />
                         <div className="px-2 py-1">
-                          <div className="text-muted fs-11 mb-2 fw-semibold text-uppercase">Custom Range</div>
+                          <div className="fs-11 mb-2 fw-semibold text-uppercase" style={{ color: textSub }}>Custom Range</div>
                           <div className="mb-2">
-                            <label className="form-label fs-10 text-muted mb-0">From</label>
+                            <label className="form-label fs-10 mb-0" style={{ color: textSub }}>From</label>
                             <Input
                               type="date"
                               className="form-control form-control-sm rounded-0 fs-11"
                               value={dueDateFrom}
                               onChange={(e) => setDueDateFrom(e.target.value)}
+                              style={{
+                                borderRadius: 0,
+                                backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                                borderColor: subtleBorder,
+                                color: textTitle,
+                              }}
                             />
                           </div>
                           <div className="mb-2">
-                            <label className="form-label fs-10 text-muted mb-0">To</label>
+                            <label className="form-label fs-10 mb-0" style={{ color: textSub }}>To</label>
                             <Input
                               type="date"
                               className="form-control form-control-sm rounded-0 fs-11"
                               value={dueDateTo}
                               onChange={(e) => setDueDateTo(e.target.value)}
+                              style={{
+                                borderRadius: 0,
+                                backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                                borderColor: subtleBorder,
+                                color: textTitle,
+                              }}
                             />
                           </div>
                           <div className="d-flex gap-1 mt-2">
                             <Button
                               size="sm"
                               className="w-100 rounded-0 text-white fs-11"
-                              style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d" }}
+                              style={{ backgroundColor: primaryColor, borderColor: primaryColor }}
                               onClick={() => {
                                 if (dueDateFrom && dueDateTo) {
                                   setDateRangeLabel(`${dueDateFrom} - ${dueDateTo}`);
@@ -912,7 +1055,12 @@ const Tasks = () => {
                               size="sm"
                               color="light"
                               className="rounded-0 fs-11"
-                              style={{ border: "1px solid #cbd5e1" }}
+                              style={{
+                                borderRadius: 0,
+                                border: `1px solid ${subtleBorder}`,
+                                backgroundColor: subtleBg,
+                                color: textTitle,
+                              }}
                               onClick={() => handlePresetRange("ALL")}
                             >
                               Clear
@@ -929,15 +1077,28 @@ const Tasks = () => {
                       className="rounded-0 p-1 px-2 d-flex align-items-center justify-content-center"
                       title="Reset Filters"
                       onClick={handleResetFilters}
-                      style={{ border: "1px solid #e2e8f0", height: "31px", width: "31px" }}
+                      style={{
+                        borderRadius: 0,
+                        border: `1px solid ${subtleBorder}`,
+                        backgroundColor: subtleBg,
+                        color: textTitle,
+                        height: "31px",
+                        width: "31px",
+                      }}
                     >
-                      <i className="ri-filter-3-line text-secondary fs-13"></i>
+                      <i className="ri-filter-3-line fs-13" style={{ color: textSub }}></i>
                     </Button>
                   </div>
                 </div>
 
                 {/* Filters Controls Row (100% Dynamic from DB lookups) */}
-                <div className="p-3 border-bottom bg-light bg-opacity-25" style={{ borderColor: "#f1f5f9" }}>
+                <div
+                  className="p-3 border-bottom"
+                  style={{
+                    borderColor: cardBorder,
+                    backgroundColor: isDark ? "#161b22" : "rgba(248, 250, 252, 0.5)",
+                  }}
+                >
                   <Row className="g-2 align-items-center">
                     {/* Owner Dropdown from DB */}
                     <Col xs={6} sm={4} md={2}>
@@ -946,6 +1107,12 @@ const Tasks = () => {
                         className="form-select form-select-sm rounded-0 fs-12"
                         value={ownerFilter}
                         onChange={(e) => { setOwnerFilter(e.target.value); setPage(0); }}
+                        style={{
+                          borderRadius: 0,
+                          backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                          borderColor: subtleBorder,
+                          color: textTitle,
+                        }}
                       >
                         <option value="">All Owners</option>
                         {owners.map((o) => (
@@ -963,6 +1130,12 @@ const Tasks = () => {
                         className="form-select form-select-sm rounded-0 fs-12"
                         value={typeFilter}
                         onChange={(e) => { setTypeFilter(e.target.value); setPage(0); }}
+                        style={{
+                          borderRadius: 0,
+                          backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                          borderColor: subtleBorder,
+                          color: textTitle,
+                        }}
                       >
                         <option value="">All Types</option>
                         {lookups.taskType.map((t) => (
@@ -980,6 +1153,12 @@ const Tasks = () => {
                         className="form-select form-select-sm rounded-0 fs-12"
                         value={priorityFilter}
                         onChange={(e) => { setPriorityFilter(e.target.value); setPage(0); }}
+                        style={{
+                          borderRadius: 0,
+                          backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                          borderColor: subtleBorder,
+                          color: textTitle,
+                        }}
                       >
                         <option value="">All Priority</option>
                         {lookups.taskPriority.map((p) => (
@@ -997,6 +1176,12 @@ const Tasks = () => {
                         className="form-select form-select-sm rounded-0 fs-12"
                         value={statusFilter}
                         onChange={(e) => { setStatusFilter(e.target.value); setPage(0); }}
+                        style={{
+                          borderRadius: 0,
+                          backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                          borderColor: subtleBorder,
+                          color: textTitle,
+                        }}
                       >
                         <option value="">All Status</option>
                         {lookups.taskStatus.map((s) => (
@@ -1016,8 +1201,14 @@ const Tasks = () => {
                           className="form-control form-control-sm rounded-0 fs-12 pe-4"
                           value={searchInput}
                           onChange={(e) => setSearchInput(e.target.value)}
+                          style={{
+                            borderRadius: 0,
+                            backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                            borderColor: subtleBorder,
+                            color: textTitle,
+                          }}
                         />
-                        <i className="ri-search-line position-absolute top-50 end-0 translate-middle-y me-2 text-muted fs-13"></i>
+                        <i className="ri-search-line position-absolute top-50 end-0 translate-middle-y me-2 fs-13" style={{ color: textSub }}></i>
                       </div>
                     </Col>
 
@@ -1029,7 +1220,12 @@ const Tasks = () => {
                         className="rounded-0 w-100 p-1"
                         title="Reset Filters"
                         onClick={handleResetFilters}
-                        style={{ border: "1px solid #cbd5e1" }}
+                        style={{
+                          borderRadius: 0,
+                          border: `1px solid ${subtleBorder}`,
+                          backgroundColor: subtleBg,
+                          color: textTitle,
+                        }}
                       >
                         <i className="ri-filter-off-line"></i>
                       </Button>
@@ -1040,7 +1236,7 @@ const Tasks = () => {
                 {/* Tasks Table */}
                 <div className="table-responsive" style={{ minHeight: "340px" }}>
                   <table className="table table-hover align-middle mb-0" style={{ fontSize: "13px" }}>
-                    <thead style={{ backgroundColor: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+                    <thead style={{ backgroundColor: subtleBg, borderBottom: `1px solid ${cardBorder}` }}>
                       <tr>
                         <th style={{ width: "35px" }} className="text-center px-2 py-3">
                           <input
@@ -1050,28 +1246,28 @@ const Tasks = () => {
                             onChange={handleSelectAll}
                           />
                         </th>
-                        <th className="fw-semibold text-secondary text-center py-3" style={{ width: "105px" }}>
+                        <th className="fw-semibold text-center py-3" style={{ width: "105px", color: textSub }}>
                           Actions
                         </th>
-                        <th className="fw-semibold text-secondary py-3" style={{ minWidth: "220px" }}>
+                        <th className="fw-semibold py-3" style={{ minWidth: "220px", color: textSub }}>
                           Task
                         </th>
-                        <th className="fw-semibold text-secondary py-3" style={{ minWidth: "150px" }}>
+                        <th className="fw-semibold py-3" style={{ minWidth: "150px", color: textSub }}>
                           Related To
                         </th>
-                        <th className="fw-semibold text-secondary py-3" style={{ minWidth: "100px" }}>
+                        <th className="fw-semibold py-3" style={{ minWidth: "100px", color: textSub }}>
                           Type
                         </th>
-                        <th className="fw-semibold text-secondary py-3" style={{ minWidth: "90px" }}>
+                        <th className="fw-semibold py-3" style={{ minWidth: "90px", color: textSub }}>
                           Priority
                         </th>
-                        <th className="fw-semibold text-secondary py-3" style={{ minWidth: "130px" }}>
+                        <th className="fw-semibold py-3" style={{ minWidth: "130px", color: textSub }}>
                           Owner
                         </th>
-                        <th className="fw-semibold text-secondary py-3" style={{ minWidth: "120px" }}>
+                        <th className="fw-semibold py-3" style={{ minWidth: "120px", color: textSub }}>
                           Due Date
                         </th>
-                        <th className="fw-semibold text-secondary py-3" style={{ minWidth: "100px" }}>
+                        <th className="fw-semibold py-3" style={{ minWidth: "100px", color: textSub }}>
                           Status
                         </th>
                       </tr>
@@ -1079,26 +1275,26 @@ const Tasks = () => {
                     <tbody>
                       {loading ? (
                         <tr>
-                          <td colSpan={9} className="text-center py-5">
-                            <Spinner size="sm" className="me-2" /> Loading tasks from database...
+                          <td colSpan={9} className="text-center py-5" style={{ color: textSub }}>
+                            <Spinner size="sm" className="me-2" style={{ color: primaryColor }} /> Loading tasks from database...
                           </td>
                         </tr>
                       ) : items.length === 0 ? (
                         <tr>
-                          <td colSpan={9} className="text-center py-5 text-muted">
-                            <i className="ri-inbox-line fs-32 d-block mb-2 text-secondary"></i>
+                          <td colSpan={9} className="text-center py-5" style={{ color: textSub }}>
+                            <i className="ri-inbox-line fs-32 d-block mb-2" style={{ color: textSub }}></i>
                             No tasks found matching your filters.
                           </td>
                         </tr>
                       ) : (
                         items.map((t) => {
-                          const typeCfg = getTypeConfig(t.taskType);
+                          const typeCfg = getTypeConfig(t.taskType, isDark);
                           const priDot = getPriorityDot(t.priority);
-                          const stBadge = getStatusBadge(t.taskStatus, t.isOverdue);
+                          const stBadge = getStatusBadge(t.taskStatus, t.isOverdue, isDark);
                           const isComplete = String(t.taskStatus || "").toUpperCase() === "COMPLETED";
 
                           return (
-                            <tr key={t.taskId} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                            <tr key={t.taskId} style={{ borderBottom: `1px solid ${cardBorder}` }}>
                               {/* Checkbox */}
                               <td className="text-center px-2 py-2">
                                 <input
@@ -1118,9 +1314,17 @@ const Tasks = () => {
                                     className="btn-icon p-1 rounded-0"
                                     title="View Task Details"
                                     onClick={() => openDetailModal(t.taskId)}
-                                    style={{ border: "1px solid #e2e8f0", width: "28px", height: "28px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                                    style={{
+                                      border: `1px solid ${subtleBorder}`,
+                                      backgroundColor: subtleBg,
+                                      width: "28px",
+                                      height: "28px",
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                    }}
                                   >
-                                    <i className="ri-eye-line text-muted fs-14"></i>
+                                    <i className="ri-eye-line fs-14" style={{ color: textSub }}></i>
                                   </Button>
                                   <Button
                                     color="light"
@@ -1128,9 +1332,17 @@ const Tasks = () => {
                                     className="btn-icon p-1 rounded-0"
                                     title="Edit Task"
                                     onClick={() => openEditModal(t)}
-                                    style={{ border: "1px solid #e2e8f0", width: "28px", height: "28px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                                    style={{
+                                      border: `1px solid ${subtleBorder}`,
+                                      backgroundColor: subtleBg,
+                                      width: "28px",
+                                      height: "28px",
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                    }}
                                   >
-                                    <i className="ri-pencil-line text-primary fs-14"></i>
+                                    <i className="ri-pencil-line fs-14" style={{ color: primaryColor }}></i>
                                   </Button>
                                   <Button
                                     color="light"
@@ -1138,7 +1350,15 @@ const Tasks = () => {
                                     className="btn-icon p-1 rounded-0 text-danger"
                                     title="Delete Task"
                                     onClick={() => openDeleteModal(t)}
-                                    style={{ border: "1px solid #e2e8f0", width: "28px", height: "28px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                                    style={{
+                                      border: `1px solid ${subtleBorder}`,
+                                      backgroundColor: subtleBg,
+                                      width: "28px",
+                                      height: "28px",
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                    }}
                                   >
                                     <i className="ri-delete-bin-line fs-14"></i>
                                   </Button>
@@ -1149,16 +1369,16 @@ const Tasks = () => {
                               <td className="py-2">
                                 <button
                                   type="button"
-                                  className="btn btn-link p-0 text-start text-dark fw-semibold text-decoration-none d-block fs-13"
-                                  style={{ lineHeight: "1.3" }}
+                                  className="btn btn-link p-0 text-start fw-semibold text-decoration-none d-block fs-13"
+                                  style={{ lineHeight: "1.3", color: textTitle }}
                                   onClick={() => openDetailModal(t.taskId)}
                                 >
                                   {t.title}
                                 </button>
                                 {t.notes ? (
                                   <div
-                                    className="text-muted fs-11 text-truncate mt-1"
-                                    style={{ maxWidth: "240px" }}
+                                    className="fs-11 text-truncate mt-1"
+                                    style={{ maxWidth: "240px", color: textSub }}
                                   >
                                     {t.notes}
                                   </div>
@@ -1167,8 +1387,8 @@ const Tasks = () => {
 
                               {/* Related To (Company & Contact) */}
                               <td className="py-2">
-                                <div className="fw-medium text-dark fs-12">{t.company || "—"}</div>
-                                <div className="text-muted fs-11">{t.contactPerson || "—"}</div>
+                                <div className="fw-medium fs-12" style={{ color: textTitle }}>{t.company || "—"}</div>
+                                <div className="fs-11" style={{ color: textSub }}>{t.contactPerson || "—"}</div>
                               </td>
 
                               {/* Type Badge */}
@@ -1179,25 +1399,25 @@ const Tasks = () => {
                                     backgroundColor: typeCfg.bg,
                                     color: typeCfg.text,
                                     borderRadius: "0px",
-                                    border: `1px solid ${typeCfg.color}22`,
+                                    border: `1px solid ${typeCfg.color}33`,
                                   }}
                                 >
                                   <i className={typeCfg.icon}></i> {typeCfg.label}
                                 </span>
                               </td>
 
-                              {/* Priority Dot */}
+                              {/* Priority Dot (Square geometry) */}
                               <td className="py-2">
                                 <div className="d-flex align-items-center gap-1">
                                   <span
                                     style={{
-                                      width: "7px",
-                                      height: "7px",
-                                      borderRadius: "50%",
+                                      width: "8px",
+                                      height: "8px",
+                                      borderRadius: "0px",
                                       backgroundColor: priDot.color,
                                     }}
                                   ></span>
-                                  <span className="fs-12 text-secondary">{priDot.label}</span>
+                                  <span className="fs-12" style={{ color: textSub }}>{priDot.label}</span>
                                 </div>
                               </td>
 
@@ -1209,13 +1429,13 @@ const Tasks = () => {
                                     style={{
                                       width: "24px",
                                       height: "24px",
-                                      backgroundColor: "#475569",
-                                      borderRadius: "50%",
+                                      backgroundColor: isDark ? "#334155" : "#475569",
+                                      borderRadius: "0px",
                                     }}
                                   >
                                     {getInitials(t.ownerName)}
                                   </div>
-                                  <span className="fs-12 text-dark text-truncate" style={{ maxWidth: "90px" }}>
+                                  <span className="fs-12 text-truncate" style={{ maxWidth: "90px", color: textTitle }}>
                                     {t.ownerName || "Unassigned"}
                                   </span>
                                 </div>
@@ -1226,8 +1446,8 @@ const Tasks = () => {
                                 <div
                                   className={classnames("fs-12 fw-medium", {
                                     "text-danger": t.isOverdue,
-                                    "text-dark": !t.isOverdue,
                                   })}
+                                  style={!t.isOverdue ? { color: textTitle } : {}}
                                 >
                                   {t.dueLabel || t.dueDate || "—"}
                                 </div>
@@ -1259,19 +1479,25 @@ const Tasks = () => {
                 {/* Table Footer with Pagination */}
                 <div
                   className="d-flex flex-wrap align-items-center justify-content-between p-3 border-top"
-                  style={{ borderColor: "#e2e8f0" }}
+                  style={{ borderColor: cardBorder }}
                 >
-                  <div className="text-muted fs-12 mb-2 mb-sm-0">
-                    Showing <span className="fw-semibold text-dark">{startItem}</span> to{" "}
-                    <span className="fw-semibold text-dark">{endItem}</span> of{" "}
-                    <span className="fw-semibold text-dark">{totalCount}</span> entries
+                  <div className="fs-12 mb-2 mb-sm-0" style={{ color: textSub }}>
+                    Showing <span className="fw-semibold" style={{ color: textTitle }}>{startItem}</span> to{" "}
+                    <span className="fw-semibold" style={{ color: textTitle }}>{endItem}</span> of{" "}
+                    <span className="fw-semibold" style={{ color: textTitle }}>{totalCount}</span> entries
                   </div>
 
                   <div className="d-flex align-items-center gap-2">
                     <Input
                       type="select"
                       className="form-select form-select-sm rounded-0 fs-12"
-                      style={{ width: "95px" }}
+                      style={{
+                        width: "95px",
+                        borderRadius: 0,
+                        backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                        borderColor: subtleBorder,
+                        color: textTitle,
+                      }}
                       value={pageSize}
                       onChange={(e) => {
                         setPageSize(Number(e.target.value));
@@ -1290,7 +1516,12 @@ const Tasks = () => {
                         className="rounded-0"
                         disabled={page === 0}
                         onClick={() => setPage((p) => Math.max(0, p - 1))}
-                        style={{ border: "1px solid #cbd5e1" }}
+                        style={{
+                          borderRadius: 0,
+                          border: `1px solid ${subtleBorder}`,
+                          backgroundColor: subtleBg,
+                          color: textTitle,
+                        }}
                       >
                         <i className="ri-arrow-left-s-line"></i>
                       </Button>
@@ -1301,9 +1532,10 @@ const Tasks = () => {
                             key={i}
                             className="rounded-0 fs-12 px-2"
                             style={{
-                              backgroundColor: page === i ? "#7f1d1d" : "#ffffff",
-                              borderColor: page === i ? "#7f1d1d" : "#cbd5e1",
-                              color: page === i ? "#ffffff" : "#334155",
+                              borderRadius: 0,
+                              backgroundColor: page === i ? primaryColor : subtleBg,
+                              borderColor: page === i ? primaryColor : subtleBorder,
+                              color: page === i ? "#ffffff" : textTitle,
                             }}
                             onClick={() => setPage(i)}
                           >
@@ -1316,7 +1548,12 @@ const Tasks = () => {
                         className="rounded-0"
                         disabled={page >= totalPages - 1}
                         onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                        style={{ border: "1px solid #cbd5e1" }}
+                        style={{
+                          borderRadius: 0,
+                          border: `1px solid ${subtleBorder}`,
+                          backgroundColor: subtleBg,
+                          color: textTitle,
+                        }}
                       >
                         <i className="ri-arrow-right-s-line"></i>
                       </Button>
@@ -1330,11 +1567,14 @@ const Tasks = () => {
           {/* RIGHT SIDEBAR COLUMN: Compact Task Summary, Pending Tasks, Quick Actions */}
           <Col lg={4} xl={3}>
             {/* 1. Task Summary Donut Card */}
-            <Card className="rounded-0 shadow-sm border-0 mb-3" style={{ backgroundColor: "#ffffff" }}>
+            <Card
+              className="rounded-0 shadow-sm border-0 mb-3"
+              style={{ borderRadius: 0, backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}
+            >
               <CardBody className="p-3">
                 <div className="d-flex align-items-center justify-content-between mb-2">
-                  <h6 className="fw-semibold text-dark mb-0 fs-13">Task Summary</h6>
-                  <span className="text-muted fs-11 d-flex align-items-center gap-1">
+                  <h6 className="fw-semibold mb-0 fs-13" style={{ color: textTitle }}>Task Summary</h6>
+                  <span className="fs-11 d-flex align-items-center gap-1" style={{ color: textSub }}>
                     This Month <i className="ri-arrow-down-s-line fs-12"></i>
                   </span>
                 </div>
@@ -1351,7 +1591,7 @@ const Tasks = () => {
                         height: "100%",
                         borderRadius: "50%",
                         background: (() => {
-                          if (!stats.distribution || stats.totalTasks === 0) return "#e2e8f0";
+                          if (!stats.distribution || stats.totalTasks === 0) return isDark ? "#262626" : "#e2e8f0";
                           let cumulative = 0;
                           const stops = [];
                           stats.distribution.forEach((d) => {
@@ -1362,24 +1602,29 @@ const Tasks = () => {
                               cumulative = end;
                             }
                           });
-                          return stops.length > 0 ? `conic-gradient(${stops.join(", ")})` : "#e2e8f0";
+                          return stops.length > 0 ? `conic-gradient(${stops.join(", ")})` : (isDark ? "#262626" : "#e2e8f0");
                         })(),
                       }}
                     ></div>
                     <div
-                      className="position-absolute bg-white d-flex flex-column align-items-center justify-content-center"
-                      style={{ width: "74px", height: "74px", borderRadius: "50%" }}
+                      className="position-absolute d-flex flex-column align-items-center justify-content-center"
+                      style={{
+                        width: "74px",
+                        height: "74px",
+                        borderRadius: "50%",
+                        backgroundColor: cardBg,
+                      }}
                     >
-                      <span className="fw-bold fs-18 lh-1" style={{ color: "#7f1d1d" }}>
+                      <span className="fw-bold fs-18 lh-1" style={{ color: primaryColor }}>
                         {stats.totalTasks}
                       </span>
-                      <span className="text-muted fs-10 mt-1">Total</span>
+                      <span className="fs-10 mt-1" style={{ color: textSub }}>Total</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Legend list (Square geometry per Rule 4) */}
-                <div className="mt-2 pt-2 border-top" style={{ borderColor: "#f1f5f9" }}>
+                <div className="mt-2 pt-2 border-top" style={{ borderColor: cardBorder }}>
                   {stats.distribution.map((d) => (
                     <div
                       key={d.code}
@@ -1396,11 +1641,11 @@ const Tasks = () => {
                             backgroundColor: d.color,
                           }}
                         ></span>
-                        <span className="text-secondary">{d.label}</span>
+                        <span style={{ color: textSub }}>{d.label}</span>
                       </div>
-                      <div className="fw-medium text-dark">
+                      <div className="fw-medium" style={{ color: textTitle }}>
                         {d.count}{" "}
-                        <span className="text-muted fs-10">({d.percentage}%)</span>
+                        <span className="fs-10" style={{ color: textSub }}>({d.percentage}%)</span>
                       </div>
                     </div>
                   ))}
@@ -1409,15 +1654,18 @@ const Tasks = () => {
             </Card>
 
             {/* 2. My Pending Tasks Card (Sleek List & Perfect Visibility) */}
-            <Card className="rounded-0 shadow-sm border-0 mb-3" style={{ backgroundColor: "#ffffff" }}>
+            <Card
+              className="rounded-0 shadow-sm border-0 mb-3"
+              style={{ borderRadius: 0, backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}
+            >
               <CardBody className="p-3">
                 <div className="d-flex align-items-center justify-content-between mb-2">
                   <div className="d-flex align-items-center gap-1">
-                    <h6 className="fw-semibold text-dark mb-0 fs-13">My Pending Tasks</h6>
+                    <h6 className="fw-semibold mb-0 fs-13" style={{ color: textTitle }}>My Pending Tasks</h6>
                     {stats.pendingTasks.length > 0 && (
                       <span
                         className="badge rounded-0 fs-10 px-1 py-0 ms-1 fw-semibold"
-                        style={{ backgroundColor: "#f1f5f9", color: "#475569" }}
+                        style={{ backgroundColor: subtleBg, color: textSub }}
                       >
                         {stats.pendingTasks.length}
                       </span>
@@ -1426,7 +1674,7 @@ const Tasks = () => {
                   <button
                     type="button"
                     className="btn btn-link p-0 text-decoration-none fs-11 fw-medium"
-                    style={{ color: "#7f1d1d" }}
+                    style={{ color: primaryColor }}
                     onClick={() => handleKpiClick("TO_DO")}
                   >
                     View All
@@ -1434,7 +1682,7 @@ const Tasks = () => {
                 </div>
 
                 {stats.pendingTasks.length === 0 ? (
-                  <div className="text-center py-3 text-muted fs-11">No pending tasks.</div>
+                  <div className="text-center py-3 fs-11" style={{ color: textSub }}>No pending tasks.</div>
                 ) : (
                   <div
                     className="d-flex flex-column crm-custom-scroll"
@@ -1442,11 +1690,11 @@ const Tasks = () => {
                       maxHeight: "380px",
                       overflowY: "auto",
                       scrollbarWidth: "thin",
-                      scrollbarColor: "#cbd5e1 transparent",
+                      scrollbarColor: `${subtleBorder} transparent`,
                     }}
                   >
                     {stats.pendingTasks.slice(0, 5).map((pt, idx) => {
-                      const typeCfg = getTypeConfig(pt.task_type || pt.taskType);
+                      const typeCfg = getTypeConfig(pt.task_type || pt.taskType, isDark);
                       const isHigh = String(pt.priority).toUpperCase() === "HIGH";
                       const isLow = String(pt.priority).toUpperCase() === "LOW";
                       const isOver = pt.is_overdue || pt.isOverdue;
@@ -1472,17 +1720,17 @@ const Tasks = () => {
                               <i className={`${typeCfg.icon} fs-15`}></i>
                             </div>
                             <div className="overflow-hidden flex-grow-1">
-                              <div className="fw-semibold text-dark fs-12 text-truncate" title={pt.title}>
+                              <div className="fw-semibold fs-12 text-truncate" style={{ color: textTitle }} title={pt.title}>
                                 {pt.title}
                               </div>
-                              <div className="d-flex align-items-center gap-1 text-muted fs-11 mt-1 text-truncate">
+                              <div className="d-flex align-items-center gap-1 fs-11 mt-1 text-truncate" style={{ color: textSub }}>
                                 <span className="text-truncate">{pt.company || "—"}</span>
                                 <span>•</span>
                                 <span
                                   className={classnames("fw-medium flex-shrink-0", {
                                     "text-danger": isOver,
-                                    "text-secondary": !isOver,
                                   })}
+                                  style={!isOver ? { color: textSub } : {}}
                                 >
                                   {pt.due_label || pt.dueLabel || pt.due_date || pt.dueDate}
                                 </span>
@@ -1497,9 +1745,23 @@ const Tasks = () => {
                                 fontSize: "10px",
                                 letterSpacing: "0.5px",
                                 borderRadius: "0px",
-                                backgroundColor: isHigh ? "#fef2f2" : isLow ? "#ecfdf5" : "#fffbeb",
-                                color: isHigh ? "#dc2626" : isLow ? "#16a34a" : "#d97706",
-                                border: `1px solid ${isHigh ? "#fecaca" : isLow ? "#a7f3d0" : "#fde68a"}`,
+                                backgroundColor: isHigh
+                                  ? (isDark ? "rgba(239, 68, 68, 0.25)" : "#fef2f2")
+                                  : isLow
+                                  ? (isDark ? "rgba(16, 185, 129, 0.2)" : "#ecfdf5")
+                                  : (isDark ? "rgba(245, 158, 11, 0.2)" : "#fffbeb"),
+                                color: isHigh
+                                  ? (isDark ? "#f87171" : "#dc2626")
+                                  : isLow
+                                  ? (isDark ? "#34d399" : "#16a34a")
+                                  : (isDark ? "#fbbf24" : "#d97706"),
+                                border: `1px solid ${
+                                  isHigh
+                                    ? (isDark ? "rgba(239, 68, 68, 0.4)" : "#fecaca")
+                                    : isLow
+                                    ? (isDark ? "rgba(16, 185, 129, 0.35)" : "#a7f3d0")
+                                    : (isDark ? "rgba(245, 158, 11, 0.35)" : "#fde68a")
+                                }`,
                               }}
                             >
                               {pt.priority}
@@ -1514,15 +1776,23 @@ const Tasks = () => {
             </Card>
 
             {/* 3. Quick Actions 6-Button Grid Card */}
-            <Card className="rounded-0 shadow-sm border-0 mb-3" style={{ backgroundColor: "#ffffff" }}>
+            <Card
+              className="rounded-0 shadow-sm border-0 mb-3"
+              style={{ borderRadius: 0, backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}
+            >
               <CardBody className="p-3">
-                <h6 className="fw-semibold text-dark mb-2 fs-13">Quick Actions</h6>
+                <h6 className="fw-semibold mb-2 fs-13" style={{ color: textTitle }}>Quick Actions</h6>
                 <Row className="g-2">
                   <Col xs={6}>
                     <Button
                       color="light"
-                      className="w-100 rounded-0 p-2 text-center d-flex flex-column align-items-center gap-1 fs-11 text-secondary"
-                      style={{ border: "1px solid #e2e8f0" }}
+                      className="w-100 rounded-0 p-2 text-center d-flex flex-column align-items-center gap-1 fs-11"
+                      style={{
+                        borderRadius: 0,
+                        border: `1px solid ${subtleBorder}`,
+                        backgroundColor: subtleBg,
+                        color: textTitle,
+                      }}
                       onClick={() => openCreateModal("TASK")}
                     >
                       <i className="ri-add-circle-line fs-16 text-primary"></i>
@@ -1532,8 +1802,13 @@ const Tasks = () => {
                   <Col xs={6}>
                     <Button
                       color="light"
-                      className="w-100 rounded-0 p-2 text-center d-flex flex-column align-items-center gap-1 fs-11 text-secondary"
-                      style={{ border: "1px solid #e2e8f0" }}
+                      className="w-100 rounded-0 p-2 text-center d-flex flex-column align-items-center gap-1 fs-11"
+                      style={{
+                        borderRadius: 0,
+                        border: `1px solid ${subtleBorder}`,
+                        backgroundColor: subtleBg,
+                        color: textTitle,
+                      }}
                       onClick={() => openCreateModal("CALL")}
                     >
                       <i className="ri-phone-line fs-16 text-success"></i>
@@ -1543,8 +1818,13 @@ const Tasks = () => {
                   <Col xs={6}>
                     <Button
                       color="light"
-                      className="w-100 rounded-0 p-2 text-center d-flex flex-column align-items-center gap-1 fs-11 text-secondary"
-                      style={{ border: "1px solid #e2e8f0" }}
+                      className="w-100 rounded-0 p-2 text-center d-flex flex-column align-items-center gap-1 fs-11"
+                      style={{
+                        borderRadius: 0,
+                        border: `1px solid ${subtleBorder}`,
+                        backgroundColor: subtleBg,
+                        color: textTitle,
+                      }}
                       onClick={() => openCreateModal("MEETING")}
                     >
                       <i className="ri-calendar-event-line fs-16" style={{ color: "#8b5cf6" }}></i>
@@ -1554,8 +1834,13 @@ const Tasks = () => {
                   <Col xs={6}>
                     <Button
                       color="light"
-                      className="w-100 rounded-0 p-2 text-center d-flex flex-column align-items-center gap-1 fs-11 text-secondary"
-                      style={{ border: "1px solid #e2e8f0" }}
+                      className="w-100 rounded-0 p-2 text-center d-flex flex-column align-items-center gap-1 fs-11"
+                      style={{
+                        borderRadius: 0,
+                        border: `1px solid ${subtleBorder}`,
+                        backgroundColor: subtleBg,
+                        color: textTitle,
+                      }}
                       onClick={() => openCreateModal("EMAIL")}
                     >
                       <i className="ri-mail-line fs-16 text-info"></i>
@@ -1565,8 +1850,13 @@ const Tasks = () => {
                   <Col xs={6}>
                     <Button
                       color="light"
-                      className="w-100 rounded-0 p-2 text-center d-flex flex-column align-items-center gap-1 fs-11 text-secondary"
-                      style={{ border: "1px solid #e2e8f0" }}
+                      className="w-100 rounded-0 p-2 text-center d-flex flex-column align-items-center gap-1 fs-11"
+                      style={{
+                        borderRadius: 0,
+                        border: `1px solid ${subtleBorder}`,
+                        backgroundColor: subtleBg,
+                        color: textTitle,
+                      }}
                       onClick={() => setUploadDocModal(true)}
                     >
                       <i className="ri-file-upload-line fs-16 text-warning"></i>
@@ -1576,8 +1866,13 @@ const Tasks = () => {
                   <Col xs={6}>
                     <Button
                       color="light"
-                      className="w-100 rounded-0 p-2 text-center d-flex flex-column align-items-center gap-1 fs-11 text-secondary"
-                      style={{ border: "1px solid #e2e8f0" }}
+                      className="w-100 rounded-0 p-2 text-center d-flex flex-column align-items-center gap-1 fs-11"
+                      style={{
+                        borderRadius: 0,
+                        border: `1px solid ${subtleBorder}`,
+                        backgroundColor: subtleBg,
+                        color: textTitle,
+                      }}
                       onClick={() => setCreateQuoteModal(true)}
                     >
                       <i className="ri-file-text-line fs-16 text-danger"></i>
@@ -1603,22 +1898,25 @@ const Tasks = () => {
         >
           <ModalHeader
             toggle={() => setModal(!modal)}
-            className="rounded-0 bg-light"
-            style={{ borderBottom: "1px solid #e2e8f0" }}
+            className="rounded-0"
+            style={{
+              backgroundColor: subtleBg,
+              borderBottom: `1px solid ${cardBorder}`,
+            }}
           >
-            <span className="fw-semibold text-dark fs-15">
+            <span className="fw-semibold fs-15" style={{ color: textTitle }}>
               {editMode ? `Edit Task — ${form.title}` : "New Task"}
             </span>
           </ModalHeader>
           <Form onSubmit={handleSave}>
-            <ModalBody className="p-4">
+            <ModalBody className="p-4" style={{ backgroundColor: cardBg, color: textTitle }}>
               {formError ? <Alert color="danger" className="rounded-0 py-2 fs-12">{formError}</Alert> : null}
 
               <Row className="g-3">
                 {/* Title */}
                 <Col md={12}>
                   <FormGroup className="mb-0">
-                    <Label className="fw-medium fs-12 text-dark">
+                    <Label className="fw-medium fs-12" style={{ color: textTitle }}>
                       Task Title <span className="text-danger">*</span>
                     </Label>
                     <Input
@@ -1628,6 +1926,12 @@ const Tasks = () => {
                       value={form.title}
                       onChange={(e) => setForm({ ...form, title: e.target.value })}
                       required
+                      style={{
+                        borderRadius: 0,
+                        backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                        borderColor: subtleBorder,
+                        color: textTitle,
+                      }}
                     />
                   </FormGroup>
                 </Col>
@@ -1635,12 +1939,18 @@ const Tasks = () => {
                 {/* Type & Priority & Status (Dynamic from DB lookups) */}
                 <Col md={4}>
                   <FormGroup className="mb-0">
-                    <Label className="fw-medium fs-12 text-dark">Type</Label>
+                    <Label className="fw-medium fs-12" style={{ color: textTitle }}>Type</Label>
                     <Input
                       type="select"
                       className="form-select rounded-0 fs-13"
                       value={form.taskType}
                       onChange={(e) => setForm({ ...form, taskType: e.target.value })}
+                      style={{
+                        borderRadius: 0,
+                        backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                        borderColor: subtleBorder,
+                        color: textTitle,
+                      }}
                     >
                       {lookups.taskType.map((t) => (
                         <option key={t.masterCode || t.master_code} value={t.masterCode || t.master_code}>
@@ -1652,12 +1962,18 @@ const Tasks = () => {
                 </Col>
                 <Col md={4}>
                   <FormGroup className="mb-0">
-                    <Label className="fw-medium fs-12 text-dark">Priority</Label>
+                    <Label className="fw-medium fs-12" style={{ color: textTitle }}>Priority</Label>
                     <Input
                       type="select"
                       className="form-select rounded-0 fs-13"
                       value={form.priority}
                       onChange={(e) => setForm({ ...form, priority: e.target.value })}
+                      style={{
+                        borderRadius: 0,
+                        backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                        borderColor: subtleBorder,
+                        color: textTitle,
+                      }}
                     >
                       {lookups.taskPriority.map((p) => (
                         <option key={p.masterCode || p.master_code} value={p.masterCode || p.master_code}>
@@ -1669,12 +1985,18 @@ const Tasks = () => {
                 </Col>
                 <Col md={4}>
                   <FormGroup className="mb-0">
-                    <Label className="fw-medium fs-12 text-dark">Status</Label>
+                    <Label className="fw-medium fs-12" style={{ color: textTitle }}>Status</Label>
                     <Input
                       type="select"
                       className="form-select rounded-0 fs-13"
                       value={form.status}
                       onChange={(e) => setForm({ ...form, status: e.target.value })}
+                      style={{
+                        borderRadius: 0,
+                        backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                        borderColor: subtleBorder,
+                        color: textTitle,
+                      }}
                     >
                       {lookups.taskStatus.map((s) => (
                         <option key={s.masterCode || s.master_code} value={s.masterCode || s.master_code}>
@@ -1688,7 +2010,7 @@ const Tasks = () => {
                 {/* Related Company & Contact Person with Accounts Datalist */}
                 <Col md={6}>
                   <FormGroup className="mb-0">
-                    <Label className="fw-medium fs-12 text-dark">Related Company / Account</Label>
+                    <Label className="fw-medium fs-12" style={{ color: textTitle }}>Related Company / Account</Label>
                     <Input
                       type="text"
                       list="accounts-list"
@@ -1696,6 +2018,12 @@ const Tasks = () => {
                       placeholder="e.g. ABC Ltd."
                       value={form.company}
                       onChange={(e) => setForm({ ...form, company: e.target.value })}
+                      style={{
+                        borderRadius: 0,
+                        backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                        borderColor: subtleBorder,
+                        color: textTitle,
+                      }}
                     />
                     <datalist id="accounts-list">
                       {lookups.accounts.map((a) => (
@@ -1706,13 +2034,19 @@ const Tasks = () => {
                 </Col>
                 <Col md={6}>
                   <FormGroup className="mb-0">
-                    <Label className="fw-medium fs-12 text-dark">Contact Person</Label>
+                    <Label className="fw-medium fs-12" style={{ color: textTitle }}>Contact Person</Label>
                     <Input
                       type="text"
                       className="form-control rounded-0 fs-13"
                       placeholder="e.g. Neha Shah"
                       value={form.contactPerson}
                       onChange={(e) => setForm({ ...form, contactPerson: e.target.value })}
+                      style={{
+                        borderRadius: 0,
+                        backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                        borderColor: subtleBorder,
+                        color: textTitle,
+                      }}
                     />
                   </FormGroup>
                 </Col>
@@ -1720,12 +2054,18 @@ const Tasks = () => {
                 {/* Owner & Dates */}
                 <Col md={4}>
                   <FormGroup className="mb-0">
-                    <Label className="fw-medium fs-12 text-dark">Assigned Owner</Label>
+                    <Label className="fw-medium fs-12" style={{ color: textTitle }}>Assigned Owner</Label>
                     <Input
                       type="select"
                       className="form-select rounded-0 fs-13"
                       value={form.employeeId}
                       onChange={(e) => setForm({ ...form, employeeId: e.target.value })}
+                      style={{
+                        borderRadius: 0,
+                        backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                        borderColor: subtleBorder,
+                        color: textTitle,
+                      }}
                     >
                       {owners.map((o) => (
                         <option key={o.ownerId || o.employee_id} value={o.ownerId || o.employee_id}>
@@ -1737,31 +2077,39 @@ const Tasks = () => {
                 </Col>
                 <Col md={4}>
                   <FormGroup className="mb-0">
-                    <Label className="fw-medium fs-12 text-dark">Start Date</Label>
+                    <Label className="fw-medium fs-12" style={{ color: textTitle }}>Start Date</Label>
                     <Input
                       type="date"
                       className="form-control rounded-0 fs-13"
                       value={form.startDate}
                       onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                      style={{
+                        borderRadius: 0,
+                        backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                        borderColor: subtleBorder,
+                        color: textTitle,
+                      }}
                     />
                   </FormGroup>
                 </Col>
                 <Col md={4}>
                   <FormGroup className="mb-0">
                     <div className="d-flex align-items-center justify-content-between mb-1">
-                      <Label className="fw-medium fs-12 text-dark mb-0">Due Date</Label>
+                      <Label className="fw-medium fs-12 mb-0" style={{ color: textTitle }}>Due Date</Label>
                       <div className="d-flex gap-1">
                         <button
                           type="button"
-                          className="btn btn-link p-0 text-muted fs-10 text-decoration-none"
+                          className="btn btn-link p-0 fs-10 text-decoration-none"
+                          style={{ color: primaryColor }}
                           onClick={() => setForm({ ...form, dueDate: todayIso() })}
                         >
                           Today
                         </button>
-                        <span className="text-muted fs-10">|</span>
+                        <span className="fs-10" style={{ color: textSub }}>|</span>
                         <button
                           type="button"
-                          className="btn btn-link p-0 text-muted fs-10 text-decoration-none"
+                          className="btn btn-link p-0 fs-10 text-decoration-none"
+                          style={{ color: primaryColor }}
                           onClick={() => setForm({ ...form, dueDate: tomorrowIso() })}
                         >
                           Tmrw
@@ -1773,6 +2121,12 @@ const Tasks = () => {
                       className="form-control rounded-0 fs-13"
                       value={form.dueDate}
                       onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+                      style={{
+                        borderRadius: 0,
+                        backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                        borderColor: subtleBorder,
+                        color: textTitle,
+                      }}
                     />
                   </FormGroup>
                 </Col>
@@ -1780,7 +2134,7 @@ const Tasks = () => {
                 {/* Notes */}
                 <Col md={12}>
                   <FormGroup className="mb-0">
-                    <Label className="fw-medium fs-12 text-dark">Notes / Description</Label>
+                    <Label className="fw-medium fs-12" style={{ color: textTitle }}>Notes / Description</Label>
                     <Input
                       type="textarea"
                       rows={3}
@@ -1788,25 +2142,47 @@ const Tasks = () => {
                       placeholder="Add details, next steps or action items..."
                       value={form.notes}
                       onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                      style={{
+                        borderRadius: 0,
+                        backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                        borderColor: subtleBorder,
+                        color: textTitle,
+                      }}
                     />
                   </FormGroup>
                 </Col>
               </Row>
             </ModalBody>
-            <ModalFooter className="rounded-0 bg-light py-2" style={{ borderTop: "1px solid #e2e8f0" }}>
+            <ModalFooter
+              className="rounded-0 py-2"
+              style={{
+                backgroundColor: subtleBg,
+                borderTop: `1px solid ${cardBorder}`,
+              }}
+            >
               <Button
                 color="light"
                 type="button"
                 className="rounded-0 fs-13"
                 onClick={() => setModal(false)}
                 disabled={saving}
+                style={{
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "#212529" : "#ffffff",
+                  borderColor: subtleBorder,
+                  color: textTitle,
+                }}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 className="rounded-0 fs-13 text-white"
-                style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d" }}
+                style={{
+                  borderRadius: 0,
+                  backgroundColor: primaryColor,
+                  borderColor: primaryColor,
+                }}
                 disabled={saving}
               >
                 {saving ? <Spinner size="sm" className="me-1" /> : null}
@@ -1828,31 +2204,41 @@ const Tasks = () => {
         >
           <ModalHeader
             toggle={() => setDetailModal(!detailModal)}
-            className="rounded-0 bg-light"
-            style={{ borderBottom: "1px solid #e2e8f0" }}
+            className="rounded-0"
+            style={{
+              backgroundColor: subtleBg,
+              borderBottom: `1px solid ${cardBorder}`,
+            }}
           >
             <div className="d-flex align-items-center gap-2">
-              <span className="badge bg-secondary-subtle text-secondary rounded-0 fs-12">
+              <span
+                className="badge rounded-0 fs-12"
+                style={{
+                  backgroundColor: subtleBg,
+                  color: primaryColor,
+                  border: `1px solid ${subtleBorder}`,
+                }}
+              >
                 {detailTask?.taskCode || "TSK"}
               </span>
-              <span className="fw-semibold text-dark fs-15">Task Details</span>
+              <span className="fw-semibold fs-15" style={{ color: textTitle }}>Task Details</span>
             </div>
           </ModalHeader>
-          <ModalBody className="p-4">
+          <ModalBody className="p-4" style={{ backgroundColor: cardBg, color: textTitle }}>
             {detailLoading ? (
-              <div className="text-center py-5">
-                <Spinner size="sm" className="me-2" /> Loading task details from database...
+              <div className="text-center py-5" style={{ color: textSub }}>
+                <Spinner size="sm" className="me-2" style={{ color: primaryColor }} /> Loading task details from database...
               </div>
             ) : detailTask ? (
               <div>
                 {/* Title & Badges Header */}
                 <div className="d-flex align-items-start justify-content-between mb-3">
                   <div>
-                    <h5 className="fw-bold text-dark mb-1">{detailTask.title}</h5>
+                    <h5 className="fw-bold mb-1" style={{ color: textTitle }}>{detailTask.title}</h5>
                     <div className="d-flex align-items-center gap-2">
                       {/* Type Badge */}
                       {(() => {
-                        const typeCfg = getTypeConfig(detailTask.taskType);
+                        const typeCfg = getTypeConfig(detailTask.taskType, isDark);
                         return (
                           <span
                             className="px-2 py-0 fs-11 fw-medium"
@@ -1860,7 +2246,7 @@ const Tasks = () => {
                               backgroundColor: typeCfg.bg,
                               color: typeCfg.text,
                               borderRadius: "0px",
-                              border: `1px solid ${typeCfg.color}22`,
+                              border: `1px solid ${typeCfg.color}33`,
                             }}
                           >
                             <i className={typeCfg.icon}></i> {typeCfg.label}
@@ -1869,7 +2255,7 @@ const Tasks = () => {
                       })()}
                       {/* Status Badge */}
                       {(() => {
-                        const stBadge = getStatusBadge(detailTask.taskStatus, detailTask.isOverdue);
+                        const stBadge = getStatusBadge(detailTask.taskStatus, detailTask.isOverdue, isDark);
                         return (
                           <span
                             className="px-2 py-0 fs-11 fw-medium"
@@ -1904,42 +2290,56 @@ const Tasks = () => {
                       className="rounded-0 fs-12 d-flex align-items-center gap-1"
                       onClick={() => handleCompleteTask(detailTask.taskId)}
                       disabled={completingDetail}
+                      style={{ borderRadius: 0 }}
                     >
                       {completingDetail ? <Spinner size="sm" className="me-1" /> : <i className="ri-check-line"></i>}
                       Mark Completed
                     </Button>
                   ) : (
-                    <span className="badge bg-success-subtle text-success rounded-0 fs-12 p-2">
+                    <span
+                      className="badge rounded-0 fs-12 p-2"
+                      style={{
+                        backgroundColor: isDark ? "rgba(16, 185, 129, 0.2)" : "#ecfdf5",
+                        color: isDark ? "#34d399" : "#047857",
+                        border: `1px solid ${isDark ? "rgba(16, 185, 129, 0.35)" : "#a7f3d0"}`,
+                      }}
+                    >
                       <i className="ri-checkbox-circle-line me-1"></i> Completed
                     </span>
                   )}
                 </div>
 
                 {/* Metadata Grid */}
-                <Row className="g-3 p-3 bg-light bg-opacity-50 border rounded-0 mb-3" style={{ borderColor: "#e2e8f0" }}>
+                <Row
+                  className="g-3 p-3 border rounded-0 mb-3"
+                  style={{
+                    backgroundColor: subtleBg,
+                    borderColor: cardBorder,
+                  }}
+                >
                   <Col md={6}>
-                    <div className="text-muted fs-11">Related Company</div>
-                    <div className="fw-semibold text-dark fs-13">{detailTask.company || "—"}</div>
+                    <div className="fs-11" style={{ color: textSub }}>Related Company</div>
+                    <div className="fw-semibold fs-13" style={{ color: textTitle }}>{detailTask.company || "—"}</div>
                   </Col>
                   <Col md={6}>
-                    <div className="text-muted fs-11">Contact Person</div>
-                    <div className="fw-semibold text-dark fs-13">{detailTask.contactPerson || "—"}</div>
+                    <div className="fs-11" style={{ color: textSub }}>Contact Person</div>
+                    <div className="fw-semibold fs-13" style={{ color: textTitle }}>{detailTask.contactPerson || "—"}</div>
                   </Col>
                   <Col md={4}>
-                    <div className="text-muted fs-11">Assigned Owner</div>
-                    <div className="fw-semibold text-dark fs-13">{detailTask.ownerName || "—"}</div>
+                    <div className="fs-11" style={{ color: textSub }}>Assigned Owner</div>
+                    <div className="fw-semibold fs-13" style={{ color: textTitle }}>{detailTask.ownerName || "—"}</div>
                   </Col>
                   <Col md={4}>
-                    <div className="text-muted fs-11">Start Date</div>
-                    <div className="fw-semibold text-dark fs-13">{detailTask.startDate || "—"}</div>
+                    <div className="fs-11" style={{ color: textSub }}>Start Date</div>
+                    <div className="fw-semibold fs-13" style={{ color: textTitle }}>{detailTask.startDate || "—"}</div>
                   </Col>
                   <Col md={4}>
-                    <div className="text-muted fs-11">Due Date</div>
+                    <div className="fs-11" style={{ color: textSub }}>Due Date</div>
                     <div
                       className={classnames("fw-semibold fs-13", {
                         "text-danger": detailTask.isOverdue,
-                        "text-dark": !detailTask.isOverdue,
                       })}
+                      style={!detailTask.isOverdue ? { color: textTitle } : {}}
                     >
                       {detailTask.dueLabel || detailTask.dueDate || "—"}
                     </div>
@@ -1948,10 +2348,16 @@ const Tasks = () => {
 
                 {/* Notes Section */}
                 <div className="mb-3">
-                  <div className="fw-semibold text-dark fs-13 mb-1">Notes / Description</div>
+                  <div className="fw-semibold fs-13 mb-1" style={{ color: textTitle }}>Notes / Description</div>
                   <div
-                    className="p-3 bg-white border rounded-0 fs-13 text-secondary"
-                    style={{ borderColor: "#e2e8f0", minHeight: "60px", whiteSpace: "pre-wrap" }}
+                    className="p-3 border rounded-0 fs-13"
+                    style={{
+                      backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                      borderColor: subtleBorder,
+                      color: textTitle,
+                      minHeight: "60px",
+                      whiteSpace: "pre-wrap",
+                    }}
                   >
                     {detailTask.notes || "No notes provided for this task."}
                   </div>
@@ -1960,12 +2366,24 @@ const Tasks = () => {
                 {/* Activity History Log from tab_task_detail_tran */}
                 {detailTask.history && detailTask.history.length > 0 ? (
                   <div>
-                    <div className="fw-semibold text-dark fs-13 mb-2">Activity History Log</div>
-                    <div className="border rounded-0 p-2" style={{ borderColor: "#f1f5f9", maxHeight: "150px", overflowY: "auto" }}>
+                    <div className="fw-semibold fs-13 mb-2" style={{ color: textTitle }}>Activity History Log</div>
+                    <div
+                      className="border rounded-0 p-2"
+                      style={{
+                        borderColor: cardBorder,
+                        backgroundColor: subtleBg,
+                        maxHeight: "150px",
+                        overflowY: "auto",
+                      }}
+                    >
                       {detailTask.history.map((h, idx) => (
-                        <div key={idx} className="d-flex align-items-center justify-content-between py-1 border-bottom fs-12">
-                          <span className="text-dark">{h.remarks || h.status}</span>
-                          <span className="text-muted fs-11">
+                        <div
+                          key={idx}
+                          className="d-flex align-items-center justify-content-between py-1 border-bottom fs-12"
+                          style={{ borderColor: cardBorder }}
+                        >
+                          <span style={{ color: textTitle }}>{h.remarks || h.status}</span>
+                          <span className="fs-11" style={{ color: textSub }}>
                             {h.dateTime ? new Date(h.dateTime).toLocaleString() : ""}
                           </span>
                         </div>
@@ -1976,7 +2394,13 @@ const Tasks = () => {
               </div>
             ) : null}
           </ModalBody>
-          <ModalFooter className="rounded-0 bg-light py-2" style={{ borderTop: "1px solid #e2e8f0" }}>
+          <ModalFooter
+            className="rounded-0 py-2"
+            style={{
+              backgroundColor: subtleBg,
+              borderTop: `1px solid ${cardBorder}`,
+            }}
+          >
             {detailTask ? (
               <>
                 <Button
@@ -1985,6 +2409,7 @@ const Tasks = () => {
                   size="sm"
                   className="rounded-0 fs-12 me-auto"
                   onClick={() => openDeleteModal(detailTask)}
+                  style={{ borderRadius: 0 }}
                 >
                   <i className="ri-delete-bin-line me-1"></i> Delete
                 </Button>
@@ -1997,6 +2422,7 @@ const Tasks = () => {
                     setDetailModal(false);
                     openEditModal(detailTask);
                   }}
+                  style={{ borderRadius: 0 }}
                 >
                   <i className="ri-edit-line me-1"></i> Edit
                 </Button>
@@ -2007,6 +2433,12 @@ const Tasks = () => {
               size="sm"
               className="rounded-0 fs-12"
               onClick={() => setDetailModal(false)}
+              style={{
+                borderRadius: 0,
+                backgroundColor: isDark ? "#212529" : "#ffffff",
+                borderColor: subtleBorder,
+                color: textTitle,
+              }}
             >
               Close
             </Button>
@@ -2024,29 +2456,44 @@ const Tasks = () => {
         >
           <ModalHeader
             toggle={() => setUploadDocModal(!uploadDocModal)}
-            className="rounded-0 bg-light"
-            style={{ borderBottom: "1px solid #e2e8f0" }}
+            className="rounded-0"
+            style={{
+              backgroundColor: subtleBg,
+              borderBottom: `1px solid ${cardBorder}`,
+            }}
           >
-            <span className="fw-semibold text-dark fs-15">Upload Task Document</span>
+            <span className="fw-semibold fs-15" style={{ color: textTitle }}>Upload Task Document</span>
           </ModalHeader>
-          <ModalBody className="p-4">
+          <ModalBody className="p-4" style={{ backgroundColor: cardBg, color: textTitle }}>
             <FormGroup className="mb-3">
-              <Label className="fw-medium fs-12 text-dark">Document Name</Label>
+              <Label className="fw-medium fs-12" style={{ color: textTitle }}>Document Name</Label>
               <Input
                 type="text"
                 className="form-control rounded-0 fs-13"
                 placeholder="e.g. Requirement_Spec.pdf"
                 value={uploadFileName}
                 onChange={(e) => setUploadFileName(e.target.value)}
+                style={{
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                  borderColor: subtleBorder,
+                  color: textTitle,
+                }}
               />
             </FormGroup>
             <FormGroup className="mb-3">
-              <Label className="fw-medium fs-12 text-dark">Related Company</Label>
+              <Label className="fw-medium fs-12" style={{ color: textTitle }}>Related Company</Label>
               <Input
                 type="select"
                 className="form-select rounded-0 fs-13"
                 value={uploadFileEntity}
                 onChange={(e) => setUploadFileEntity(e.target.value)}
+                style={{
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                  borderColor: subtleBorder,
+                  color: textTitle,
+                }}
               >
                 <option value="">Select Company / Account</option>
                 {lookups.accounts.map((a) => (
@@ -2057,22 +2504,46 @@ const Tasks = () => {
               </Input>
             </FormGroup>
             <div
-              className="p-4 border border-dashed rounded-0 text-center bg-light cursor-pointer"
-              style={{ borderColor: "#cbd5e1" }}
+              className="p-4 border border-dashed rounded-0 text-center cursor-pointer"
+              style={{
+                borderColor: subtleBorder,
+                backgroundColor: isDark ? "#1a1d21" : "#f8fafc",
+              }}
             >
-              <i className="ri-upload-cloud-2-line fs-32 text-primary d-block mb-1"></i>
-              <div className="fw-medium fs-13 text-dark">Drop file here or click to browse</div>
-              <div className="text-muted fs-11">Supports PDF, XLSX, DOCX up to 10MB</div>
+              <i className="ri-upload-cloud-2-line fs-32 d-block mb-1" style={{ color: primaryColor }}></i>
+              <div className="fw-medium fs-13" style={{ color: textTitle }}>Drop file here or click to browse</div>
+              <div className="fs-11" style={{ color: textSub }}>Supports PDF, XLSX, DOCX up to 10MB</div>
             </div>
           </ModalBody>
-          <ModalFooter className="rounded-0 bg-light py-2">
-            <Button color="light" size="sm" className="rounded-0" onClick={() => setUploadDocModal(false)}>
+          <ModalFooter
+            className="rounded-0 py-2"
+            style={{
+              backgroundColor: subtleBg,
+              borderTop: `1px solid ${cardBorder}`,
+            }}
+          >
+            <Button
+              color="light"
+              size="sm"
+              className="rounded-0"
+              onClick={() => setUploadDocModal(false)}
+              style={{
+                borderRadius: 0,
+                backgroundColor: isDark ? "#212529" : "#ffffff",
+                borderColor: subtleBorder,
+                color: textTitle,
+              }}
+            >
               Cancel
             </Button>
             <Button
               size="sm"
               className="rounded-0 text-white"
-              style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d" }}
+              style={{
+                borderRadius: 0,
+                backgroundColor: primaryColor,
+                borderColor: primaryColor,
+              }}
               onClick={() => {
                 toastSuccess("Document attachment recorded.");
                 setUploadDocModal(false);
@@ -2094,19 +2565,28 @@ const Tasks = () => {
         >
           <ModalHeader
             toggle={() => setCreateQuoteModal(!createQuoteModal)}
-            className="rounded-0 bg-light"
-            style={{ borderBottom: "1px solid #e2e8f0" }}
+            className="rounded-0"
+            style={{
+              backgroundColor: subtleBg,
+              borderBottom: `1px solid ${cardBorder}`,
+            }}
           >
-            <span className="fw-semibold text-dark fs-15">Quick Quotation</span>
+            <span className="fw-semibold fs-15" style={{ color: textTitle }}>Quick Quotation</span>
           </ModalHeader>
-          <ModalBody className="p-4">
+          <ModalBody className="p-4" style={{ backgroundColor: cardBg, color: textTitle }}>
             <FormGroup className="mb-3">
-              <Label className="fw-medium fs-12 text-dark">Customer Account</Label>
+              <Label className="fw-medium fs-12" style={{ color: textTitle }}>Customer Account</Label>
               <Input
                 type="select"
                 className="form-select rounded-0 fs-13"
                 value={quoteAccount}
                 onChange={(e) => setQuoteAccount(e.target.value)}
+                style={{
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                  borderColor: subtleBorder,
+                  color: textTitle,
+                }}
               >
                 <option value="">Select Customer Account</option>
                 {lookups.accounts.map((a) => (
@@ -2117,24 +2597,51 @@ const Tasks = () => {
               </Input>
             </FormGroup>
             <FormGroup className="mb-3">
-              <Label className="fw-medium fs-12 text-dark">Quotation Amount (INR)</Label>
+              <Label className="fw-medium fs-12" style={{ color: textTitle }}>Quotation Amount (INR)</Label>
               <Input
                 type="number"
                 className="form-control rounded-0 fs-13"
                 placeholder="e.g. 150000"
                 value={quoteAmount}
                 onChange={(e) => setQuoteAmount(e.target.value)}
+                style={{
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                  borderColor: subtleBorder,
+                  color: textTitle,
+                }}
               />
             </FormGroup>
           </ModalBody>
-          <ModalFooter className="rounded-0 bg-light py-2">
-            <Button color="light" size="sm" className="rounded-0" onClick={() => setCreateQuoteModal(false)}>
+          <ModalFooter
+            className="rounded-0 py-2"
+            style={{
+              backgroundColor: subtleBg,
+              borderTop: `1px solid ${cardBorder}`,
+            }}
+          >
+            <Button
+              color="light"
+              size="sm"
+              className="rounded-0"
+              onClick={() => setCreateQuoteModal(false)}
+              style={{
+                borderRadius: 0,
+                backgroundColor: isDark ? "#212529" : "#ffffff",
+                borderColor: subtleBorder,
+                color: textTitle,
+              }}
+            >
               Cancel
             </Button>
             <Button
               size="sm"
               className="rounded-0 text-white"
-              style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d" }}
+              style={{
+                borderRadius: 0,
+                backgroundColor: primaryColor,
+                borderColor: primaryColor,
+              }}
               onClick={() => {
                 toastSuccess("Quotation draft generated.");
                 setCreateQuoteModal(false);

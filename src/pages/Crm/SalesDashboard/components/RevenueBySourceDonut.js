@@ -150,11 +150,11 @@ const RevenueBySourceDonut = ({ data = {} }) => {
 
   return (
     <Card
-      className="border shadow-none h-100 mb-0 bg-white"
+      className="border shadow-none h-100 mb-0"
       style={{
         borderRadius: 0,
-        borderColor: isDark ? "#262626" : "#e2e8f0",
-        backgroundColor: isDark ? "#121212" : "#ffffff",
+        borderColor: isDark ? "#21262d" : "#e2e8f0",
+        backgroundColor: isDark ? "#161b22" : "#ffffff",
       }}
     >
       {/* Top Header: Indicator + Title */}
@@ -165,7 +165,7 @@ const RevenueBySourceDonut = ({ data = {} }) => {
               width: 8,
               height: 8,
               backgroundColor: "#b91c1c",
-              borderRadius: "50%",
+              borderRadius: 0,
               display: "inline-block",
             }}
           />
@@ -395,7 +395,7 @@ const RevenueBySourceDonut = ({ data = {} }) => {
                         style={{
                           width: "8px",
                           height: "8px",
-                          borderRadius: "50%",
+                          borderRadius: 0,
                           backgroundColor: s.dotColor,
                           display: "inline-block",
                           flexShrink: 0,

@@ -103,7 +103,7 @@ const RosetteMedal = ({ rank = 1 }) => {
 
   return (
     <div
-      className="rounded-circle d-flex align-items-center justify-content-center"
+      className="rounded-0 d-flex align-items-center justify-content-center"
       style={{
         width: "24px",
         height: "24px",
@@ -130,12 +130,12 @@ const RepAvatar = ({ name = "", index = 0 }) => {
         width="34"
         height="34"
         viewBox="0 0 36 36"
-        style={{ borderRadius: "50%", flexShrink: 0, display: "block" }}
+        style={{ borderRadius: 0, flexShrink: 0, display: "block" }}
       >
-        <circle cx="18" cy="18" r="17" fill="#ffe4e6" stroke="#f87171" strokeWidth="1.8" />
+        <rect x="1" y="1" width="34" height="34" fill="#ffe4e6" stroke="#f87171" strokeWidth="1.8" />
         <path d="M 10,18 C 9,28 10,32 12,34 L 24,34 C 26,32 27,28 26,18 Z" fill="#1c1917" />
         <path d="M 8,36 C 10,29 14,27 18,27 C 22,27 26,29 28,36 Z" fill="#be123c" />
-        <rect x="15.5" y="21" width="5" height="7" fill="#fed7aa" rx="1.5" />
+        <rect x="15.5" y="21" width="5" height="7" fill="#fed7aa" rx="0" />
         <ellipse cx="18" cy="17" rx="6.5" ry="7.5" fill="#fde68a" />
         <path
           d="M 11.5,16 C 11.5,10 14,8 18,8 C 22,8 24.5,10 24.5,16 C 23,13 20,11 18,12 C 16,11 13,13 11.5,16 Z"
@@ -155,11 +155,11 @@ const RepAvatar = ({ name = "", index = 0 }) => {
       width="34"
       height="34"
       viewBox="0 0 36 36"
-      style={{ borderRadius: "50%", flexShrink: 0, display: "block" }}
+      style={{ borderRadius: 0, flexShrink: 0, display: "block" }}
     >
-      <circle cx="18" cy="18" r="17" fill="#ffedd5" stroke="#f87171" strokeWidth="1.8" />
+      <rect x="1" y="1" width="34" height="34" fill="#ffedd5" stroke="#f87171" strokeWidth="1.8" />
       <path d="M 7,36 C 9,28 13,26 18,26 C 23,26 27,28 29,36 Z" fill={hasFullBeard ? "#1e293b" : "#0f766e"} />
-      <rect x="15.5" y="21" width="5" height="6" fill="#fed7aa" rx="1" />
+      <rect x="15.5" y="21" width="5" height="6" fill="#fed7aa" rx="0" />
       <ellipse cx="18" cy="16.5" rx="6.5" ry="7.5" fill="#fde68a" />
       <path
         d="M 11.5,15 C 11.5,9 14,7 18,7 C 22,7 24.5,9 24.5,15 C 23,12 21,11 18,11 C 15,11 13,12 11.5,15 Z"
@@ -192,8 +192,8 @@ const TeamPerformanceCard = ({ reps = [] }) => {
       >
         <div className="d-flex align-items-center">
           <div
-            className="rounded-circle d-flex align-items-center justify-content-center me-2"
-            style={{ width: "28px", height: "28px", backgroundColor: "#fff1f2", color: "#991b1b" }}
+            className="rounded-0 d-flex align-items-center justify-content-center me-2"
+            style={{ width: "28px", height: "28px", backgroundColor: "rgba(153, 27, 27, 0.15)", color: "#991b1b" }}
           >
             <i className="ri-trophy-fill" style={{ fontSize: "0.95rem" }} />
           </div>
@@ -210,9 +210,8 @@ const TeamPerformanceCard = ({ reps = [] }) => {
           style={{
             fontSize: "0.72rem",
             color: "#991b1b",
-            backgroundColor: "#ffffff",
             border: "1px solid #fee2e2",
-            borderRadius: "20px",
+            borderRadius: 0,
             padding: "3px 10px",
             transition: "all 0.15s ease",
           }}
@@ -388,7 +387,7 @@ const TeamPerformanceCard = ({ reps = [] }) => {
                               width: "55px",
                               height: "6px",
                               backgroundColor: "#e2e8f0",
-                              borderRadius: "10px",
+                              borderRadius: 0,
                               overflow: "hidden",
                               flexShrink: 0,
                             }}
@@ -398,7 +397,7 @@ const TeamPerformanceCard = ({ reps = [] }) => {
                                 width: `${pct}%`,
                                 height: "100%",
                                 backgroundColor: progressColor,
-                                borderRadius: "10px",
+                                borderRadius: 0,
                                 transition: "width 0.3s ease",
                               }}
                             />

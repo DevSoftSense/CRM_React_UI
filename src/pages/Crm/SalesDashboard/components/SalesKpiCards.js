@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { Row, Col, Card, CardBody } from "reactstrap";
 
 const formatInr = (val) => {
@@ -37,6 +38,14 @@ const MiniSparkline = ({ data = [], color = "#7f1d1d", width = 110, height = 28 
 };
 
 const SalesKpiCards = ({ kpis = {}, comparisonLabel = "vs previous period" }) => {
+  const layoutMode = useSelector((state) => state.Layout?.layoutModeType);
+  const isDark = layoutMode === "dark";
+
+  const cardBg = isDark ? "#161b22" : "#ffffff";
+  const cardBorder = isDark ? "#21262d" : "#e2e8f0";
+  const textTitle = isDark ? "#f0f6fc" : "#0f172a";
+  const textSub = isDark ? "#8b949e" : "#64748b";
+
   const totalRevVal = Number(kpis.total_revenue?.value ?? kpis.total_revenue?.count ?? 0);
   const totalRevGrowth = Number(kpis.total_revenue?.growth_pct ?? 0);
 
@@ -129,15 +138,15 @@ const SalesKpiCards = ({ kpis = {}, comparisonLabel = "vs previous period" }) =>
       {cards.map((card, idx) => (
         <Col key={idx} xl={2} md={4} sm={6}>
           <Card
-            className="border shadow-none h-100 mb-0 bg-white crm-sales-kpi-card"
-            style={{ borderRadius: 0, borderColor: "#e2e8f0" }}
+            className="border shadow-none h-100 mb-0 crm-sales-kpi-card"
+            style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}
           >
             <CardBody className="p-3 d-flex flex-column justify-content-between">
               {/* Row 1: Title + Icon */}
               <div className="d-flex align-items-center justify-content-between mb-2">
                 <span
-                  className="text-muted fw-bold fs-11 text-uppercase text-truncate me-1"
-                  style={{ letterSpacing: "0.5px" }}
+                  className="fw-bold fs-11 text-uppercase text-truncate me-1"
+                  style={{ letterSpacing: "0.5px", color: textSub }}
                   title={card.title}
                 >
                   {card.title}
@@ -157,7 +166,7 @@ const SalesKpiCards = ({ kpis = {}, comparisonLabel = "vs previous period" }) =>
               </div>
 
               {/* Row 2: Value */}
-              <h3 className="fw-bold text-dark mb-2 fs-20 text-truncate" title={card.value}>
+              <h3 className="fw-bold mb-2 fs-20 text-truncate" style={{ color: textTitle }} title={card.value}>
                 {card.value}
               </h3>
 
@@ -167,8 +176,11 @@ const SalesKpiCards = ({ kpis = {}, comparisonLabel = "vs previous period" }) =>
               </div>
 
               {/* Row 4: Comparison & Growth */}
-              <div className="d-flex align-items-center justify-content-between pt-2 border-top mt-1 fs-11">
-                <span className="text-muted text-truncate" style={{ maxWidth: "70px" }}>
+              <div
+                className="d-flex align-items-center justify-content-between pt-2 border-top mt-1 fs-11"
+                style={{ borderColor: cardBorder }}
+              >
+                <span className="text-truncate" style={{ maxWidth: "70px", color: textSub }}>
                   {comparisonLabel}
                 </span>
                 <span

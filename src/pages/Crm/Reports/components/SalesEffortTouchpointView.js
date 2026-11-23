@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useSelector } from "react-redux";
 import ReactApexChart from "react-apexcharts";
 import { Link } from "react-router-dom";
 import {
@@ -22,6 +23,18 @@ const SalesEffortTouchpointView = ({
   onOwnerChange,
   onExport,
 }) => {
+  const layoutMode = useSelector((state) => state.Layout?.layoutModeType);
+  const isDark = layoutMode === "dark";
+
+  // Dynamic Theme Colors
+  const cardBg = isDark ? "#161b22" : "#ffffff";
+  const cardBorder = isDark ? "#21262d" : "#e2e8f0";
+  const subtleBg = isDark ? "#0d1117" : "#f8fafc";
+  const subtleBorder = isDark ? "#30363d" : "#e2e8f0";
+  const textTitle = isDark ? "#f0f6fc" : "#0f172a";
+  const textSub = isDark ? "#8b949e" : "#64748b";
+  const primaryColor = "#7f1d1d";
+
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("ALL");
   const [pageSize, setPageSize] = useState(10);
@@ -152,7 +165,7 @@ const SalesEffortTouchpointView = ({
         },
         labels: ["Documents", "Calls", "Meetings", "Tasks"],
         colors: ["#7f1d1d", "#f87171", "#d97706", "#6366f1"], // Maroon, Rose, Amber, Indigo
-        stroke: { width: 2, colors: ["#ffffff"] },
+        stroke: { width: 2, colors: [cardBg] },
         plotOptions: {
           pie: {
             donut: {
@@ -168,7 +181,7 @@ const SalesEffortTouchpointView = ({
         },
       },
     };
-  }, [typeCounts, effectiveTotal]);
+  }, [typeCounts, effectiveTotal, cardBg]);
 
   // 2. Activity Trend Spline Area Chart
   const trendChartConfig = useMemo(() => {
@@ -201,7 +214,7 @@ const SalesEffortTouchpointView = ({
         },
         markers: {
           size: 4,
-          strokeColors: "#ffffff",
+          strokeColors: isDark ? "#21262d" : "#ffffff",
           strokeWidth: 2,
           hover: { size: 6 },
         },
@@ -211,13 +224,13 @@ const SalesEffortTouchpointView = ({
             fontSize: "10.5px",
             fontFamily: "Inter, sans-serif",
             fontWeight: 600,
-            colors: ["#1e293b"],
+            colors: [isDark ? "#f0f6fc" : "#1e293b"],
           },
           offsetY: -8,
           formatter: (val) => String(val),
         },
         grid: {
-          borderColor: "#f1f5f9",
+          borderColor: isDark ? "#21262d" : "#f1f5f9",
           strokeDashArray: 3,
           xaxis: { lines: { show: false } },
           yaxis: { lines: { show: true } },
@@ -227,14 +240,14 @@ const SalesEffortTouchpointView = ({
           categories,
           labels: {
             style: {
-              colors: "#475569",
+              colors: isDark ? "#8b949e" : "#475569",
               fontSize: "11px",
               fontFamily: "Inter, sans-serif",
               fontWeight: 500,
             },
             offsetY: 2,
           },
-          axisBorder: { color: "#e2e8f0" },
+          axisBorder: { color: isDark ? "#21262d" : "#e2e8f0" },
           axisTicks: { show: false },
         },
         yaxis: {
@@ -242,7 +255,7 @@ const SalesEffortTouchpointView = ({
           tickAmount: 4,
           labels: {
             style: {
-              colors: "#64748b",
+              colors: textSub,
               fontSize: "11px",
               fontFamily: "Inter, sans-serif",
             },
@@ -257,7 +270,7 @@ const SalesEffortTouchpointView = ({
         },
       },
     };
-  }, []);
+  }, [isDark, textSub]);
 
   return (
     <div className="sales-effort-touchpoint-view">
@@ -266,11 +279,12 @@ const SalesEffortTouchpointView = ({
         {/* Card 1: Total Calls */}
         <Col lg={4} md={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              borderRadius: 0,
+              border: "1px solid " + cardBorder,
+              backgroundColor: cardBg,
+              boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
               transition: "all 0.15s ease",
             }}
           >
@@ -280,9 +294,9 @@ const SalesEffortTouchpointView = ({
                   style={{
                     width: "48px",
                     height: "48px",
-                    borderRadius: "4px",
-                    backgroundColor: "rgba(127, 29, 29, 0.08)",
-                    color: "#7f1d1d",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(127, 29, 29, 0.2)" : "rgba(127, 29, 29, 0.08)",
+                    color: isDark ? "#f87171" : "#7f1d1d",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -294,17 +308,18 @@ const SalesEffortTouchpointView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "11px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "11px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Total Calls
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "26px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {totalCalls}
@@ -313,7 +328,7 @@ const SalesEffortTouchpointView = ({
                     <span style={{ color: "#16a34a", fontSize: "11px", fontWeight: 600 }}>
                       <i className="ri-arrow-up-line"></i> 0%
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       vs last period
                     </span>
                   </div>
@@ -326,11 +341,12 @@ const SalesEffortTouchpointView = ({
         {/* Card 2: Total Meetings */}
         <Col lg={4} md={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              borderRadius: 0,
+              border: "1px solid " + cardBorder,
+              backgroundColor: cardBg,
+              boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
               transition: "all 0.15s ease",
             }}
           >
@@ -340,9 +356,9 @@ const SalesEffortTouchpointView = ({
                   style={{
                     width: "48px",
                     height: "48px",
-                    borderRadius: "4px",
-                    backgroundColor: "#fef2f2",
-                    color: "#dc2626",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(220, 38, 38, 0.2)" : "#fef2f2",
+                    color: isDark ? "#f87171" : "#dc2626",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -354,17 +370,18 @@ const SalesEffortTouchpointView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "11px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "11px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Total Meetings
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "26px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {totalMeetings}
@@ -373,7 +390,7 @@ const SalesEffortTouchpointView = ({
                     <span style={{ color: "#16a34a", fontSize: "11px", fontWeight: 600 }}>
                       <i className="ri-arrow-up-line"></i> 0%
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       vs last period
                     </span>
                   </div>
@@ -386,11 +403,12 @@ const SalesEffortTouchpointView = ({
         {/* Card 3: Total Activities */}
         <Col lg={4} md={12}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              borderRadius: 0,
+              border: "1px solid " + cardBorder,
+              backgroundColor: cardBg,
+              boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <CardBody className="p-3 d-flex align-items-center justify-content-between">
@@ -399,9 +417,9 @@ const SalesEffortTouchpointView = ({
                   style={{
                     width: "48px",
                     height: "48px",
-                    borderRadius: "4px",
-                    backgroundColor: "rgba(127, 29, 29, 0.08)",
-                    color: "#7f1d1d",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(127, 29, 29, 0.2)" : "rgba(127, 29, 29, 0.08)",
+                    color: isDark ? "#f87171" : "#7f1d1d",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -413,17 +431,18 @@ const SalesEffortTouchpointView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "11px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "11px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Total Activities
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "26px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {totalActivities}
@@ -432,7 +451,7 @@ const SalesEffortTouchpointView = ({
                     <span style={{ color: "#16a34a", fontSize: "11px", fontWeight: 600 }}>
                       <i className="ri-arrow-up-line"></i> 0%
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       vs last period
                     </span>
                   </div>
@@ -448,22 +467,23 @@ const SalesEffortTouchpointView = ({
         {/* Col 1: Touchpoint Distribution Donut (Col lg=4) */}
         <Col lg={4} md={12}>
           <Card
-            className="h-100 bg-white d-flex flex-column"
+            className="h-100 d-flex flex-column"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              borderRadius: 0,
+              border: "1px solid " + cardBorder,
+              backgroundColor: cardBg,
+              boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex align-items-center gap-2"
-              style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+              className="p-3 border-bottom d-flex align-items-center gap-2"
+              style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}
             >
               <i
                 className="ri-pie-chart-2-line"
-                style={{ color: "#7f1d1d", fontSize: "16px" }}
+                style={{ color: isDark ? "#f87171" : "#7f1d1d", fontSize: "16px" }}
               ></i>
-              <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+              <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                 Touchpoint Distribution
               </span>
             </div>
@@ -495,7 +515,7 @@ const SalesEffortTouchpointView = ({
                     style={{
                       fontSize: "22px",
                       fontWeight: 700,
-                      color: "#0f172a",
+                      color: textTitle,
                       fontFamily: "Inter, sans-serif",
                       lineHeight: "1.1",
                     }}
@@ -505,7 +525,7 @@ const SalesEffortTouchpointView = ({
                   <div
                     style={{
                       fontSize: "11px",
-                      color: "#64748b",
+                      color: textSub,
                       fontWeight: 500,
                       fontFamily: "Inter, sans-serif",
                       marginTop: "2px",
@@ -523,10 +543,10 @@ const SalesEffortTouchpointView = ({
               >
                 <div className="d-flex align-items-center justify-content-between">
                   <span className="d-flex align-items-center gap-2">
-                    <i className="ri-file-text-line" style={{ color: "#7f1d1d", fontSize: "14px" }}></i>
-                    <span style={{ color: "#334155", fontWeight: 500 }}>Documents</span>
+                    <i className="ri-file-text-line" style={{ color: isDark ? "#f87171" : "#7f1d1d", fontSize: "14px" }}></i>
+                    <span style={{ color: textSub, fontWeight: 500 }}>Documents</span>
                   </span>
-                  <span className="fw-bold text-dark font-monospace" style={{ fontSize: "12.5px" }}>
+                  <span className="fw-bold font-monospace" style={{ fontSize: "12.5px", color: textTitle }}>
                     {docPct}%
                   </span>
                 </div>
@@ -534,9 +554,9 @@ const SalesEffortTouchpointView = ({
                 <div className="d-flex align-items-center justify-content-between">
                   <span className="d-flex align-items-center gap-2">
                     <i className="ri-phone-line" style={{ color: "#f87171", fontSize: "14px" }}></i>
-                    <span style={{ color: "#334155", fontWeight: 500 }}>Calls</span>
+                    <span style={{ color: textSub, fontWeight: 500 }}>Calls</span>
                   </span>
-                  <span className="fw-bold text-dark font-monospace" style={{ fontSize: "12.5px" }}>
+                  <span className="fw-bold font-monospace" style={{ fontSize: "12.5px", color: textTitle }}>
                     {callPct}%
                   </span>
                 </div>
@@ -544,9 +564,9 @@ const SalesEffortTouchpointView = ({
                 <div className="d-flex align-items-center justify-content-between">
                   <span className="d-flex align-items-center gap-2">
                     <i className="ri-calendar-event-line" style={{ color: "#d97706", fontSize: "14px" }}></i>
-                    <span style={{ color: "#334155", fontWeight: 500 }}>Meetings</span>
+                    <span style={{ color: textSub, fontWeight: 500 }}>Meetings</span>
                   </span>
-                  <span className="fw-bold text-dark font-monospace" style={{ fontSize: "12.5px" }}>
+                  <span className="fw-bold font-monospace" style={{ fontSize: "12.5px", color: textTitle }}>
                     {meetPct}%
                   </span>
                 </div>
@@ -554,9 +574,9 @@ const SalesEffortTouchpointView = ({
                 <div className="d-flex align-items-center justify-content-between">
                   <span className="d-flex align-items-center gap-2">
                     <i className="ri-checkbox-circle-line" style={{ color: "#6366f1", fontSize: "14px" }}></i>
-                    <span style={{ color: "#334155", fontWeight: 500 }}>Tasks</span>
+                    <span style={{ color: textSub, fontWeight: 500 }}>Tasks</span>
                   </span>
-                  <span className="fw-bold text-dark font-monospace" style={{ fontSize: "12.5px" }}>
+                  <span className="fw-bold font-monospace" style={{ fontSize: "12.5px", color: textTitle }}>
                     {taskPct}%
                   </span>
                 </div>
@@ -568,29 +588,30 @@ const SalesEffortTouchpointView = ({
         {/* Col 2: Activity Trend Spline Area Chart (Col lg=5) */}
         <Col lg={5} md={12}>
           <Card
-            className="h-100 bg-white d-flex flex-column"
+            className="h-100 d-flex flex-column"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              borderRadius: 0,
+              border: "1px solid " + cardBorder,
+              backgroundColor: cardBg,
+              boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
-              style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+              className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
+              style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}
             >
               <div className="d-flex align-items-center gap-2">
                 <i
                   className="ri-line-chart-line"
-                  style={{ color: "#7f1d1d", fontSize: "16px" }}
+                  style={{ color: isDark ? "#f87171" : "#7f1d1d", fontSize: "16px" }}
                 ></i>
-                <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+                <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                   Activity Trend
                 </span>
               </div>
               <div
                 className="d-flex align-items-center gap-3"
-                style={{ fontSize: "11.5px", color: "#475569" }}
+                style={{ fontSize: "11.5px", color: textSub }}
               >
                 <span className="d-flex align-items-center gap-1.5">
                   <span
@@ -598,11 +619,11 @@ const SalesEffortTouchpointView = ({
                       width: "9px",
                       height: "9px",
                       backgroundColor: "#7f1d1d",
-                      borderRadius: "50%",
+                      borderRadius: 0,
                       display: "inline-block",
                     }}
                   ></span>
-                  <span className="fw-medium text-dark">Total Activities</span>
+                  <span className="fw-medium" style={{ color: textTitle }}>Total Activities</span>
                 </span>
                 <span className="d-flex align-items-center gap-1.5">
                   <span
@@ -610,11 +631,11 @@ const SalesEffortTouchpointView = ({
                       width: "9px",
                       height: "9px",
                       backgroundColor: "#f87171",
-                      borderRadius: "50%",
+                      borderRadius: 0,
                       display: "inline-block",
                     }}
                   ></span>
-                  <span className="fw-medium text-dark">Meetings</span>
+                  <span className="fw-medium" style={{ color: textTitle }}>Meetings</span>
                 </span>
               </div>
             </div>
@@ -633,22 +654,23 @@ const SalesEffortTouchpointView = ({
         {/* Col 3: Sales Activity Breakdown Progress/Funnel (Col lg=3) */}
         <Col lg={3} md={6}>
           <Card
-            className="h-100 bg-white d-flex flex-column"
+            className="h-100 d-flex flex-column"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              borderRadius: 0,
+              border: "1px solid " + cardBorder,
+              backgroundColor: cardBg,
+              boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex align-items-center gap-2"
-              style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+              className="p-3 border-bottom d-flex align-items-center gap-2"
+              style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}
             >
               <i
                 className="ri-filter-3-line"
-                style={{ color: "#7f1d1d", fontSize: "16px" }}
+                style={{ color: isDark ? "#f87171" : "#7f1d1d", fontSize: "16px" }}
               ></i>
-              <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+              <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                 Sales Activity Breakdown
               </span>
             </div>
@@ -660,8 +682,8 @@ const SalesEffortTouchpointView = ({
                   className="w-100 d-flex overflow-hidden"
                   style={{
                     height: "12px",
-                    borderRadius: "4px",
-                    backgroundColor: "#f1f5f9",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "#21262d" : "#f1f5f9",
                   }}
                 >
                   <div
@@ -685,36 +707,48 @@ const SalesEffortTouchpointView = ({
 
               {/* Activity Share List matching Reference */}
               <div className="d-flex flex-column gap-2" style={{ fontSize: "12px" }}>
-                <div className="d-flex align-items-center justify-content-between p-1.5 rounded" style={{ backgroundColor: "#f8fafc" }}>
+                <div
+                  className="d-flex align-items-center justify-content-between p-1.5"
+                  style={{ backgroundColor: subtleBg, border: "1px solid " + subtleBorder, borderRadius: 0 }}
+                >
                   <div className="d-flex align-items-center gap-2">
-                    <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#7f1d1d" }}></span>
-                    <span className="text-dark fw-medium">Documents</span>
+                    <span style={{ width: "8px", height: "8px", borderRadius: 0, backgroundColor: "#7f1d1d" }}></span>
+                    <span className="fw-medium" style={{ color: textTitle }}>Documents</span>
                   </div>
-                  <span className="fw-bold text-dark font-monospace">{docPct}%</span>
+                  <span className="fw-bold font-monospace" style={{ color: textTitle }}>{docPct}%</span>
                 </div>
 
-                <div className="d-flex align-items-center justify-content-between p-1.5 rounded" style={{ backgroundColor: "#f8fafc" }}>
+                <div
+                  className="d-flex align-items-center justify-content-between p-1.5"
+                  style={{ backgroundColor: subtleBg, border: "1px solid " + subtleBorder, borderRadius: 0 }}
+                >
                   <div className="d-flex align-items-center gap-2">
-                    <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#f87171" }}></span>
-                    <span className="text-dark fw-medium">Calls</span>
+                    <span style={{ width: "8px", height: "8px", borderRadius: 0, backgroundColor: "#f87171" }}></span>
+                    <span className="fw-medium" style={{ color: textTitle }}>Calls</span>
                   </div>
-                  <span className="fw-bold text-dark font-monospace">{callPct}%</span>
+                  <span className="fw-bold font-monospace" style={{ color: textTitle }}>{callPct}%</span>
                 </div>
 
-                <div className="d-flex align-items-center justify-content-between p-1.5 rounded" style={{ backgroundColor: "#f8fafc" }}>
+                <div
+                  className="d-flex align-items-center justify-content-between p-1.5"
+                  style={{ backgroundColor: subtleBg, border: "1px solid " + subtleBorder, borderRadius: 0 }}
+                >
                   <div className="d-flex align-items-center gap-2">
-                    <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#d97706" }}></span>
-                    <span className="text-dark fw-medium">Meetings</span>
+                    <span style={{ width: "8px", height: "8px", borderRadius: 0, backgroundColor: "#d97706" }}></span>
+                    <span className="fw-medium" style={{ color: textTitle }}>Meetings</span>
                   </div>
-                  <span className="fw-bold text-dark font-monospace">{meetPct}%</span>
+                  <span className="fw-bold font-monospace" style={{ color: textTitle }}>{meetPct}%</span>
                 </div>
 
-                <div className="d-flex align-items-center justify-content-between p-1.5 rounded" style={{ backgroundColor: "#f8fafc" }}>
+                <div
+                  className="d-flex align-items-center justify-content-between p-1.5"
+                  style={{ backgroundColor: subtleBg, border: "1px solid " + subtleBorder, borderRadius: 0 }}
+                >
                   <div className="d-flex align-items-center gap-2">
-                    <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#6366f1" }}></span>
-                    <span className="text-dark fw-medium">Tasks</span>
+                    <span style={{ width: "8px", height: "8px", borderRadius: 0, backgroundColor: "#6366f1" }}></span>
+                    <span className="fw-medium" style={{ color: textTitle }}>Tasks</span>
                   </div>
-                  <span className="fw-bold text-dark font-monospace">{taskPct}%</span>
+                  <span className="fw-bold font-monospace" style={{ color: textTitle }}>{taskPct}%</span>
                 </div>
               </div>
             </CardBody>
@@ -724,32 +758,34 @@ const SalesEffortTouchpointView = ({
 
       {/* ─── ROW 3: DETAILED DATA LEDGER (TABLE) ─────────────────────────────── */}
       <Card
-        className="bg-white mb-4"
+        className="mb-4"
         style={{
-          borderRadius: "4px",
-          border: "1px solid #e2e8f0",
-          boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+          borderRadius: 0,
+          border: "1px solid " + cardBorder,
+          backgroundColor: cardBg,
+          boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
       >
         <div
-          className="p-3 bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
+          className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
           style={{
-            borderRadius: "4px 4px 0 0",
-            borderColor: "#e2e8f0",
+            borderRadius: 0,
+            borderColor: cardBorder,
+            backgroundColor: cardBg,
           }}
         >
           <div>
             <h6
-              className="mb-0 fw-bold text-dark d-flex align-items-center gap-2"
-              style={{ fontSize: "14px" }}
+              className="mb-0 fw-bold d-flex align-items-center gap-2"
+              style={{ fontSize: "14px", color: textTitle }}
             >
               <i
                 className="ri-table-line"
-                style={{ color: "#7f1d1d", fontSize: "16px" }}
+                style={{ color: isDark ? "#f87171" : "#7f1d1d", fontSize: "16px" }}
               ></i>
               Detailed Data Ledger
             </h6>
-            <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+            <span style={{ fontSize: "11.5px", color: textSub }}>
               Showing 1 to {filteredRows.length} of {rawRows.length} entries
             </span>
           </div>
@@ -762,17 +798,18 @@ const SalesEffortTouchpointView = ({
                 placeholder="Search by subject..."
                 className="form-control-sm ps-4"
                 style={{
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
-                  borderColor: "#cbd5e1",
-                  backgroundColor: "#ffffff",
+                  borderColor: subtleBorder,
+                  backgroundColor: subtleBg,
+                  color: textTitle,
                 }}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <i
-                className="ri-search-line position-absolute top-50 start-0 translate-middle-y ms-2 text-muted"
-                style={{ fontSize: "12px" }}
+                className="ri-search-line position-absolute top-50 start-0 translate-middle-y ms-2"
+                style={{ fontSize: "12px", color: textSub }}
               ></i>
             </div>
 
@@ -781,9 +818,11 @@ const SalesEffortTouchpointView = ({
               className="form-select form-select-sm"
               style={{
                 width: "125px",
-                borderRadius: "4px",
+                borderRadius: 0,
                 fontSize: "12px",
-                borderColor: "#cbd5e1",
+                borderColor: subtleBorder,
+                backgroundColor: subtleBg,
+                color: textTitle,
               }}
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
@@ -800,10 +839,10 @@ const SalesEffortTouchpointView = ({
               type="button"
               className="btn btn-sm d-flex align-items-center gap-1"
               style={{
-                backgroundColor: "#ffffff",
-                color: "#7f1d1d",
-                border: "1px solid #e2e8f0",
-                borderRadius: "4px",
+                backgroundColor: isDark ? "rgba(127, 29, 29, 0.15)" : "#ffffff",
+                color: isDark ? "#f87171" : "#7f1d1d",
+                border: "1px solid " + (isDark ? "rgba(127, 29, 29, 0.3)" : "#e2e8f0"),
+                borderRadius: 0,
                 fontSize: "12px",
                 fontWeight: 500,
                 padding: "5px 12px",
@@ -818,8 +857,8 @@ const SalesEffortTouchpointView = ({
         <CardBody className="p-0">
           <div className="table-responsive">
             <Table className="align-middle table-nowrap mb-0" hover>
-              <thead style={{ backgroundColor: "#f8fafc" }}>
-                <tr style={{ fontSize: "11.5px", color: "#64748b" }}>
+              <thead style={{ backgroundColor: subtleBg }}>
+                <tr style={{ fontSize: "11.5px", color: textSub, borderBottom: "1px solid " + cardBorder }}>
                   <th style={{ width: "40px" }} className="text-center">#</th>
                   <th>SUBJECT</th>
                   <th>SALES REP</th>
@@ -832,46 +871,46 @@ const SalesEffortTouchpointView = ({
               <tbody style={{ fontSize: "12.5px" }}>
                 {filteredRows.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="text-center py-4 text-muted">
+                    <td colSpan="7" className="text-center py-4" style={{ color: textSub }}>
                       No activity records match the search criteria.
                     </td>
                   </tr>
                 ) : (
                   filteredRows.map((r, idx) => {
                     const type = String(r.type || "OTHER").toUpperCase();
-                    let badgeBg = "#f8fafc";
-                    let badgeColor = "#475569";
-                    let badgeBorder = "#e2e8f0";
+                    let badgeBg = subtleBg;
+                    let badgeColor = textSub;
+                    let badgeBorder = subtleBorder;
                     let icon = "ri-checkbox-circle-line";
 
                     if (type.includes("DOC") || type.includes("FILE")) {
-                      badgeBg = "#fef2f2";
-                      badgeColor = "#dc2626";
-                      badgeBorder = "#fecaca";
+                      badgeBg = isDark ? "rgba(220, 38, 38, 0.15)" : "#fef2f2";
+                      badgeColor = isDark ? "#f87171" : "#dc2626";
+                      badgeBorder = isDark ? "rgba(220, 38, 38, 0.35)" : "#fecaca";
                       icon = "ri-file-text-line";
                     } else if (type.includes("CALL")) {
-                      badgeBg = "#fff7ed";
-                      badgeColor = "#c2410c";
-                      badgeBorder = "#fed7aa";
+                      badgeBg = isDark ? "rgba(217, 119, 6, 0.15)" : "#fff7ed";
+                      badgeColor = isDark ? "#fbbf24" : "#c2410c";
+                      badgeBorder = isDark ? "rgba(217, 119, 6, 0.35)" : "#fed7aa";
                       icon = "ri-phone-line";
                     } else if (type.includes("MEET")) {
-                      badgeBg = "#fdf4ff";
-                      badgeColor = "#a21caf";
-                      badgeBorder = "#f5d0fe";
+                      badgeBg = isDark ? "rgba(192, 38, 211, 0.15)" : "#fdf4ff";
+                      badgeColor = isDark ? "#e879f9" : "#a21caf";
+                      badgeBorder = isDark ? "rgba(192, 38, 211, 0.35)" : "#f5d0fe";
                       icon = "ri-calendar-event-line";
                     } else if (type.includes("TASK")) {
-                      badgeBg = "#eff6ff";
-                      badgeColor = "#1d4ed8";
-                      badgeBorder = "#bfdbfe";
+                      badgeBg = isDark ? "rgba(59, 130, 246, 0.15)" : "#eff6ff";
+                      badgeColor = isDark ? "#60a5fa" : "#1d4ed8";
+                      badgeBorder = isDark ? "rgba(59, 130, 246, 0.35)" : "#bfdbfe";
                       icon = "ri-checkbox-circle-line";
                     }
 
                     return (
-                      <tr key={r.activity_id || idx}>
-                        <td className="text-center text-muted" style={{ fontSize: "11px" }}>
+                      <tr key={r.activity_id || idx} style={{ borderBottom: "1px solid " + cardBorder }}>
+                        <td className="text-center" style={{ fontSize: "11px", color: textSub }}>
                           {idx + 1}
                         </td>
-                        <td className="fw-semibold text-dark" style={{ maxWidth: "260px" }}>
+                        <td className="fw-semibold" style={{ maxWidth: "260px", color: textTitle }}>
                           <span className="text-truncate d-inline-block" style={{ maxWidth: "260px" }}>
                             {r.subject}
                           </span>
@@ -882,9 +921,9 @@ const SalesEffortTouchpointView = ({
                               style={{
                                 width: "24px",
                                 height: "24px",
-                                borderRadius: "50%",
-                                backgroundColor: "rgba(127, 29, 29, 0.1)",
-                                color: "#7f1d1d",
+                                borderRadius: 0,
+                                backgroundColor: isDark ? "rgba(127, 29, 29, 0.2)" : "rgba(127, 29, 29, 0.1)",
+                                color: isDark ? "#f87171" : "#7f1d1d",
                                 display: "inline-flex",
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -894,7 +933,7 @@ const SalesEffortTouchpointView = ({
                             >
                               {(r.sales_rep || "U").charAt(0)}
                             </span>
-                            <span className="text-dark" style={{ fontSize: "12.5px" }}>
+                            <span style={{ fontSize: "12.5px", color: textTitle }}>
                               {r.sales_rep || "Sales Rep"}
                             </span>
                           </div>
@@ -908,7 +947,7 @@ const SalesEffortTouchpointView = ({
                               fontSize: "11px",
                               fontWeight: 600,
                               padding: "2.5px 8px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               display: "inline-flex",
                               alignItems: "center",
                               gap: "4px",
@@ -918,13 +957,13 @@ const SalesEffortTouchpointView = ({
                             {r.type || "Activity"}
                           </span>
                         </td>
-                        <td className="text-muted" style={{ fontSize: "12px" }}>
+                        <td style={{ fontSize: "12px", color: textSub }}>
                           <span className="d-inline-flex align-items-center gap-1">
-                            <i className="ri-calendar-line text-muted" style={{ fontSize: "12px" }}></i>
+                            <i className="ri-calendar-line" style={{ fontSize: "12px", color: textSub }}></i>
                             {r.start_time}
                           </span>
                         </td>
-                        <td className="text-muted" style={{ fontSize: "12px", maxWidth: "260px" }}>
+                        <td style={{ fontSize: "12px", maxWidth: "260px", color: textSub }}>
                           <span className="text-truncate d-inline-block" style={{ maxWidth: "260px" }}>
                             {r.notes || "—"}
                           </span>
@@ -933,16 +972,36 @@ const SalesEffortTouchpointView = ({
                           <div className="d-flex align-items-center justify-content-center gap-1">
                             <Link
                               to="/crm/activities"
-                              className="btn btn-sm btn-light border p-1"
-                              style={{ borderRadius: "4px", color: "#475569", width: "26px", height: "26px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                              className="btn btn-sm p-1"
+                              style={{
+                                borderRadius: 0,
+                                backgroundColor: subtleBg,
+                                border: "1px solid " + subtleBorder,
+                                color: textSub,
+                                width: "26px",
+                                height: "26px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
                               title="View Activity Details"
                             >
                               <i className="ri-eye-line" style={{ fontSize: "13px" }}></i>
                             </Link>
                             <button
                               type="button"
-                              className="btn btn-sm btn-light border p-1"
-                              style={{ borderRadius: "4px", color: "#475569", width: "26px", height: "26px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                              className="btn btn-sm p-1"
+                              style={{
+                                borderRadius: 0,
+                                backgroundColor: subtleBg,
+                                border: "1px solid " + subtleBorder,
+                                color: textSub,
+                                width: "26px",
+                                height: "26px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
                               title="More Options"
                             >
                               <i className="ri-more-2-line" style={{ fontSize: "13px" }}></i>
@@ -958,14 +1017,24 @@ const SalesEffortTouchpointView = ({
           </div>
 
           {/* Table Footer Pagination */}
-          <div className="p-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div
+            className="p-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2"
+            style={{ borderColor: cardBorder }}
+          >
             <div className="d-flex align-items-center gap-2">
-              <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+              <span style={{ fontSize: "11.5px", color: textSub }}>
                 Show
               </span>
               <select
                 className="form-select form-select-sm"
-                style={{ width: "65px", fontSize: "11.5px", borderRadius: "4px" }}
+                style={{
+                  width: "65px",
+                  fontSize: "11.5px",
+                  borderRadius: 0,
+                  borderColor: subtleBorder,
+                  backgroundColor: subtleBg,
+                  color: textTitle,
+                }}
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
               >
@@ -973,7 +1042,7 @@ const SalesEffortTouchpointView = ({
                 <option value={25}>25</option>
                 <option value={50}>50</option>
               </select>
-              <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+              <span style={{ fontSize: "11.5px", color: textSub }}>
                 Showing 1 to {filteredRows.length} of {rawRows.length} entries
               </span>
             </div>
@@ -981,8 +1050,14 @@ const SalesEffortTouchpointView = ({
             <div className="btn-group btn-group-sm">
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "4px 0 0 4px", fontSize: "11px" }}
+                className="btn btn-sm"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  backgroundColor: subtleBg,
+                  borderColor: subtleBorder,
+                  color: textTitle,
+                }}
                 disabled
               >
                 &lt; Prev
@@ -991,19 +1066,26 @@ const SalesEffortTouchpointView = ({
                 type="button"
                 className="btn btn-sm"
                 style={{
-                  backgroundColor: "#7f1d1d",
+                  backgroundColor: primaryColor,
                   color: "#ffffff",
                   fontSize: "11px",
                   fontWeight: 600,
-                  border: "1px solid #7f1d1d",
+                  border: "1px solid " + primaryColor,
+                  borderRadius: 0,
                 }}
               >
                 1
               </button>
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "0 4px 4px 0", fontSize: "11px" }}
+                className="btn btn-sm"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  backgroundColor: subtleBg,
+                  borderColor: subtleBorder,
+                  color: textTitle,
+                }}
                 disabled
               >
                 Next &gt;
@@ -1015,12 +1097,13 @@ const SalesEffortTouchpointView = ({
 
       {/* ─── ROW 4: KEY INSIGHTS EXECUTIVE STRIP ─────────────────────────────── */}
       <Card
-        className="bg-white mb-4"
+        className="mb-4"
         style={{
-          borderRadius: "4px",
-          border: "1px solid #e2e8f0",
-          borderLeft: "4px solid #7f1d1d",
-          boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+          borderRadius: 0,
+          border: "1px solid " + cardBorder,
+          borderLeft: "4px solid " + primaryColor,
+          backgroundColor: cardBg,
+          boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
       >
         <CardBody className="p-3">
@@ -1031,10 +1114,10 @@ const SalesEffortTouchpointView = ({
                 style={{
                   width: "36px",
                   height: "36px",
-                  borderRadius: "4px",
-                  backgroundColor: "#fffbeb",
-                  border: "1px solid #fde68a",
-                  color: "#d97706",
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "rgba(217, 119, 6, 0.2)" : "#fffbeb",
+                  border: "1px solid " + (isDark ? "rgba(217, 119, 6, 0.4)" : "#fde68a"),
+                  color: isDark ? "#fbbf24" : "#d97706",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1044,30 +1127,30 @@ const SalesEffortTouchpointView = ({
               >
                 <i className="ri-lightbulb-line"></i>
               </div>
-              <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+              <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                 Key Insights
               </span>
             </div>
 
             {/* Middle: 3 Key Insights */}
             <div
-              className="d-flex flex-wrap align-items-center gap-3 text-muted"
-              style={{ fontSize: "12px" }}
+              className="d-flex flex-wrap align-items-center gap-3"
+              style={{ fontSize: "12px", color: textSub }}
             >
               <div className="d-flex align-items-center gap-1.5">
-                <i className="ri-bar-chart-fill" style={{ color: "#7f1d1d" }}></i>
+                <i className="ri-bar-chart-fill" style={{ color: isDark ? "#f87171" : "#7f1d1d" }}></i>
                 <span>
-                  Documents are the primary touchpoint (<strong className="text-dark">{docPct}%</strong>).
+                  Documents are the primary touchpoint (<strong style={{ color: textTitle }}>{docPct}%</strong>).
                 </span>
               </div>
-              <span className="d-none d-md-inline text-muted">|</span>
+              <span className="d-none d-md-inline" style={{ color: cardBorder }}>|</span>
               <div className="d-flex align-items-center gap-1.5">
-                <i className="ri-calendar-check-line" style={{ color: "#7f1d1d" }}></i>
+                <i className="ri-calendar-check-line" style={{ color: isDark ? "#f87171" : "#7f1d1d" }}></i>
                 <span>Engagement is consistent across the period.</span>
               </div>
-              <span className="d-none d-md-inline text-muted">|</span>
+              <span className="d-none d-md-inline" style={{ color: cardBorder }}>|</span>
               <div className="d-flex align-items-center gap-1.5">
-                <i className="ri-line-chart-line" style={{ color: "#7f1d1d" }}></i>
+                <i className="ri-line-chart-line" style={{ color: isDark ? "#f87171" : "#7f1d1d" }}></i>
                 <span>Focus on increasing meeting activity for higher deal conversion.</span>
               </div>
             </div>
@@ -1075,10 +1158,10 @@ const SalesEffortTouchpointView = ({
             {/* Right: SoftOnCloud Tagline */}
             <div className="d-none d-lg-flex align-items-center gap-2 text-end">
               <div>
-                <span className="fw-bold text-dark d-block" style={{ fontSize: "11.5px" }}>
+                <span className="fw-bold d-block" style={{ fontSize: "11.5px", color: textTitle }}>
                   Track. Analyze. Grow.
                 </span>
-                <span className="text-muted" style={{ fontSize: "10.5px" }}>
+                <span style={{ fontSize: "10.5px", color: textSub }}>
                   Turn touches into revenue.
                 </span>
               </div>
@@ -1086,9 +1169,9 @@ const SalesEffortTouchpointView = ({
                 style={{
                   width: "32px",
                   height: "32px",
-                  borderRadius: "4px",
-                  backgroundColor: "rgba(127, 29, 29, 0.08)",
-                  color: "#7f1d1d",
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "rgba(127, 29, 29, 0.2)" : "rgba(127, 29, 29, 0.08)",
+                  color: isDark ? "#f87171" : "#7f1d1d",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",

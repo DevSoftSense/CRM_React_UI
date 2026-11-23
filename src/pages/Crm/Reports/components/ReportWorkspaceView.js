@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useSelector } from "react-redux";
 import {
   Card,
   CardBody,
@@ -124,15 +125,26 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
     report?.code === "R01_PIPELINE_AGING" ||
     report?.code === "R01_PIPELINE_AGE";
 
+  const layoutModeType = useSelector((state) => state.Layout.layoutModeType);
+  const isDark = layoutModeType === "dark";
+
+  const cardBg = isDark ? "#121212" : "#ffffff";
+  const cardBorder = isDark ? "#2d3748" : "#e2e8f0";
+  const subtleBg = isDark ? "#1a202c" : "#f8fafc";
+  const subtleBorder = isDark ? "#334155" : "#cbd5e1";
+  const textTitle = isDark ? "#f8fafc" : "#0f172a";
+  const textSub = isDark ? "#94a3b8" : "#64748b";
+
   return (
     <div>
       {/* Top Workspace Action & Filter Bar */}
       <Card
-        className="bg-white mb-4"
+        className="mb-4"
         style={{
           borderRadius: 0,
-          border: "1px solid #e2e8f0",
-          boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+          backgroundColor: cardBg,
+          border: `1px solid ${cardBorder}`,
+          boxShadow: isDark ? "0 1px 3px rgba(0, 0, 0, 0.3)" : "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
       >
         <CardBody className="p-3">
@@ -140,16 +152,15 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
             {/* Left: Back button & Title */}
             <div className="d-flex align-items-center gap-3">
               <Button
-                color="light"
                 size="sm"
                 className="border d-flex align-items-center gap-1 rounded-0"
                 style={{
                   borderRadius: 0,
                   fontSize: "12px",
                   fontWeight: 500,
-                  color: "#475569",
-                  borderColor: "#e2e8f0",
-                  backgroundColor: "#ffffff",
+                  color: textTitle,
+                  borderColor: subtleBorder,
+                  backgroundColor: subtleBg,
                   padding: "5px 10px",
                 }}
                 onClick={onBackToCatalog}
@@ -161,15 +172,15 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
 
               <div>
                 <h5
-                  className="fw-bold mb-0 text-dark"
-                  style={{ fontSize: "17px", letterSpacing: "-0.3px" }}
+                  className="fw-bold mb-0"
+                  style={{ fontSize: "17px", letterSpacing: "-0.3px", color: textTitle }}
                 >
                   {report?.name}
                 </h5>
                 {report?.description && (
                   <p
-                    className="text-muted small mb-0 mt-1"
-                    style={{ fontSize: "12px" }}
+                    className="small mb-0 mt-1"
+                    style={{ fontSize: "12px", color: textSub }}
                   >
                     {report.description}
                   </p>
@@ -186,10 +197,10 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
                   width: "135px",
                   borderRadius: 0,
                   fontSize: "12px",
-                  borderColor: "#cbd5e1",
-                  color: "#0f172a",
+                  borderColor: subtleBorder,
+                  color: textTitle,
                   fontWeight: 500,
-                  backgroundColor: "#ffffff",
+                  backgroundColor: isDark ? "#121212" : "#ffffff",
                 }}
                 value={datePreset}
                 onChange={(e) => handlePresetChange(e.target.value)}
@@ -210,16 +221,30 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
                     className="rounded-0"
                     value={dateFrom}
                     onChange={(e) => setDateFrom(e.target.value)}
-                    style={{ width: "130px", fontSize: "12px", borderRadius: 0 }}
+                    style={{
+                      width: "130px",
+                      fontSize: "12px",
+                      borderRadius: 0,
+                      backgroundColor: isDark ? "#121212" : "#ffffff",
+                      borderColor: subtleBorder,
+                      color: textTitle,
+                    }}
                   />
-                  <span className="text-muted small">to</span>
+                  <span className="small" style={{ color: textSub }}>to</span>
                   <Input
                     type="date"
                     bsSize="sm"
                     className="rounded-0"
                     value={dateTo}
                     onChange={(e) => setDateTo(e.target.value)}
-                    style={{ width: "130px", fontSize: "12px", borderRadius: 0 }}
+                    style={{
+                      width: "130px",
+                      fontSize: "12px",
+                      borderRadius: 0,
+                      backgroundColor: isDark ? "#121212" : "#ffffff",
+                      borderColor: subtleBorder,
+                      color: textTitle,
+                    }}
                   />
                 </div>
               )}
@@ -231,7 +256,9 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
                   width: "160px",
                   borderRadius: 0,
                   fontSize: "12px",
-                  borderColor: "#cbd5e1",
+                  borderColor: subtleBorder,
+                  backgroundColor: isDark ? "#121212" : "#ffffff",
+                  color: textTitle,
                 }}
                 value={selectedOwnerId}
                 onChange={(e) => setSelectedOwnerId(e.target.value)}
@@ -249,15 +276,14 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
 
               {/* Refresh Button */}
               <Button
-                color="light"
                 size="sm"
                 className="border d-flex align-items-center gap-1 rounded-0"
                 style={{
                   borderRadius: 0,
                   fontSize: "12px",
-                  color: "#475569",
-                  borderColor: "#e2e8f0",
-                  backgroundColor: "#ffffff",
+                  color: textTitle,
+                  borderColor: subtleBorder,
+                  backgroundColor: subtleBg,
                   padding: "5px 9px",
                 }}
                 onClick={executeReport}
@@ -269,15 +295,14 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
 
               {/* Print Button */}
               <Button
-                color="light"
                 size="sm"
                 className="border d-flex align-items-center gap-1 rounded-0"
                 style={{
                   borderRadius: 0,
                   fontSize: "12px",
-                  color: "#475569",
-                  borderColor: "#e2e8f0",
-                  backgroundColor: "#ffffff",
+                  color: textTitle,
+                  borderColor: subtleBorder,
+                  backgroundColor: subtleBg,
                   padding: "5px 9px",
                 }}
                 onClick={() => window.print()}

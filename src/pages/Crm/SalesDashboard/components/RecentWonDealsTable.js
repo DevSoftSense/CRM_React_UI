@@ -20,11 +20,11 @@ const RecentWonDealsTable = ({ deals = [] }) => {
 
   return (
     <Card
-      className="border shadow-none h-100 mb-0 bg-white"
+      className="border shadow-none h-100 mb-0"
       style={{
         borderRadius: 0,
-        borderColor: isDark ? "#262626" : "#e2e8f0",
-        backgroundColor: isDark ? "#121212" : "#ffffff",
+        borderColor: isDark ? "#21262d" : "#e2e8f0",
+        backgroundColor: isDark ? "#161b22" : "#ffffff",
       }}
     >
       {/* Top Header: Title */}
@@ -35,7 +35,7 @@ const RecentWonDealsTable = ({ deals = [] }) => {
               width: 8,
               height: 8,
               backgroundColor: "#b91c1c",
-              borderRadius: "50%",
+              borderRadius: 0,
               display: "inline-block",
             }}
           />
@@ -122,10 +122,10 @@ const RecentWonDealsTable = ({ deals = [] }) => {
                   <span
                     className="badge fw-bold fs-11 px-3 py-1 flex-shrink-0"
                     style={{
-                      backgroundColor: "#d1fae5",
-                      color: "#047857",
+                      backgroundColor: isDark ? "rgba(16, 185, 129, 0.2)" : "#d1fae5",
+                      color: isDark ? "#34d399" : "#047857",
                       borderRadius: 0,
-                      border: "1px solid #a7f3d0",
+                      border: `1px solid ${isDark ? "rgba(16, 185, 129, 0.4)" : "#a7f3d0"}`,
                     }}
                   >
                     Won

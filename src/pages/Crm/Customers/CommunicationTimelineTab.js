@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   Button,
   Card,
@@ -85,37 +86,56 @@ const TYPE_CONFIG = {
   },
 };
 
-const getDirectionBadge = (dir) => {
+const getTypeConfig = (type, isDark = false) => {
+  const base = TYPE_CONFIG[type] || TYPE_CONFIG.CALL;
+  if (!isDark) return base;
+  const darkMap = {
+    CALL: { color: "#34d399", bgColor: "rgba(5, 150, 105, 0.18)", borderColor: "rgba(5, 150, 105, 0.35)" },
+    EMAIL: { color: "#60a5fa", bgColor: "rgba(37, 99, 235, 0.18)", borderColor: "rgba(37, 99, 235, 0.35)" },
+    MEETING: { color: "#c084fc", bgColor: "rgba(124, 58, 237, 0.18)", borderColor: "rgba(124, 58, 237, 0.35)" },
+    NOTE: { color: "#fbbf24", bgColor: "rgba(217, 119, 6, 0.18)", borderColor: "rgba(217, 119, 6, 0.35)" },
+    TASK: { color: "#2dd4bf", bgColor: "rgba(13, 148, 136, 0.18)", borderColor: "rgba(13, 148, 136, 0.35)" },
+    DOCUMENT: { color: "#fca5a5", bgColor: "rgba(127, 29, 29, 0.22)", borderColor: "rgba(127, 29, 29, 0.4)" },
+  };
+  return {
+    ...base,
+    color: darkMap[type]?.color || base.color,
+    bgColor: darkMap[type]?.bgColor || base.bgColor,
+    borderColor: darkMap[type]?.borderColor || base.borderColor,
+  };
+};
+
+const getDirectionBadge = (dir, isDark = false) => {
   if (!dir) return null;
   const d = String(dir).toLowerCase();
   let style = {
-    backgroundColor: "#f1f5f9",
-    color: "#475569",
-    border: "1px solid #cbd5e1",
+    backgroundColor: isDark ? "rgba(255, 255, 255, 0.08)" : "#f1f5f9",
+    color: isDark ? "#cbd5e1" : "#475569",
+    border: isDark ? "1px solid #334155" : "1px solid #cbd5e1",
   };
   if (d.includes("outbound")) {
     style = {
-      backgroundColor: "#ecfdf5",
-      color: "#047857",
-      border: "1px solid #a7f3d0",
+      backgroundColor: isDark ? "rgba(5, 150, 105, 0.18)" : "#ecfdf5",
+      color: isDark ? "#34d399" : "#047857",
+      border: isDark ? "1px solid rgba(5, 150, 105, 0.35)" : "1px solid #a7f3d0",
     };
   } else if (d.includes("inbound")) {
     style = {
-      backgroundColor: "#eff6ff",
-      color: "#1d4ed8",
-      border: "1px solid #bfdbfe",
+      backgroundColor: isDark ? "rgba(37, 99, 235, 0.18)" : "#eff6ff",
+      color: isDark ? "#60a5fa" : "#1d4ed8",
+      border: isDark ? "1px solid rgba(37, 99, 235, 0.35)" : "1px solid #bfdbfe",
     };
   } else if (d.includes("in person") || d.includes("person")) {
     style = {
-      backgroundColor: "#f5f3ff",
-      color: "#6d28d9",
-      border: "1px solid #ddd6fe",
+      backgroundColor: isDark ? "rgba(124, 58, 237, 0.18)" : "#f5f3ff",
+      color: isDark ? "#c084fc" : "#6d28d9",
+      border: isDark ? "1px solid rgba(124, 58, 237, 0.35)" : "1px solid #ddd6fe",
     };
   } else if (d.includes("online")) {
     style = {
-      backgroundColor: "#e0f2fe",
-      color: "#0369a1",
-      border: "1px solid #bae6fd",
+      backgroundColor: isDark ? "rgba(2, 132, 199, 0.18)" : "#e0f2fe",
+      color: isDark ? "#38bdf8" : "#0369a1",
+      border: isDark ? "1px solid rgba(2, 132, 199, 0.35)" : "1px solid #bae6fd",
     };
   }
   return (
@@ -135,18 +155,20 @@ const cleanDescription = (text) => {
     .trim();
 };
 
-const renderDateLabel = (label) => {
+const renderDateLabel = (label, isDark = false) => {
   if (!label) return null;
   const parts = label.trim().split(/\s+/);
+  const textTitle = isDark ? "#f1f5f9" : "#0f172a";
+  const textSub = isDark ? "#94a3b8" : "#64748b";
   if (parts[0] === "Today" || parts[0] === "Yesterday") {
     return (
       <div className="lh-sm">
-        <div className="fw-bold text-dark fs-12">{parts[0]}</div>
-        <div className="text-muted fs-11 mt-0.5">{parts.slice(1).join(" ")}</div>
+        <div className="fw-bold fs-12" style={{ color: textTitle }}>{parts[0]}</div>
+        <div className="fs-11 mt-0.5" style={{ color: textSub }}>{parts.slice(1).join(" ")}</div>
       </div>
     );
   }
-  return <div className="fw-bold text-dark fs-12">{label}</div>;
+  return <div className="fw-bold fs-12" style={{ color: textTitle }}>{label}</div>;
 };
 
 const CommunicationTimelineTab = ({
@@ -155,6 +177,24 @@ const CommunicationTimelineTab = ({
   onEditCustomer,
   initialLogType = null,
 }) => {
+  // Redux Dark Mode detection
+  const { layoutModeType } = useSelector((state) => ({
+    layoutModeType: state.Layout.layoutModeType,
+  }));
+  const isDark =
+    layoutModeType === "dark" ||
+    (typeof document !== "undefined" &&
+      (document.documentElement.getAttribute("data-bs-theme") === "dark" ||
+        document.documentElement.getAttribute("data-layout-mode") === "dark"));
+
+  const primaryColor = isDark ? "#fca5a5" : THEME.primary;
+  const cardBg = isDark ? "#121212" : "#ffffff";
+  const cardBorder = isDark ? "#262626" : THEME.cardBorder;
+  const subtleBg = isDark ? "#161b22" : "#f8fafc";
+  const subtleBorder = isDark ? "#2d3748" : "#cbd5e1";
+  const textTitle = isDark ? "#f1f5f9" : THEME.textDark;
+  const textSub = isDark ? "#94a3b8" : THEME.textMuted;
+
   // State
   const [timelineItems, setTimelineItems] = useState([]);
   const [stats, setStats] = useState({
@@ -489,8 +529,8 @@ const CommunicationTimelineTab = ({
         <Col lg={8} xl={8}>
           {/* Top Filter & Search Action Bar */}
           <div
-            className="d-flex align-items-center justify-content-between flex-wrap gap-2 p-2 mb-4 bg-white border"
-            style={{ borderRadius: 0, borderColor: THEME.cardBorder }}
+            className="d-flex align-items-center justify-content-between flex-wrap gap-2 p-2 mb-4 border"
+            style={{ borderRadius: 0, backgroundColor: cardBg, borderColor: cardBorder }}
           >
             {/* Left: Interaction Type Dropdown */}
             <Dropdown
@@ -500,43 +540,54 @@ const CommunicationTimelineTab = ({
               <DropdownToggle
                 color="light"
                 size="sm"
-                className="border bg-white text-dark fw-semibold d-flex align-items-center gap-2 px-3"
-                style={{ borderRadius: 0, borderColor: "#cbd5e1", height: "36px" }}
+                className="border fw-semibold d-flex align-items-center gap-2 px-3"
+                style={{
+                  borderRadius: 0,
+                  backgroundColor: subtleBg,
+                  borderColor: subtleBorder,
+                  color: textTitle,
+                  height: "36px",
+                }}
               >
                 <span>
                   {filterType === "ALL"
                     ? "All Interactions"
                     : TYPE_CONFIG[filterType]?.label || filterType}
                 </span>
-                <i className="ri-arrow-down-s-line fs-14 text-muted" />
+                <i className="ri-arrow-down-s-line fs-14" style={{ color: textSub }} />
               </DropdownToggle>
               <DropdownMenu
                 style={{
                   borderRadius: 0,
-                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                  backgroundColor: cardBg,
+                  borderColor: cardBorder,
+                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.2)",
                 }}
               >
                 <DropdownItem
                   active={filterType === "ALL"}
                   onClick={() => setFilterType("ALL")}
-                  style={{ borderRadius: 0 }}
+                  style={{ borderRadius: 0, color: textTitle }}
                 >
                   All Interactions
                 </DropdownItem>
-                {Object.keys(TYPE_CONFIG).map((k) => (
-                  <DropdownItem
-                    key={k}
-                    active={filterType === k}
-                    onClick={() => setFilterType(k)}
-                    style={{ borderRadius: 0 }}
-                  >
-                    <i
-                      className={`${TYPE_CONFIG[k].icon} me-2`}
-                      style={{ color: TYPE_CONFIG[k].color }}
-                    />
-                    {TYPE_CONFIG[k].label}s
-                  </DropdownItem>
-                ))}
+                {Object.keys(TYPE_CONFIG).map((k) => {
+                  const cfg = getTypeConfig(k, isDark);
+                  return (
+                    <DropdownItem
+                      key={k}
+                      active={filterType === k}
+                      onClick={() => setFilterType(k)}
+                      style={{ borderRadius: 0, color: textTitle }}
+                    >
+                      <i
+                        className={`${cfg.icon} me-2`}
+                        style={{ color: cfg.color }}
+                      />
+                      {cfg.label}s
+                    </DropdownItem>
+                  );
+                })}
               </DropdownMenu>
             </Dropdown>
 
@@ -547,8 +598,13 @@ const CommunicationTimelineTab = ({
                 style={{ maxWidth: "280px" }}
               >
                 <span
-                  className="input-group-text bg-white border-end-0 text-muted"
-                  style={{ borderRadius: 0, borderColor: "#cbd5e1" }}
+                  className="input-group-text border-end-0"
+                  style={{
+                    borderRadius: 0,
+                    borderColor: subtleBorder,
+                    backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                    color: textSub,
+                  }}
                 >
                   <i className="ri-search-line" />
                 </span>
@@ -558,14 +614,25 @@ const CommunicationTimelineTab = ({
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="border-start-0 ps-1"
-                  style={{ borderRadius: 0, borderColor: "#cbd5e1", height: "36px" }}
+                  style={{
+                    borderRadius: 0,
+                    borderColor: subtleBorder,
+                    backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                    color: textTitle,
+                    height: "36px",
+                  }}
                 />
                 {search && (
                   <button
                     type="button"
-                    className="btn btn-sm btn-white border border-start-0 text-muted"
+                    className="btn btn-sm border border-start-0"
                     onClick={() => setSearch("")}
-                    style={{ borderRadius: 0, borderColor: "#cbd5e1" }}
+                    style={{
+                      borderRadius: 0,
+                      borderColor: subtleBorder,
+                      backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                      color: textSub,
+                    }}
                   >
                     <i className="ri-close-line" />
                   </button>
@@ -578,8 +645,8 @@ const CommunicationTimelineTab = ({
                 className="text-white fw-semibold px-3 d-inline-flex align-items-center gap-1"
                 onClick={() => handleOpenLogModal("CALL")}
                 style={{
-                  backgroundColor: THEME.primary,
-                  borderColor: THEME.primary,
+                  backgroundColor: primaryColor,
+                  borderColor: primaryColor,
                   borderRadius: 0,
                   height: "36px",
                   boxShadow: "0 1px 2px 0 rgba(127, 29, 29, 0.2)",
@@ -594,16 +661,16 @@ const CommunicationTimelineTab = ({
           <div className="timeline-stream-container position-relative">
             {loading ? (
               <div
-                className="text-center py-5 bg-white border"
-                style={{ borderRadius: 0, borderColor: THEME.cardBorder }}
+                className="text-center py-5 border"
+                style={{ borderRadius: 0, backgroundColor: cardBg, borderColor: cardBorder }}
               >
-                <Spinner size="sm" style={{ color: THEME.primary }} />
-                <div className="text-muted fs-13 mt-2">Loading timeline touchpoints...</div>
+                <Spinner size="sm" style={{ color: primaryColor }} />
+                <div className="fs-13 mt-2" style={{ color: textSub }}>Loading timeline touchpoints...</div>
               </div>
             ) : timelineItems.length === 0 ? (
               <div
-                className="text-center py-5 bg-white border"
-                style={{ borderRadius: 0, borderColor: THEME.cardBorder }}
+                className="text-center py-5 border"
+                style={{ borderRadius: 0, backgroundColor: cardBg, borderColor: cardBorder }}
               >
                 <div
                   className="d-inline-flex align-items-center justify-content-center mb-2"
@@ -611,14 +678,14 @@ const CommunicationTimelineTab = ({
                     width: "48px",
                     height: "48px",
                     borderRadius: 0,
-                    backgroundColor: "#fef2f2",
-                    color: THEME.primary,
+                    backgroundColor: isDark ? "rgba(127, 29, 29, 0.2)" : "#fef2f2",
+                    color: primaryColor,
                   }}
                 >
                   <i className="ri-history-line fs-24" />
                 </div>
-                <h6 className="fw-bold text-dark mb-1">No Interactions Found</h6>
-                <p className="text-muted fs-13 mb-3">
+                <h6 className="fw-bold mb-1" style={{ color: textTitle }}>No Interactions Found</h6>
+                <p className="fs-13 mb-3" style={{ color: textSub }}>
                   No communication activities match your selected filters.
                 </p>
                 <div className="d-flex justify-content-center gap-2">
@@ -627,8 +694,8 @@ const CommunicationTimelineTab = ({
                     className="text-white fw-semibold"
                     onClick={() => handleOpenLogModal("CALL")}
                     style={{
-                      backgroundColor: THEME.primary,
-                      borderColor: THEME.primary,
+                      backgroundColor: primaryColor,
+                      borderColor: primaryColor,
                       borderRadius: 0,
                     }}
                   >
@@ -640,7 +707,12 @@ const CommunicationTimelineTab = ({
                       color="light"
                       className="border"
                       onClick={handleClearFilters}
-                      style={{ borderRadius: 0 }}
+                      style={{
+                        borderRadius: 0,
+                        backgroundColor: subtleBg,
+                        borderColor: subtleBorder,
+                        color: textTitle,
+                      }}
                     >
                       Clear Filters
                     </Button>
@@ -657,13 +729,13 @@ const CommunicationTimelineTab = ({
                     bottom: "28px",
                     left: "111px",
                     width: "2px",
-                    backgroundColor: "#e2e8f0",
+                    backgroundColor: isDark ? "#262626" : "#e2e8f0",
                     zIndex: 1,
                   }}
                 />
 
                 {timelineItems.map((item, index) => {
-                  const typeCfg = TYPE_CONFIG[item.interaction_type] || TYPE_CONFIG.CALL;
+                  const typeCfg = getTypeConfig(item.interaction_type, isDark);
                   const isFirstOfDay =
                     index === 0 ||
                     item.date_label !== timelineItems[index - 1]?.date_label;
@@ -684,9 +756,9 @@ const CommunicationTimelineTab = ({
                         }}
                       >
                         {isFirstOfDay ? (
-                          renderDateLabel(item.date_label)
+                          renderDateLabel(item.date_label, isDark)
                         ) : (
-                          <div className="text-muted fs-11 fw-medium">{item.date_label}</div>
+                          <div className="fs-11 fw-medium" style={{ color: textSub }}>{item.date_label}</div>
                         )}
                       </div>
 
@@ -705,7 +777,7 @@ const CommunicationTimelineTab = ({
                             height: "10px",
                             borderRadius: "50%",
                             backgroundColor: typeCfg.color,
-                            border: "2px solid #ffffff",
+                            border: isDark ? "2px solid #121212" : "2px solid #ffffff",
                             boxShadow: `0 0 0 1.5px ${typeCfg.color}`,
                           }}
                         />
@@ -729,28 +801,29 @@ const CommunicationTimelineTab = ({
 
                       {/* Right: Event Card */}
                       <Card
-                        className="flex-grow-1 border bg-white mb-0 shadow-sm"
+                        className="flex-grow-1 border mb-0 shadow-sm"
                         style={{
                           borderRadius: 0,
-                          borderColor: THEME.cardBorder,
+                          backgroundColor: cardBg,
+                          borderColor: cardBorder,
                         }}
                       >
                         <CardBody className="p-3">
                           {/* Card Top: Title, Direction Badge, Time, Duration, Context Menu */}
                           <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
                             <div className="d-flex align-items-center gap-2 flex-wrap">
-                              <h6 className="fw-bold text-dark mb-0 fs-14">
+                              <h6 className="fw-bold mb-0 fs-14" style={{ color: textTitle }}>
                                 {item.title}
                               </h6>
-                              {getDirectionBadge(item.direction)}
+                              {getDirectionBadge(item.direction, isDark)}
                               {item.status_badge && (
                                 <span
                                   className="badge px-2 py-0.5 fs-10"
                                   style={{
                                     borderRadius: 0,
-                                    backgroundColor: "#f1f5f9",
-                                    color: "#475569",
-                                    border: "1px solid #cbd5e1",
+                                    backgroundColor: subtleBg,
+                                    color: textSub,
+                                    border: `1px solid ${subtleBorder}`,
                                     fontWeight: 600,
                                   }}
                                 >
@@ -759,16 +832,16 @@ const CommunicationTimelineTab = ({
                               )}
                             </div>
 
-                            <div className="d-flex align-items-center gap-2 text-muted fs-12">
+                            <div className="d-flex align-items-center gap-2 fs-12" style={{ color: textSub }}>
                               <span className="fw-medium">{item.time_label}</span>
                               {item.duration_label && (
                                 <span
                                   className="badge px-2 py-0.5 fs-11"
                                   style={{
                                     borderRadius: 0,
-                                    backgroundColor: "#f8fafc",
-                                    color: "#0f172a",
-                                    border: "1px solid #e2e8f0",
+                                    backgroundColor: subtleBg,
+                                    color: textTitle,
+                                    border: `1px solid ${subtleBorder}`,
                                     fontWeight: 600,
                                   }}
                                 >
@@ -780,9 +853,9 @@ const CommunicationTimelineTab = ({
                                   className="badge px-2 py-0.5 fs-11"
                                   style={{
                                     borderRadius: 0,
-                                    backgroundColor: "#f8fafc",
-                                    color: "#475569",
-                                    border: "1px solid #e2e8f0",
+                                    backgroundColor: subtleBg,
+                                    color: textSub,
+                                    border: `1px solid ${subtleBorder}`,
                                   }}
                                 >
                                   <i className="ri-attachment-2 me-1" />
@@ -802,7 +875,8 @@ const CommunicationTimelineTab = ({
                                 <DropdownToggle
                                   color="link"
                                   size="sm"
-                                  className="p-0 text-muted text-decoration-none"
+                                  className="p-0 text-decoration-none"
+                                  style={{ color: textSub }}
                                 >
                                   <i className="ri-more-2-fill fs-16" />
                                 </DropdownToggle>
@@ -810,7 +884,9 @@ const CommunicationTimelineTab = ({
                                   end
                                   style={{
                                     borderRadius: 0,
-                                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                                    backgroundColor: cardBg,
+                                    borderColor: cardBorder,
+                                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.2)",
                                   }}
                                 >
                                   <DropdownItem
@@ -818,27 +894,27 @@ const CommunicationTimelineTab = ({
                                       setActiveItem(item);
                                       setDetailModalOpen(true);
                                     }}
-                                    style={{ borderRadius: 0 }}
+                                    style={{ borderRadius: 0, color: textTitle }}
                                   >
-                                    <i className="ri-eye-line me-2 text-muted" /> View Details
+                                    <i className="ri-eye-line me-2" style={{ color: textSub }} /> View Details
                                   </DropdownItem>
                                   {cleanedNotes && (
                                     <DropdownItem
                                       onClick={() => handleCopyNote(cleanedNotes)}
-                                      style={{ borderRadius: 0 }}
+                                      style={{ borderRadius: 0, color: textTitle }}
                                     >
-                                      <i className="ri-file-copy-line me-2 text-muted" /> Copy Notes
+                                      <i className="ri-file-copy-line me-2" style={{ color: textSub }} /> Copy Notes
                                     </DropdownItem>
                                   )}
                                   <DropdownItem
                                     onClick={() => handleOpenLogModal("CALL")}
-                                    style={{ borderRadius: 0 }}
+                                    style={{ borderRadius: 0, color: textTitle }}
                                   >
-                                    <i className="ri-reply-line me-2 text-muted" /> Log Follow-up
+                                    <i className="ri-reply-line me-2" style={{ color: textSub }} /> Log Follow-up
                                   </DropdownItem>
                                   {item.timeline_id && String(item.timeline_id).startsWith("ACT_") && (
                                     <>
-                                      <DropdownItem divider />
+                                      <DropdownItem divider style={{ borderColor: cardBorder }} />
                                       <DropdownItem
                                         onClick={() => confirmDelete(item.timeline_id, item.title)}
                                         className="text-danger"
@@ -856,11 +932,11 @@ const CommunicationTimelineTab = ({
                           {/* Card Body: Clean Discussion Text */}
                           {cleanedNotes && (
                             <p
-                              className="text-dark fs-13 mb-3"
+                              className="fs-13 mb-3"
                               style={{
                                 whiteSpace: "pre-line",
                                 lineHeight: 1.55,
-                                color: "#334155",
+                                color: isDark ? "#cbd5e1" : "#334155",
                               }}
                             >
                               {cleanedNotes}
@@ -868,13 +944,16 @@ const CommunicationTimelineTab = ({
                           )}
 
                           {/* Card Footer: Contact Person & Staff Owner */}
-                          <div className="d-flex align-items-center gap-3 text-muted fs-12 pt-2 border-top flex-wrap">
+                          <div
+                            className="d-flex align-items-center gap-3 fs-12 pt-2 border-top flex-wrap"
+                            style={{ borderColor: cardBorder, color: textSub }}
+                          >
                             {item.contact_person && (
-                              <div className="d-flex align-items-center gap-1 text-dark fw-medium">
-                                <i className="ri-user-line text-muted" />
+                              <div className="d-flex align-items-center gap-1 fw-medium" style={{ color: textTitle }}>
+                                <i className="ri-user-line" style={{ color: textSub }} />
                                 <span>{item.contact_person}</span>
                                 {item.contact_info && (
-                                  <span className="text-muted fw-normal ms-1">
+                                  <span className="fw-normal ms-1" style={{ color: textSub }}>
                                     ({item.contact_info})
                                   </span>
                                 )}
@@ -882,7 +961,7 @@ const CommunicationTimelineTab = ({
                             )}
 
                             {item.contact_person && item.employee_name && (
-                              <span className="text-muted" style={{ opacity: 0.5 }}>
+                              <span style={{ color: textSub, opacity: 0.5 }}>
                                 |
                               </span>
                             )}
@@ -895,12 +974,12 @@ const CommunicationTimelineTab = ({
                                     width: "18px",
                                     height: "18px",
                                     borderRadius: 0,
-                                    backgroundColor: THEME.primary,
+                                    backgroundColor: primaryColor,
                                   }}
                                 >
                                   {(item.employee_name[0] || "S").toUpperCase()}
                                 </div>
-                                <span className="text-dark fw-medium">
+                                <span className="fw-medium" style={{ color: textTitle }}>
                                   {item.employee_name}
                                 </span>
                               </div>
@@ -918,12 +997,14 @@ const CommunicationTimelineTab = ({
                     <Button
                       color="light"
                       size="sm"
-                      className="border bg-white text-dark fw-semibold px-4 py-2 shadow-sm"
+                      className="border fw-semibold px-4 py-2 shadow-sm"
                       onClick={handleLoadMore}
                       disabled={loadingMore}
                       style={{
                         borderRadius: 0,
-                        borderColor: "#cbd5e1",
+                        backgroundColor: subtleBg,
+                        borderColor: subtleBorder,
+                        color: textTitle,
                       }}
                     >
                       {loadingMore ? (
@@ -947,12 +1028,15 @@ const CommunicationTimelineTab = ({
         <Col lg={4} xl={4}>
           {/* Card 1: Lead / Customer Summary */}
           <Card
-            className="border shadow-sm mb-3 bg-white"
-            style={{ borderRadius: 0, borderColor: THEME.cardBorder }}
+            className="border shadow-sm mb-3"
+            style={{ borderRadius: 0, backgroundColor: cardBg, borderColor: cardBorder }}
           >
             <CardBody className="p-3">
-              <div className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
-                <h6 className="fw-bold text-dark mb-0 fs-14">
+              <div
+                className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom"
+                style={{ borderColor: cardBorder }}
+              >
+                <h6 className="fw-bold mb-0 fs-14" style={{ color: textTitle }}>
                   {displayProfile.partyType?.toLowerCase() === "lead" ? "Lead Summary" : "Customer Summary"}
                 </h6>
                 {onEditCustomer && (
@@ -960,7 +1044,7 @@ const CommunicationTimelineTab = ({
                     type="button"
                     onClick={onEditCustomer}
                     className="btn btn-link p-0 text-decoration-none fs-12 fw-semibold d-inline-flex align-items-center gap-1"
-                    style={{ color: THEME.primary }}
+                    style={{ color: primaryColor }}
                   >
                     <i className="ri-pencil-line" /> Edit
                   </button>
@@ -969,14 +1053,14 @@ const CommunicationTimelineTab = ({
 
               <div className="summary-fields-list d-flex flex-column gap-2 fs-12">
                 <div className="d-flex justify-content-between align-items-center py-1">
-                  <span className="text-muted">Industry</span>
-                  <span className="text-dark fw-semibold text-end">
+                  <span style={{ color: textSub }}>Industry</span>
+                  <span className="fw-semibold text-end" style={{ color: textTitle }}>
                     {displayProfile.industry}
                   </span>
                 </div>
 
                 <div className="d-flex justify-content-between align-items-center py-1">
-                  <span className="text-muted">Website</span>
+                  <span style={{ color: textSub }}>Website</span>
                   {displayProfile.website ? (
                     <a
                       href={
@@ -987,47 +1071,48 @@ const CommunicationTimelineTab = ({
                       target="_blank"
                       rel="noreferrer"
                       className="text-decoration-none fw-semibold text-end d-inline-flex align-items-center gap-1"
-                      style={{ color: THEME.primary }}
+                      style={{ color: primaryColor }}
                     >
                       {displayProfile.website.replace(/^https?:\/\//, "")}
                       <i className="ri-external-link-line fs-11" />
                     </a>
                   ) : (
-                    <span className="text-muted">—</span>
+                    <span style={{ color: textSub }}>—</span>
                   )}
                 </div>
 
                 <div className="d-flex justify-content-between align-items-center py-1">
-                  <span className="text-muted">Phone</span>
+                  <span style={{ color: textSub }}>Phone</span>
                   {displayProfile.phone ? (
                     <a
                       href={`tel:${displayProfile.phone}`}
-                      className="text-decoration-none fw-semibold text-dark text-end"
+                      className="text-decoration-none fw-semibold text-end"
+                      style={{ color: textTitle }}
                     >
                       {displayProfile.phone}
                     </a>
                   ) : (
-                    <span className="text-muted">—</span>
+                    <span style={{ color: textSub }}>—</span>
                   )}
                 </div>
 
                 <div className="d-flex justify-content-between align-items-center py-1">
-                  <span className="text-muted">Email</span>
+                  <span style={{ color: textSub }}>Email</span>
                   {displayProfile.email ? (
                     <a
                       href={`mailto:${displayProfile.email}`}
-                      className="text-decoration-none fw-semibold text-dark text-end text-truncate"
-                      style={{ maxWidth: "180px" }}
+                      className="text-decoration-none fw-semibold text-end text-truncate"
+                      style={{ maxWidth: "180px", color: textTitle }}
                     >
                       {displayProfile.email}
                     </a>
                   ) : (
-                    <span className="text-muted">—</span>
+                    <span style={{ color: textSub }}>—</span>
                   )}
                 </div>
 
                 <div className="d-flex justify-content-between align-items-center py-1">
-                  <span className="text-muted">Owner</span>
+                  <span style={{ color: textSub }}>Owner</span>
                   <div className="d-flex align-items-center gap-1.5">
                     <div
                       className="text-white d-inline-flex align-items-center justify-content-center fw-bold fs-10"
@@ -1035,33 +1120,33 @@ const CommunicationTimelineTab = ({
                         width: "18px",
                         height: "18px",
                         borderRadius: 0,
-                        backgroundColor: THEME.primary,
+                        backgroundColor: primaryColor,
                       }}
                     >
                       {(displayProfile.ownerName[0] || "S").toUpperCase()}
                     </div>
-                    <span className="text-dark fw-semibold">
+                    <span className="fw-semibold" style={{ color: textTitle }}>
                       {displayProfile.ownerName}
                     </span>
                   </div>
                 </div>
 
                 <div className="d-flex justify-content-between align-items-center py-1">
-                  <span className="text-muted">Lead Source</span>
-                  <span className="text-dark fw-semibold">
+                  <span style={{ color: textSub }}>Lead Source</span>
+                  <span className="fw-semibold" style={{ color: textTitle }}>
                     {displayProfile.leadSource}
                   </span>
                 </div>
 
                 <div className="d-flex justify-content-between align-items-center py-1">
-                  <span className="text-muted">Status</span>
+                  <span style={{ color: textSub }}>Status</span>
                   <span
                     className="badge px-2 py-1 fs-11"
                     style={{
                       borderRadius: 0,
-                      backgroundColor: "#dcfce7",
-                      color: "#15803d",
-                      border: "1px solid #bbf7d0",
+                      backgroundColor: isDark ? "rgba(22, 163, 74, 0.2)" : "#dcfce7",
+                      color: isDark ? "#4ade80" : "#15803d",
+                      border: isDark ? "1px solid rgba(22, 163, 74, 0.35)" : "1px solid #bbf7d0",
                       fontWeight: 600,
                       textTransform: "capitalize",
                     }}
@@ -1075,19 +1160,23 @@ const CommunicationTimelineTab = ({
 
           {/* Card 2: Interactive 2x3 Metric Grid with Filter Sync */}
           <Card
-            className="border shadow-sm mb-3 bg-white"
-            style={{ borderRadius: 0, borderColor: THEME.cardBorder }}
+            className="border shadow-sm mb-3"
+            style={{ borderRadius: 0, backgroundColor: cardBg, borderColor: cardBorder }}
           >
             <CardBody className="p-3">
-              <div className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
-                <h6 className="fw-bold text-dark mb-0 fs-14">Interaction Stats</h6>
+              <div
+                className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom"
+                style={{ borderColor: cardBorder }}
+              >
+                <h6 className="fw-bold mb-0 fs-14" style={{ color: textTitle }}>Interaction Stats</h6>
                 <Dropdown
                   isOpen={statsPeriodOpen}
                   toggle={() => setStatsPeriodOpen(!statsPeriodOpen)}
                 >
                   <DropdownToggle
                     color="link"
-                    className="p-0 text-decoration-none fs-12 text-muted fw-semibold d-flex align-items-center gap-1"
+                    className="p-0 text-decoration-none fs-12 fw-semibold d-flex align-items-center gap-1"
+                    style={{ color: textSub }}
                   >
                     <span>{statsPeriod}</span>
                     <i className="ri-arrow-down-s-line" />
@@ -1096,24 +1185,26 @@ const CommunicationTimelineTab = ({
                     end
                     style={{
                       borderRadius: 0,
-                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                      backgroundColor: cardBg,
+                      borderColor: cardBorder,
+                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.2)",
                     }}
                   >
                     <DropdownItem
                       onClick={() => setStatsPeriod("This Month")}
-                      style={{ borderRadius: 0 }}
+                      style={{ borderRadius: 0, color: textTitle }}
                     >
                       This Month
                     </DropdownItem>
                     <DropdownItem
                       onClick={() => setStatsPeriod("This Week")}
-                      style={{ borderRadius: 0 }}
+                      style={{ borderRadius: 0, color: textTitle }}
                     >
                       This Week
                     </DropdownItem>
                     <DropdownItem
                       onClick={() => setStatsPeriod("All Time")}
-                      style={{ borderRadius: 0 }}
+                      style={{ borderRadius: 0, color: textTitle }}
                     >
                       All Time
                     </DropdownItem>
@@ -1123,238 +1214,76 @@ const CommunicationTimelineTab = ({
 
               {/* 2x3 Interactive Metric Tiles */}
               <Row className="g-2 text-start">
-                {/* 1. Calls */}
-                <Col xs={6}>
-                  <div
-                    onClick={() => toggleFilterType("CALL")}
-                    className="p-2.5 border d-flex align-items-center gap-2 cursor-pointer shadow-sm transition"
-                    title={filterType === "CALL" ? "Click to show all" : "Click to filter Calls"}
-                    style={{
-                      borderRadius: 0,
-                      borderColor: filterType === "CALL" ? "#059669" : "#e2e8f0",
-                      backgroundColor: filterType === "CALL" ? "#ecfdf5" : "#ffffff",
-                      cursor: "pointer",
-                      borderWidth: filterType === "CALL" ? "1.5px" : "1px",
-                      transition: "all 0.15s ease",
-                    }}
-                  >
-                    <div
-                      className="d-flex align-items-center justify-content-center flex-shrink-0"
-                      style={{
-                        width: "34px",
-                        height: "34px",
-                        borderRadius: 0,
-                        backgroundColor: "#ecfdf5",
-                        color: "#059669",
-                      }}
-                    >
-                      <i className="ri-phone-line fs-17" />
-                    </div>
-                    <div>
-                      <div className="fw-bold fs-16 text-dark lh-1">
-                        {stats.calls_count || 0}
+                {[
+                  { key: "CALL", label: "Calls", count: stats.calls_count, icon: "ri-phone-line", color: "#059669", darkColor: "#34d399", bgLight: "#ecfdf5", bgDark: "rgba(5, 150, 105, 0.18)", borderDark: "rgba(5, 150, 105, 0.35)" },
+                  { key: "EMAIL", label: "Emails", count: stats.emails_count, icon: "ri-mail-line", color: "#2563eb", darkColor: "#60a5fa", bgLight: "#eff6ff", bgDark: "rgba(37, 99, 235, 0.18)", borderDark: "rgba(37, 99, 235, 0.35)" },
+                  { key: "MEETING", label: "Meetings", count: stats.meetings_count, icon: "ri-calendar-event-line", color: "#7c3aed", darkColor: "#c084fc", bgLight: "#f5f3ff", bgDark: "rgba(124, 58, 237, 0.18)", borderDark: "rgba(124, 58, 237, 0.35)" },
+                  { key: "NOTE", label: "Notes", count: stats.notes_count, icon: "ri-file-text-line", color: "#d97706", darkColor: "#fbbf24", bgLight: "#fffbeb", bgDark: "rgba(217, 119, 6, 0.18)", borderDark: "rgba(217, 119, 6, 0.35)" },
+                  { key: "TASK", label: "Tasks", count: stats.tasks_count, icon: "ri-checkbox-circle-line", color: "#0d9488", darkColor: "#2dd4bf", bgLight: "#f0fdfa", bgDark: "rgba(13, 148, 136, 0.18)", borderDark: "rgba(13, 148, 136, 0.35)" },
+                  { key: "DOCUMENT", label: "Documents", count: stats.documents_count, icon: "ri-folder-line", color: "#7f1d1d", darkColor: "#fca5a5", bgLight: "#fef2f2", bgDark: "rgba(127, 29, 29, 0.22)", borderDark: "rgba(127, 29, 29, 0.4)" },
+                ].map((tile) => {
+                  const isSelected = filterType === tile.key;
+                  return (
+                    <Col xs={6} key={tile.key}>
+                      <div
+                        onClick={() => toggleFilterType(tile.key)}
+                        className="p-2.5 border d-flex align-items-center gap-2 cursor-pointer shadow-sm transition"
+                        title={isSelected ? "Click to show all" : `Click to filter ${tile.label}`}
+                        style={{
+                          borderRadius: 0,
+                          borderColor: isSelected
+                            ? (isDark ? tile.borderDark : tile.color)
+                            : (isDark ? "#262626" : "#e2e8f0"),
+                          backgroundColor: isSelected
+                            ? (isDark ? tile.bgDark : tile.bgLight)
+                            : (isDark ? "#161b22" : "#ffffff"),
+                          cursor: "pointer",
+                          borderWidth: isSelected ? "1.5px" : "1px",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        <div
+                          className="d-flex align-items-center justify-content-center flex-shrink-0"
+                          style={{
+                            width: "34px",
+                            height: "34px",
+                            borderRadius: 0,
+                            backgroundColor: isDark ? tile.bgDark : tile.bgLight,
+                            color: isDark ? tile.darkColor : tile.color,
+                          }}
+                        >
+                          <i className={`${tile.icon} fs-17`} />
+                        </div>
+                        <div>
+                          <div className="fw-bold fs-16 lh-1" style={{ color: textTitle }}>
+                            {tile.count || 0}
+                          </div>
+                          <div className="fs-11 mt-1" style={{ color: textSub }}>{tile.label}</div>
+                        </div>
                       </div>
-                      <div className="text-muted fs-11 mt-1">Calls</div>
-                    </div>
-                  </div>
-                </Col>
-
-                {/* 2. Emails */}
-                <Col xs={6}>
-                  <div
-                    onClick={() => toggleFilterType("EMAIL")}
-                    className="p-2.5 border d-flex align-items-center gap-2 cursor-pointer shadow-sm transition"
-                    title={filterType === "EMAIL" ? "Click to show all" : "Click to filter Emails"}
-                    style={{
-                      borderRadius: 0,
-                      borderColor: filterType === "EMAIL" ? "#2563eb" : "#e2e8f0",
-                      backgroundColor: filterType === "EMAIL" ? "#eff6ff" : "#ffffff",
-                      cursor: "pointer",
-                      borderWidth: filterType === "EMAIL" ? "1.5px" : "1px",
-                      transition: "all 0.15s ease",
-                    }}
-                  >
-                    <div
-                      className="d-flex align-items-center justify-content-center flex-shrink-0"
-                      style={{
-                        width: "34px",
-                        height: "34px",
-                        borderRadius: 0,
-                        backgroundColor: "#eff6ff",
-                        color: "#2563eb",
-                      }}
-                    >
-                      <i className="ri-mail-line fs-17" />
-                    </div>
-                    <div>
-                      <div className="fw-bold fs-16 text-dark lh-1">
-                        {stats.emails_count || 0}
-                      </div>
-                      <div className="text-muted fs-11 mt-1">Emails</div>
-                    </div>
-                  </div>
-                </Col>
-
-                {/* 3. Meetings */}
-                <Col xs={6}>
-                  <div
-                    onClick={() => toggleFilterType("MEETING")}
-                    className="p-2.5 border d-flex align-items-center gap-2 cursor-pointer shadow-sm transition"
-                    title={filterType === "MEETING" ? "Click to show all" : "Click to filter Meetings"}
-                    style={{
-                      borderRadius: 0,
-                      borderColor: filterType === "MEETING" ? "#7c3aed" : "#e2e8f0",
-                      backgroundColor: filterType === "MEETING" ? "#f5f3ff" : "#ffffff",
-                      cursor: "pointer",
-                      borderWidth: filterType === "MEETING" ? "1.5px" : "1px",
-                      transition: "all 0.15s ease",
-                    }}
-                  >
-                    <div
-                      className="d-flex align-items-center justify-content-center flex-shrink-0"
-                      style={{
-                        width: "34px",
-                        height: "34px",
-                        borderRadius: 0,
-                        backgroundColor: "#f5f3ff",
-                        color: "#7c3aed",
-                      }}
-                    >
-                      <i className="ri-calendar-event-line fs-17" />
-                    </div>
-                    <div>
-                      <div className="fw-bold fs-16 text-dark lh-1">
-                        {stats.meetings_count || 0}
-                      </div>
-                      <div className="text-muted fs-11 mt-1">Meetings</div>
-                    </div>
-                  </div>
-                </Col>
-
-                {/* 4. Notes */}
-                <Col xs={6}>
-                  <div
-                    onClick={() => toggleFilterType("NOTE")}
-                    className="p-2.5 border d-flex align-items-center gap-2 cursor-pointer shadow-sm transition"
-                    title={filterType === "NOTE" ? "Click to show all" : "Click to filter Notes"}
-                    style={{
-                      borderRadius: 0,
-                      borderColor: filterType === "NOTE" ? "#d97706" : "#e2e8f0",
-                      backgroundColor: filterType === "NOTE" ? "#fffbeb" : "#ffffff",
-                      cursor: "pointer",
-                      borderWidth: filterType === "NOTE" ? "1.5px" : "1px",
-                      transition: "all 0.15s ease",
-                    }}
-                  >
-                    <div
-                      className="d-flex align-items-center justify-content-center flex-shrink-0"
-                      style={{
-                        width: "34px",
-                        height: "34px",
-                        borderRadius: 0,
-                        backgroundColor: "#fffbeb",
-                        color: "#d97706",
-                      }}
-                    >
-                      <i className="ri-file-text-line fs-17" />
-                    </div>
-                    <div>
-                      <div className="fw-bold fs-16 text-dark lh-1">
-                        {stats.notes_count || 0}
-                      </div>
-                      <div className="text-muted fs-11 mt-1">Notes</div>
-                    </div>
-                  </div>
-                </Col>
-
-                {/* 5. Tasks */}
-                <Col xs={6}>
-                  <div
-                    onClick={() => toggleFilterType("TASK")}
-                    className="p-2.5 border d-flex align-items-center gap-2 cursor-pointer shadow-sm transition"
-                    title={filterType === "TASK" ? "Click to show all" : "Click to filter Tasks"}
-                    style={{
-                      borderRadius: 0,
-                      borderColor: filterType === "TASK" ? "#0d9488" : "#e2e8f0",
-                      backgroundColor: filterType === "TASK" ? "#f0fdfa" : "#ffffff",
-                      cursor: "pointer",
-                      borderWidth: filterType === "TASK" ? "1.5px" : "1px",
-                      transition: "all 0.15s ease",
-                    }}
-                  >
-                    <div
-                      className="d-flex align-items-center justify-content-center flex-shrink-0"
-                      style={{
-                        width: "34px",
-                        height: "34px",
-                        borderRadius: 0,
-                        backgroundColor: "#f0fdfa",
-                        color: "#0d9488",
-                      }}
-                    >
-                      <i className="ri-checkbox-circle-line fs-17" />
-                    </div>
-                    <div>
-                      <div className="fw-bold fs-16 text-dark lh-1">
-                        {stats.tasks_count || 0}
-                      </div>
-                      <div className="text-muted fs-11 mt-1">Tasks</div>
-                    </div>
-                  </div>
-                </Col>
-
-                {/* 6. Documents */}
-                <Col xs={6}>
-                  <div
-                    onClick={() => toggleFilterType("DOCUMENT")}
-                    className="p-2.5 border d-flex align-items-center gap-2 cursor-pointer shadow-sm transition"
-                    title={filterType === "DOCUMENT" ? "Click to show all" : "Click to filter Documents"}
-                    style={{
-                      borderRadius: 0,
-                      borderColor: filterType === "DOCUMENT" ? "#7f1d1d" : "#e2e8f0",
-                      backgroundColor: filterType === "DOCUMENT" ? "#fef2f2" : "#ffffff",
-                      cursor: "pointer",
-                      borderWidth: filterType === "DOCUMENT" ? "1.5px" : "1px",
-                      transition: "all 0.15s ease",
-                    }}
-                  >
-                    <div
-                      className="d-flex align-items-center justify-content-center flex-shrink-0"
-                      style={{
-                        width: "34px",
-                        height: "34px",
-                        borderRadius: 0,
-                        backgroundColor: "#fef2f2",
-                        color: "#7f1d1d",
-                      }}
-                    >
-                      <i className="ri-folder-line fs-17" />
-                    </div>
-                    <div>
-                      <div className="fw-bold fs-16 text-dark lh-1">
-                        {stats.documents_count || 0}
-                      </div>
-                      <div className="text-muted fs-11 mt-1">Documents</div>
-                    </div>
-                  </div>
-                </Col>
+                    </Col>
+                  );
+                })}
               </Row>
             </CardBody>
           </Card>
 
           {/* Card 3: Filter Timeline Panel with Live State Binding */}
           <Card
-            className="border shadow-sm mb-3 bg-white"
-            style={{ borderRadius: 0, borderColor: THEME.cardBorder }}
+            className="border shadow-sm mb-3"
+            style={{ borderRadius: 0, backgroundColor: cardBg, borderColor: cardBorder }}
           >
             <CardBody className="p-3">
-              <div className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
-                <h6 className="fw-bold text-dark mb-0 fs-14">Filter Timeline</h6>
+              <div
+                className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom"
+                style={{ borderColor: cardBorder }}
+              >
+                <h6 className="fw-bold mb-0 fs-14" style={{ color: textTitle }}>Filter Timeline</h6>
                 <button
                   type="button"
                   onClick={handleClearFilters}
                   className="btn btn-link p-0 text-decoration-none fs-12 fw-semibold"
-                  style={{ color: THEME.primary }}
+                  style={{ color: primaryColor }}
                 >
                   Clear All
                 </button>
@@ -1363,7 +1292,7 @@ const CommunicationTimelineTab = ({
               <div className="d-flex flex-column gap-3">
                 {/* 1. Interaction Type Select */}
                 <div>
-                  <Label className="fs-12 fw-semibold text-muted mb-1">
+                  <Label className="fs-12 fw-semibold mb-1" style={{ color: textSub }}>
                     Interaction Type
                   </Label>
                   <Input
@@ -1371,7 +1300,12 @@ const CommunicationTimelineTab = ({
                     bsSize="sm"
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
-                    style={{ borderRadius: 0, borderColor: "#cbd5e1" }}
+                    style={{
+                      borderRadius: 0,
+                      borderColor: subtleBorder,
+                      backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                      color: textTitle,
+                    }}
                   >
                     <option value="ALL">All Interaction Types</option>
                     <option value="CALL">Calls Only</option>
@@ -1385,7 +1319,7 @@ const CommunicationTimelineTab = ({
 
                 {/* 2. User / Sales Rep Select */}
                 <div>
-                  <Label className="fs-12 fw-semibold text-muted mb-1">
+                  <Label className="fs-12 fw-semibold mb-1" style={{ color: textSub }}>
                     Sales Rep / User
                   </Label>
                   <Input
@@ -1393,7 +1327,12 @@ const CommunicationTimelineTab = ({
                     bsSize="sm"
                     value={selectedOwnerId}
                     onChange={(e) => setSelectedOwnerId(e.target.value)}
-                    style={{ borderRadius: 0, borderColor: "#cbd5e1" }}
+                    style={{
+                      borderRadius: 0,
+                      borderColor: subtleBorder,
+                      backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                      color: textTitle,
+                    }}
                   >
                     <option value="">All Users</option>
                     {lookups.owners?.map((o) => (
@@ -1406,7 +1345,7 @@ const CommunicationTimelineTab = ({
 
                 {/* 3. Date Range (From / To) */}
                 <div>
-                  <Label className="fs-12 fw-semibold text-muted mb-1">
+                  <Label className="fs-12 fw-semibold mb-1" style={{ color: textSub }}>
                     Date Range
                   </Label>
                   <Row className="g-2">
@@ -1417,7 +1356,12 @@ const CommunicationTimelineTab = ({
                         value={dateFrom}
                         onChange={(e) => setDateFrom(e.target.value)}
                         placeholder="From"
-                        style={{ borderRadius: 0, borderColor: "#cbd5e1" }}
+                        style={{
+                          borderRadius: 0,
+                          borderColor: subtleBorder,
+                          backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                          color: textTitle,
+                        }}
                       />
                     </Col>
                     <Col xs={6}>
@@ -1427,7 +1371,12 @@ const CommunicationTimelineTab = ({
                         value={dateTo}
                         onChange={(e) => setDateTo(e.target.value)}
                         placeholder="To"
-                        style={{ borderRadius: 0, borderColor: "#cbd5e1" }}
+                        style={{
+                          borderRadius: 0,
+                          borderColor: subtleBorder,
+                          backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                          color: textTitle,
+                        }}
                       />
                     </Col>
                   </Row>
@@ -1437,11 +1386,13 @@ const CommunicationTimelineTab = ({
                 <Button
                   color="light"
                   size="sm"
-                  className="border bg-white text-dark fw-semibold w-100 py-2 d-flex align-items-center justify-content-center gap-2 mt-1 shadow-sm"
+                  className="border fw-semibold w-100 py-2 d-flex align-items-center justify-content-center gap-2 mt-1 shadow-sm"
                   onClick={handleExportCsv}
                   style={{
                     borderRadius: 0,
-                    borderColor: "#cbd5e1",
+                    backgroundColor: subtleBg,
+                    borderColor: subtleBorder,
+                    color: textTitle,
                   }}
                 >
                   <i className="ri-download-2-line fs-14" />
@@ -1466,17 +1417,17 @@ const CommunicationTimelineTab = ({
         <ModalHeader
           toggle={() => setLogModalOpen(false)}
           className="border-bottom"
-          style={{ backgroundColor: "#ffffff" }}
+          style={{ backgroundColor: subtleBg, borderColor: cardBorder }}
         >
-          <span className="fw-bold fs-16 text-dark d-flex align-items-center gap-2">
+          <span className="fw-bold fs-16 d-flex align-items-center gap-2" style={{ color: textTitle }}>
             <span
               className="d-inline-flex align-items-center justify-content-center"
               style={{
                 width: "28px",
                 height: "28px",
                 borderRadius: 0,
-                backgroundColor: "#fef2f2",
-                color: THEME.primary,
+                backgroundColor: isDark ? "rgba(127, 29, 29, 0.25)" : "#fef2f2",
+                color: primaryColor,
               }}
             >
               <i className="ri-calendar-event-line" />
@@ -1485,11 +1436,11 @@ const CommunicationTimelineTab = ({
           </span>
         </ModalHeader>
         <Form onSubmit={handleLogSubmit}>
-          <ModalBody className="p-4 bg-white">
+          <ModalBody className="p-4" style={{ backgroundColor: cardBg, color: textTitle }}>
             {/* Modal Sub-tabs for Activity Type */}
             <div
               className="d-flex align-items-center gap-2 mb-4 p-1 border"
-              style={{ backgroundColor: "#f8fafc", borderRadius: 0 }}
+              style={{ backgroundColor: subtleBg, borderColor: subtleBorder, borderRadius: 0 }}
             >
               {[
                 { id: "CALL", label: "Call", icon: "ri-phone-line" },
@@ -1518,8 +1469,8 @@ const CommunicationTimelineTab = ({
                     className="btn btn-sm flex-fill fw-semibold d-inline-flex align-items-center justify-content-center gap-1"
                     style={{
                       borderRadius: 0,
-                      backgroundColor: isSelected ? THEME.primary : "transparent",
-                      color: isSelected ? "#ffffff" : "#475569",
+                      backgroundColor: isSelected ? primaryColor : "transparent",
+                      color: isSelected ? "#ffffff" : textSub,
                       border: "none",
                       height: "36px",
                       transition: "all 0.15s ease",
@@ -1536,7 +1487,7 @@ const CommunicationTimelineTab = ({
               {/* Subject / Title */}
               <Col md={8}>
                 <FormGroup className="mb-0">
-                  <Label className="fs-12 fw-semibold text-dark">
+                  <Label className="fs-12 fw-semibold" style={{ color: textTitle }}>
                     Subject / Title <span className="text-danger">*</span>
                   </Label>
                   <Input
@@ -1547,7 +1498,12 @@ const CommunicationTimelineTab = ({
                       setLogForm((prev) => ({ ...prev, title: e.target.value }))
                     }
                     placeholder="e.g. Follow-up discussion regarding quotation"
-                    style={{ borderRadius: 0, borderColor: "#cbd5e1" }}
+                    style={{
+                      borderRadius: 0,
+                      borderColor: subtleBorder,
+                      backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                      color: textTitle,
+                    }}
                   />
                 </FormGroup>
               </Col>
@@ -1555,14 +1511,19 @@ const CommunicationTimelineTab = ({
               {/* Direction */}
               <Col md={4}>
                 <FormGroup className="mb-0">
-                  <Label className="fs-12 fw-semibold text-dark">Direction</Label>
+                  <Label className="fs-12 fw-semibold" style={{ color: textTitle }}>Direction</Label>
                   <Input
                     type="select"
                     value={logForm.direction}
                     onChange={(e) =>
                       setLogForm((prev) => ({ ...prev, direction: e.target.value }))
                     }
-                    style={{ borderRadius: 0, borderColor: "#cbd5e1" }}
+                    style={{
+                      borderRadius: 0,
+                      borderColor: subtleBorder,
+                      backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                      color: textTitle,
+                    }}
                   >
                     <option value="Outbound">Outbound</option>
                     <option value="Inbound">Inbound</option>
@@ -1575,7 +1536,7 @@ const CommunicationTimelineTab = ({
               {/* Contact Person */}
               <Col md={6}>
                 <FormGroup className="mb-0">
-                  <Label className="fs-12 fw-semibold text-dark">
+                  <Label className="fs-12 fw-semibold" style={{ color: textTitle }}>
                     Contact Person
                   </Label>
                   <Input
@@ -1591,7 +1552,12 @@ const CommunicationTimelineTab = ({
                         contactInfo: selected?.mobile || selected?.email || prev.contactInfo,
                       }));
                     }}
-                    style={{ borderRadius: 0, borderColor: "#cbd5e1" }}
+                    style={{
+                      borderRadius: 0,
+                      borderColor: subtleBorder,
+                      backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                      color: textTitle,
+                    }}
                   >
                     <option value="">Select Customer Contact</option>
                     {lookups.contacts?.map((c) => (
@@ -1606,7 +1572,7 @@ const CommunicationTimelineTab = ({
               {/* Contact Info (Phone / Email) */}
               <Col md={6}>
                 <FormGroup className="mb-0">
-                  <Label className="fs-12 fw-semibold text-dark">
+                  <Label className="fs-12 fw-semibold" style={{ color: textTitle }}>
                     Contact Phone / Email
                   </Label>
                   <Input
@@ -1616,7 +1582,12 @@ const CommunicationTimelineTab = ({
                       setLogForm((prev) => ({ ...prev, contactInfo: e.target.value }))
                     }
                     placeholder="e.g. +91 98765 43210"
-                    style={{ borderRadius: 0, borderColor: "#cbd5e1" }}
+                    style={{
+                      borderRadius: 0,
+                      borderColor: subtleBorder,
+                      backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                      color: textTitle,
+                    }}
                   />
                 </FormGroup>
               </Col>
@@ -1624,7 +1595,7 @@ const CommunicationTimelineTab = ({
               {/* Date & Time */}
               <Col md={4}>
                 <FormGroup className="mb-0">
-                  <Label className="fs-12 fw-semibold text-dark">Date & Time</Label>
+                  <Label className="fs-12 fw-semibold" style={{ color: textTitle }}>Date & Time</Label>
                   <Input
                     type="datetime-local"
                     value={logForm.interactionTime}
@@ -1634,7 +1605,12 @@ const CommunicationTimelineTab = ({
                         interactionTime: e.target.value,
                       }))
                     }
-                    style={{ borderRadius: 0, borderColor: "#cbd5e1" }}
+                    style={{
+                      borderRadius: 0,
+                      borderColor: subtleBorder,
+                      backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                      color: textTitle,
+                    }}
                   />
                 </FormGroup>
               </Col>
@@ -1642,7 +1618,7 @@ const CommunicationTimelineTab = ({
               {/* Duration Minutes */}
               <Col md={4}>
                 <FormGroup className="mb-0">
-                  <Label className="fs-12 fw-semibold text-dark">
+                  <Label className="fs-12 fw-semibold" style={{ color: textTitle }}>
                     Duration (Minutes)
                   </Label>
                   <Input
@@ -1656,7 +1632,12 @@ const CommunicationTimelineTab = ({
                         durationMinutes: e.target.value,
                       }))
                     }
-                    style={{ borderRadius: 0, borderColor: "#cbd5e1" }}
+                    style={{
+                      borderRadius: 0,
+                      borderColor: subtleBorder,
+                      backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                      color: textTitle,
+                    }}
                   />
                 </FormGroup>
               </Col>
@@ -1664,7 +1645,7 @@ const CommunicationTimelineTab = ({
               {/* Sales Rep / Owner */}
               <Col md={4}>
                 <FormGroup className="mb-0">
-                  <Label className="fs-12 fw-semibold text-dark">
+                  <Label className="fs-12 fw-semibold" style={{ color: textTitle }}>
                     Sales Rep / Owner
                   </Label>
                   <Input
@@ -1673,7 +1654,12 @@ const CommunicationTimelineTab = ({
                     onChange={(e) =>
                       setLogForm((prev) => ({ ...prev, ownerId: e.target.value }))
                     }
-                    style={{ borderRadius: 0, borderColor: "#cbd5e1" }}
+                    style={{
+                      borderRadius: 0,
+                      borderColor: subtleBorder,
+                      backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                      color: textTitle,
+                    }}
                   >
                     <option value="">Select Rep</option>
                     {lookups.owners?.map((o) => (
@@ -1688,7 +1674,7 @@ const CommunicationTimelineTab = ({
               {/* Notes / Description */}
               <Col md={12}>
                 <FormGroup className="mb-0">
-                  <Label className="fs-12 fw-semibold text-dark">
+                  <Label className="fs-12 fw-semibold" style={{ color: textTitle }}>
                     Notes & Discussion Points
                   </Label>
                   <Input
@@ -1702,15 +1688,20 @@ const CommunicationTimelineTab = ({
                       }))
                     }
                     placeholder="Log summary of customer discussion, requirements, next steps, feedback..."
-                    style={{ borderRadius: 0, borderColor: "#cbd5e1" }}
+                    style={{
+                      borderRadius: 0,
+                      borderColor: subtleBorder,
+                      backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                      color: textTitle,
+                    }}
                   />
                 </FormGroup>
               </Col>
             </Row>
           </ModalBody>
           <ModalFooter
-            className="border-top bg-light d-flex justify-content-end gap-2"
-            style={{ borderRadius: 0 }}
+            className="border-top d-flex justify-content-end gap-2"
+            style={{ borderRadius: 0, backgroundColor: subtleBg, borderColor: cardBorder }}
           >
             <Button
               type="button"
@@ -1718,7 +1709,12 @@ const CommunicationTimelineTab = ({
               className="border"
               onClick={() => setLogModalOpen(false)}
               disabled={logSubmitting}
-              style={{ borderRadius: 0 }}
+              style={{
+                borderRadius: 0,
+                backgroundColor: isDark ? "#212529" : "#ffffff",
+                borderColor: subtleBorder,
+                color: textTitle,
+              }}
             >
               Cancel
             </Button>
@@ -1727,8 +1723,8 @@ const CommunicationTimelineTab = ({
               className="text-white fw-semibold px-4"
               disabled={logSubmitting}
               style={{
-                backgroundColor: THEME.primary,
-                borderColor: THEME.primary,
+                backgroundColor: primaryColor,
+                borderColor: primaryColor,
                 borderRadius: 0,
               }}
             >
@@ -1756,69 +1752,72 @@ const CommunicationTimelineTab = ({
         <ModalHeader
           toggle={() => setDetailModalOpen(false)}
           className="border-bottom"
+          style={{ backgroundColor: subtleBg, borderColor: cardBorder }}
         >
-          <span className="fw-bold fs-16 text-dark">Interaction Details</span>
+          <span className="fw-bold fs-16" style={{ color: textTitle }}>Interaction Details</span>
         </ModalHeader>
-        <ModalBody className="p-4 bg-white">
+        <ModalBody className="p-4" style={{ backgroundColor: cardBg, color: textTitle }}>
           {activeItem && (
             <div className="d-flex flex-column gap-3 fs-13">
               <div>
-                <div className="text-muted fs-11 text-uppercase fw-bold mb-1">
+                <div className="fs-11 text-uppercase fw-bold mb-1" style={{ color: textSub }}>
                   Title & Type
                 </div>
                 <div className="d-flex align-items-center gap-2 flex-wrap">
-                  <span className="fw-bold fs-15 text-dark">
+                  <span className="fw-bold fs-15" style={{ color: textTitle }}>
                     {activeItem.title}
                   </span>
-                  {getDirectionBadge(activeItem.direction)}
+                  {getDirectionBadge(activeItem.direction, isDark)}
                 </div>
               </div>
 
-              <Row className="g-2 pt-2 border-top">
+              <Row className="g-2 pt-2 border-top" style={{ borderColor: cardBorder }}>
                 <Col xs={6}>
-                  <div className="text-muted fs-11">Date & Time</div>
-                  <div className="fw-semibold text-dark mt-1">
+                  <div className="fs-11" style={{ color: textSub }}>Date & Time</div>
+                  <div className="fw-semibold mt-1" style={{ color: textTitle }}>
                     {activeItem.date_label} at {activeItem.time_label}
                   </div>
                 </Col>
                 <Col xs={6}>
-                  <div className="text-muted fs-11">Duration</div>
-                  <div className="fw-semibold text-dark mt-1">
+                  <div className="fs-11" style={{ color: textSub }}>Duration</div>
+                  <div className="fw-semibold mt-1" style={{ color: textTitle }}>
                     {activeItem.duration_label || "—"}
                   </div>
                 </Col>
               </Row>
 
-              <Row className="g-2 pt-2 border-top">
+              <Row className="g-2 pt-2 border-top" style={{ borderColor: cardBorder }}>
                 <Col xs={6}>
-                  <div className="text-muted fs-11">Contact Person</div>
-                  <div className="fw-semibold text-dark mt-1">
+                  <div className="fs-11" style={{ color: textSub }}>Contact Person</div>
+                  <div className="fw-semibold mt-1" style={{ color: textTitle }}>
                     {activeItem.contact_person || "—"}
                   </div>
                   {activeItem.contact_info && (
-                    <div className="text-muted fs-12">
+                    <div className="fs-12" style={{ color: textSub }}>
                       {activeItem.contact_info}
                     </div>
                   )}
                 </Col>
                 <Col xs={6}>
-                  <div className="text-muted fs-11">Assigned Sales Rep</div>
-                  <div className="fw-semibold text-dark mt-1">
+                  <div className="fs-11" style={{ color: textSub }}>Assigned Sales Rep</div>
+                  <div className="fw-semibold mt-1" style={{ color: textTitle }}>
                     {activeItem.employee_name || "—"}
                   </div>
                 </Col>
               </Row>
 
               {activeItem.description && (
-                <div className="pt-2 border-top">
-                  <div className="text-muted fs-11 text-uppercase fw-bold mb-1">
+                <div className="pt-2 border-top" style={{ borderColor: cardBorder }}>
+                  <div className="fs-11 text-uppercase fw-bold mb-1" style={{ color: textSub }}>
                     Discussion Notes
                   </div>
                   <div
-                    className="p-3 bg-light border text-dark"
+                    className="p-3 border"
                     style={{
                       borderRadius: 0,
-                      borderColor: "#e2e8f0",
+                      backgroundColor: subtleBg,
+                      borderColor: subtleBorder,
+                      color: textTitle,
                       whiteSpace: "pre-line",
                       lineHeight: 1.55,
                     }}
@@ -1830,12 +1829,20 @@ const CommunicationTimelineTab = ({
             </div>
           )}
         </ModalBody>
-        <ModalFooter className="border-top bg-light" style={{ borderRadius: 0 }}>
+        <ModalFooter
+          className="border-top"
+          style={{ borderRadius: 0, backgroundColor: subtleBg, borderColor: cardBorder }}
+        >
           <Button
             color="light"
             className="border"
             onClick={() => setDetailModalOpen(false)}
-            style={{ borderRadius: 0 }}
+            style={{
+              borderRadius: 0,
+              backgroundColor: isDark ? "#212529" : "#ffffff",
+              borderColor: subtleBorder,
+              color: textTitle,
+            }}
           >
             Close
           </Button>
@@ -1854,7 +1861,7 @@ const CommunicationTimelineTab = ({
         <ModalHeader
           toggle={() => setDeleteModalOpen(false)}
           className="border-bottom text-danger"
-          style={{ backgroundColor: "#ffffff" }}
+          style={{ backgroundColor: subtleBg, borderColor: cardBorder }}
         >
           <span className="fw-bold fs-16 d-flex align-items-center gap-2">
             <span
@@ -1863,7 +1870,7 @@ const CommunicationTimelineTab = ({
                 width: "28px",
                 height: "28px",
                 borderRadius: 0,
-                backgroundColor: "#fee2e2",
+                backgroundColor: isDark ? "rgba(220, 38, 38, 0.2)" : "#fee2e2",
                 color: "#dc2626",
               }}
             >
@@ -1872,21 +1879,29 @@ const CommunicationTimelineTab = ({
             Confirm Delete Activity
           </span>
         </ModalHeader>
-        <ModalBody className="p-4 bg-white">
-          <p className="fs-13 text-dark mb-2">
+        <ModalBody className="p-4" style={{ backgroundColor: cardBg, color: textTitle }}>
+          <p className="fs-13 mb-2" style={{ color: textTitle }}>
             Are you sure you want to remove <strong>"{deletingTitle || "this activity"}"</strong> from the customer timeline?
           </p>
-          <div className="text-muted fs-12">
+          <div className="fs-12" style={{ color: textSub }}>
             This will permanently remove the logged activity and update customer interaction statistics.
           </div>
         </ModalBody>
-        <ModalFooter className="border-top bg-light d-flex justify-content-end gap-2" style={{ borderRadius: 0 }}>
+        <ModalFooter
+          className="border-top d-flex justify-content-end gap-2"
+          style={{ borderRadius: 0, backgroundColor: subtleBg, borderColor: cardBorder }}
+        >
           <Button
             color="light"
             className="border"
             onClick={() => setDeleteModalOpen(false)}
             disabled={deleting}
-            style={{ borderRadius: 0 }}
+            style={{
+              borderRadius: 0,
+              backgroundColor: isDark ? "#212529" : "#ffffff",
+              borderColor: subtleBorder,
+              color: textTitle,
+            }}
           >
             Cancel
           </Button>

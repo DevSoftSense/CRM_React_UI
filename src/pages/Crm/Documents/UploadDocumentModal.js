@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { useSelector } from "react-redux";
 import {
   Modal,
   ModalHeader,
@@ -114,6 +115,17 @@ const UploadDocumentModal = ({
     }
   };
 
+  const layoutModeType = useSelector((state) => state.Layout.layoutModeType);
+  const isDark = layoutModeType === "dark";
+
+  const modalBg = isDark ? "#121212" : "#ffffff";
+  const headerFooterBg = isDark ? "#1a202c" : "#f8fafc";
+  const modalBorder = isDark ? "#2d3748" : "#e2e8f0";
+  const inputBg = isDark ? "#1a202c" : "#ffffff";
+  const inputBorder = isDark ? "#334155" : "#ced4da";
+  const textTitle = isDark ? "#f8fafc" : "#0f172a";
+  const textSub = isDark ? "#94a3b8" : "#64748b";
+
   return (
     <Modal
       isOpen={isOpen}
@@ -125,284 +137,301 @@ const UploadDocumentModal = ({
       }}
       centered
       size="lg"
-      contentClassName="rounded-0 border-0 shadow-lg"
+      contentClassName="rounded-0 border shadow-lg"
+      style={{ borderRadius: 0 }}
     >
-      <ModalHeader
-        toggle={() => {
-          if (!submitting) {
-            toggle();
-            resetForm();
-          }
-        }}
-        className="rounded-0 bg-light border-bottom py-3"
-      >
-        <div className="d-flex align-items-center gap-2">
-          <i className="ri-upload-cloud-2-line text-danger fs-18" />
-          <span className="fw-semibold text-dark" style={{ fontSize: "16px" }}>
-            Upload Document
-          </span>
-        </div>
-      </ModalHeader>
-      <Form onSubmit={handleSubmit}>
-        <ModalBody className="p-4">
-          {/* Drag & Drop Zone */}
-          <div
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragOver(true);
-            }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current && fileInputRef.current.click()}
-            className="text-center p-4 mb-4"
-            style={{
-              border: `2px dashed ${dragOver ? "#7f1d1d" : "#cbd5e1"}`,
-              backgroundColor: dragOver ? "#fef2f2" : "#f8fafc",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-            }}
-          >
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={(e) => handleFileChange(e.target.files[0])}
-              style={{ display: "none" }}
-            />
-            <i
-              className="ri-upload-cloud-2-line text-muted mb-2 d-block"
-              style={{ fontSize: "42px", color: file ? "#7f1d1d" : undefined }}
-            />
-            {file ? (
-              <div>
-                <p className="fw-semibold text-dark mb-1">{file.name}</p>
-                <p className="text-muted small mb-0">
-                  {(file.size / 1024 / 1024).toFixed(2)} MB • Click or drag to replace
-                </p>
-              </div>
-            ) : (
-              <div>
-                <p className="fw-medium text-dark mb-1">
-                  Drag and drop your file here, or{" "}
-                  <span style={{ color: "#7f1d1d", fontWeight: 600 }}>browse</span>
-                </p>
-                <p className="text-muted small mb-0">
-                  Supports PDF, DOCX, XLSX, PPTX, ZIP, PNG, JPG (up to 50 MB)
-                </p>
-              </div>
-            )}
-          </div>
-
-          <Row className="g-3">
-            {/* Document Title */}
-            <Col md={12}>
-              <FormGroup className="mb-0">
-                <Label className="form-label text-muted small fw-semibold">
-                  Document Title <span className="text-danger">*</span>
-                </Label>
-                <Input
-                  type="text"
-                  className="rounded-0"
-                  placeholder="e.g. Sales Proposal for ABC Ltd."
-                  value={fileName}
-                  onChange={(e) => setFileName(e.target.value)}
-                  required
-                />
-              </FormGroup>
-            </Col>
-
-            {/* Folder Selection */}
-            <Col md={6}>
-              <FormGroup className="mb-0">
-                <Label className="form-label text-muted small fw-semibold">
-                  Folder <span className="text-danger">*</span>
-                </Label>
-                <Input
-                  type="select"
-                  className="rounded-0"
-                  value={folder}
-                  onChange={(e) => setFolder(e.target.value)}
-                  required
-                >
-                  <option value="">Select Folder...</option>
-                  {folders.map((f) => (
-                    <option key={f.folder_id || f.folder_name} value={f.folder_name}>
-                      {f.folder_name}
-                    </option>
-                  ))}
-                  {folders.length === 0 && (
-                    <>
-                      <option value="Proposals">Proposals</option>
-                      <option value="Pricing">Pricing</option>
-                      <option value="Contracts">Contracts</option>
-                      <option value="Quotations">Quotations</option>
-                      <option value="Presentations">Presentations</option>
-                      <option value="KYC">KYC</option>
-                      <option value="Reports">Reports</option>
-                    </>
-                  )}
-                </Input>
-              </FormGroup>
-            </Col>
-
-            {/* Owner Selection */}
-            <Col md={6}>
-              <FormGroup className="mb-0">
-                <Label className="form-label text-muted small fw-semibold">
-                  Owner / Uploader
-                </Label>
-                <Input
-                  type="select"
-                  className="rounded-0"
-                  value={ownerId}
-                  onChange={(e) => setOwnerId(e.target.value)}
-                >
-                  <option value="">Current User</option>
-                  {owners.map((o) => (
-                    <option key={o.employee_id} value={o.employee_id}>
-                      {o.full_name} ({o.email})
-                    </option>
-                  ))}
-                </Input>
-              </FormGroup>
-            </Col>
-
-            {/* Related Entity Type */}
-            <Col md={6}>
-              <FormGroup className="mb-0">
-                <Label className="form-label text-muted small fw-semibold">
-                  Related Entity
-                </Label>
-                <Input
-                  type="select"
-                  className="rounded-0"
-                  value={entityType}
-                  onChange={(e) => {
-                    setEntityType(e.target.value);
-                    setEntityId("");
-                  }}
-                >
-                  <option value="GLOBAL">Global / All Customers</option>
-                  <option value="CUSTOMER">Customer Account</option>
-                  <option value="OPPORTUNITY">Opportunity / Deal</option>
-                  <option value="LEAD">Lead</option>
-                </Input>
-              </FormGroup>
-            </Col>
-
-            {/* Related Entity Picker */}
-            <Col md={6}>
-              <FormGroup className="mb-0">
-                <Label className="form-label text-muted small fw-semibold">
-                  Related Record
-                </Label>
-                {entityType === "GLOBAL" ? (
-                  <Input
-                    type="text"
-                    className="rounded-0"
-                    value="All Customers (Global)"
-                    disabled
-                  />
-                ) : entityType === "CUSTOMER" ? (
-                  <Input
-                    type="select"
-                    className="rounded-0"
-                    value={entityId}
-                    onChange={(e) => setEntityId(e.target.value)}
-                  >
-                    <option value="">Select Customer...</option>
-                    {accounts.map((a) => (
-                      <option key={a.account_id} value={a.account_id}>
-                        {a.display_name || a.company_name}
-                      </option>
-                    ))}
-                  </Input>
-                ) : entityType === "OPPORTUNITY" ? (
-                  <Input
-                    type="select"
-                    className="rounded-0"
-                    value={entityId}
-                    onChange={(e) => setEntityId(e.target.value)}
-                  >
-                    <option value="">Select Opportunity...</option>
-                    {opportunities.map((op) => (
-                      <option key={op.opportunity_id} value={op.opportunity_id}>
-                        {op.name}
-                      </option>
-                    ))}
-                  </Input>
-                ) : entityType === "LEAD" ? (
-                  <Input
-                    type="select"
-                    className="rounded-0"
-                    value={entityId}
-                    onChange={(e) => setEntityId(e.target.value)}
-                  >
-                    <option value="">Select Lead...</option>
-                    {leads.map((l) => (
-                      <option key={l.lead_id} value={l.lead_id}>
-                        {l.lead_name} {l.company_name ? `(${l.company_name})` : ""}
-                      </option>
-                    ))}
-                  </Input>
-                ) : (
-                  <Input
-                    type="text"
-                    className="rounded-0"
-                    placeholder="Enter entity ID"
-                    value={entityId}
-                    onChange={(e) => setEntityId(e.target.value)}
-                  />
-                )}
-              </FormGroup>
-            </Col>
-
-            {/* Description */}
-            <Col md={12}>
-              <FormGroup className="mb-0">
-                <Label className="form-label text-muted small fw-semibold">
-                  Description / Notes
-                </Label>
-                <Input
-                  type="textarea"
-                  rows={3}
-                  className="rounded-0"
-                  placeholder="Add notes, document details, or action items..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-              </FormGroup>
-            </Col>
-          </Row>
-        </ModalBody>
-        <ModalFooter className="rounded-0 bg-light border-top py-2 px-4 d-flex justify-content-end gap-2">
-          <Button
-            type="button"
-            color="light"
-            className="rounded-0 px-4"
-            onClick={() => {
+      <div style={{ backgroundColor: modalBg, color: textTitle }}>
+        <ModalHeader
+          toggle={() => {
+            if (!submitting) {
               toggle();
               resetForm();
-            }}
-            disabled={submitting}
+            }
+          }}
+          className="rounded-0 border-bottom py-3"
+          style={{ backgroundColor: headerFooterBg, borderColor: modalBorder }}
+        >
+          <div className="d-flex align-items-center gap-2">
+            <i className="ri-upload-cloud-2-line text-danger fs-18" />
+            <span className="fw-semibold" style={{ fontSize: "16px", color: textTitle }}>
+              Upload Document
+            </span>
+          </div>
+        </ModalHeader>
+        <Form onSubmit={handleSubmit}>
+          <ModalBody className="p-4" style={{ backgroundColor: modalBg }}>
+            {/* Drag & Drop Zone */}
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOver(true);
+              }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current && fileInputRef.current.click()}
+              className="text-center p-4 mb-4"
+              style={{
+                border: `2px dashed ${dragOver ? (isDark ? "#f87171" : "#7f1d1d") : (isDark ? "#334155" : "#cbd5e1")}`,
+                backgroundColor: dragOver ? (isDark ? "rgba(127, 29, 29, 0.25)" : "#fef2f2") : (isDark ? "#1a202c" : "#f8fafc"),
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={(e) => handleFileChange(e.target.files[0])}
+                style={{ display: "none" }}
+              />
+              <i
+                className="ri-upload-cloud-2-line mb-2 d-block"
+                style={{ fontSize: "42px", color: file ? "#7f1d1d" : textSub }}
+              />
+              {file ? (
+                <div>
+                  <p className="fw-semibold mb-1" style={{ color: textTitle }}>{file.name}</p>
+                  <p className="small mb-0" style={{ color: textSub }}>
+                    {(file.size / 1024 / 1024).toFixed(2)} MB • Click or drag to replace
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <p className="fw-medium mb-1" style={{ color: textTitle }}>
+                    Drag and drop your file here, or{" "}
+                    <span style={{ color: isDark ? "#fca5a5" : "#7f1d1d", fontWeight: 600 }}>browse</span>
+                  </p>
+                  <p className="small mb-0" style={{ color: textSub }}>
+                    Supports PDF, DOCX, XLSX, PPTX, ZIP, PNG, JPG (up to 50 MB)
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <Row className="g-3">
+              {/* Document Title */}
+              <Col md={12}>
+                <FormGroup className="mb-0">
+                  <Label className="form-label small fw-semibold" style={{ color: textSub }}>
+                    Document Title <span className="text-danger">*</span>
+                  </Label>
+                  <Input
+                    type="text"
+                    className="rounded-0"
+                    placeholder="e.g. Sales Proposal for ABC Ltd."
+                    value={fileName}
+                    onChange={(e) => setFileName(e.target.value)}
+                    required
+                    style={{ backgroundColor: inputBg, borderColor: inputBorder, color: textTitle }}
+                  />
+                </FormGroup>
+              </Col>
+
+              {/* Folder Selection */}
+              <Col md={6}>
+                <FormGroup className="mb-0">
+                  <Label className="form-label small fw-semibold" style={{ color: textSub }}>
+                    Folder <span className="text-danger">*</span>
+                  </Label>
+                  <Input
+                    type="select"
+                    className="rounded-0"
+                    value={folder}
+                    onChange={(e) => setFolder(e.target.value)}
+                    required
+                    style={{ backgroundColor: inputBg, borderColor: inputBorder, color: textTitle }}
+                  >
+                    <option value="">Select Folder...</option>
+                    {folders.map((f) => (
+                      <option key={f.folder_id || f.folder_name} value={f.folder_name}>
+                        {f.folder_name}
+                      </option>
+                    ))}
+                    {folders.length === 0 && (
+                      <>
+                        <option value="Proposals">Proposals</option>
+                        <option value="Pricing">Pricing</option>
+                        <option value="Contracts">Contracts</option>
+                        <option value="Quotations">Quotations</option>
+                        <option value="Presentations">Presentations</option>
+                        <option value="KYC">KYC</option>
+                        <option value="Reports">Reports</option>
+                      </>
+                    )}
+                  </Input>
+                </FormGroup>
+              </Col>
+
+              {/* Owner Selection */}
+              <Col md={6}>
+                <FormGroup className="mb-0">
+                  <Label className="form-label small fw-semibold" style={{ color: textSub }}>
+                    Owner / Uploader
+                  </Label>
+                  <Input
+                    type="select"
+                    className="rounded-0"
+                    value={ownerId}
+                    onChange={(e) => setOwnerId(e.target.value)}
+                    style={{ backgroundColor: inputBg, borderColor: inputBorder, color: textTitle }}
+                  >
+                    <option value="">Current User</option>
+                    {owners.map((o) => (
+                      <option key={o.employee_id} value={o.employee_id}>
+                        {o.full_name} ({o.email})
+                      </option>
+                    ))}
+                  </Input>
+                </FormGroup>
+              </Col>
+
+              {/* Related Entity Type */}
+              <Col md={6}>
+                <FormGroup className="mb-0">
+                  <Label className="form-label small fw-semibold" style={{ color: textSub }}>
+                    Related Entity
+                  </Label>
+                  <Input
+                    type="select"
+                    className="rounded-0"
+                    value={entityType}
+                    onChange={(e) => {
+                      setEntityType(e.target.value);
+                      setEntityId("");
+                    }}
+                    style={{ backgroundColor: inputBg, borderColor: inputBorder, color: textTitle }}
+                  >
+                    <option value="GLOBAL">Global / All Customers</option>
+                    <option value="CUSTOMER">Customer Account</option>
+                    <option value="OPPORTUNITY">Opportunity / Deal</option>
+                    <option value="LEAD">Lead</option>
+                  </Input>
+                </FormGroup>
+              </Col>
+
+              {/* Related Entity Picker */}
+              <Col md={6}>
+                <FormGroup className="mb-0">
+                  <Label className="form-label small fw-semibold" style={{ color: textSub }}>
+                    Related Record
+                  </Label>
+                  {entityType === "GLOBAL" ? (
+                    <Input
+                      type="text"
+                      className="rounded-0"
+                      value="All Customers (Global)"
+                      disabled
+                      style={{ backgroundColor: isDark ? "#21262d" : "#e9ecef", borderColor: inputBorder, color: textSub }}
+                    />
+                  ) : entityType === "CUSTOMER" ? (
+                    <Input
+                      type="select"
+                      className="rounded-0"
+                      value={entityId}
+                      onChange={(e) => setEntityId(e.target.value)}
+                      style={{ backgroundColor: inputBg, borderColor: inputBorder, color: textTitle }}
+                    >
+                      <option value="">Select Customer...</option>
+                      {accounts.map((a) => (
+                        <option key={a.account_id} value={a.account_id}>
+                          {a.display_name || a.company_name}
+                        </option>
+                      ))}
+                    </Input>
+                  ) : entityType === "OPPORTUNITY" ? (
+                    <Input
+                      type="select"
+                      className="rounded-0"
+                      value={entityId}
+                      onChange={(e) => setEntityId(e.target.value)}
+                      style={{ backgroundColor: inputBg, borderColor: inputBorder, color: textTitle }}
+                    >
+                      <option value="">Select Opportunity...</option>
+                      {opportunities.map((op) => (
+                        <option key={op.opportunity_id} value={op.opportunity_id}>
+                          {op.name}
+                        </option>
+                      ))}
+                    </Input>
+                  ) : entityType === "LEAD" ? (
+                    <Input
+                      type="select"
+                      className="rounded-0"
+                      value={entityId}
+                      onChange={(e) => setEntityId(e.target.value)}
+                      style={{ backgroundColor: inputBg, borderColor: inputBorder, color: textTitle }}
+                    >
+                      <option value="">Select Lead...</option>
+                      {leads.map((l) => (
+                        <option key={l.lead_id} value={l.lead_id}>
+                          {l.lead_name} {l.company_name ? `(${l.company_name})` : ""}
+                        </option>
+                      ))}
+                    </Input>
+                  ) : (
+                    <Input
+                      type="text"
+                      className="rounded-0"
+                      placeholder="Enter entity ID"
+                      value={entityId}
+                      onChange={(e) => setEntityId(e.target.value)}
+                      style={{ backgroundColor: inputBg, borderColor: inputBorder, color: textTitle }}
+                    />
+                  )}
+                </FormGroup>
+              </Col>
+
+              {/* Description */}
+              <Col md={12}>
+                <FormGroup className="mb-0">
+                  <Label className="form-label small fw-semibold" style={{ color: textSub }}>
+                    Description / Notes
+                  </Label>
+                  <Input
+                    type="textarea"
+                    rows={3}
+                    className="rounded-0"
+                    placeholder="Add notes, document details, or action items..."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    style={{ backgroundColor: inputBg, borderColor: inputBorder, color: textTitle }}
+                  />
+                </FormGroup>
+              </Col>
+            </Row>
+          </ModalBody>
+          <ModalFooter
+            className="rounded-0 border-top py-2 px-4 d-flex justify-content-end gap-2"
+            style={{ backgroundColor: headerFooterBg, borderColor: modalBorder }}
           >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            className="rounded-0 px-4 text-white"
-            style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d" }}
-            disabled={submitting}
-          >
-            {submitting ? (
-              <>
-                <Spinner size="sm" className="me-2" /> Uploading...
-              </>
-            ) : (
-              "Upload Document"
-            )}
-          </Button>
-        </ModalFooter>
-      </Form>
+            <Button
+              type="button"
+              className="rounded-0 px-4 border"
+              style={{ backgroundColor: inputBg, borderColor: inputBorder, color: textTitle }}
+              onClick={() => {
+                toggle();
+                resetForm();
+              }}
+              disabled={submitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="rounded-0 px-4 text-white"
+              style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d" }}
+              disabled={submitting}
+            >
+              {submitting ? (
+                <>
+                  <Spinner size="sm" className="me-2" /> Uploading...
+                </>
+              ) : (
+                "Upload Document"
+              )}
+            </Button>
+          </ModalFooter>
+        </Form>
+      </div>
     </Modal>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useSelector } from "react-redux";
 import ReactApexChart from "react-apexcharts";
 import { Link } from "react-router-dom";
 import {
@@ -22,6 +23,18 @@ const TargetAchievementReportView = ({
   onOwnerChange,
   onExport,
 }) => {
+  const layoutMode = useSelector((state) => state.Layout?.layoutModeType);
+  const isDark = layoutMode === "dark";
+
+  // Dynamic Theme Colors
+  const cardBg = isDark ? "#161b22" : "#ffffff";
+  const cardBorder = isDark ? "#21262d" : "#e2e8f0";
+  const subtleBg = isDark ? "#0d1117" : "#f8fafc";
+  const subtleBorder = isDark ? "#30363d" : "#e2e8f0";
+  const textTitle = isDark ? "#f0f6fc" : "#0f172a";
+  const textSub = isDark ? "#8b949e" : "#64748b";
+  const primaryColor = "#7f1d1d";
+
   const [searchTerm, setSearchTerm] = useState("");
   const [attainmentFilter, setAttainmentFilter] = useState("ALL");
   const [pageSize, setPageSize] = useState(10);
@@ -190,13 +203,13 @@ const TargetAchievementReportView = ({
           bar: {
             horizontal: false,
             columnWidth: "46%",
-            borderRadius: 4,
+            borderRadius: 0,
             dataLabels: {
               position: "top",
             },
           },
         },
-        colors: ["#94a3b8", "#7f1d1d"], // Slate Gray (Target), SoftOnCloud Maroon (Won)
+        colors: [isDark ? "#64748b" : "#94a3b8", isDark ? "#dc2626" : "#7f1d1d"],
         dataLabels: {
           enabled: true,
           offsetY: -16,
@@ -204,7 +217,7 @@ const TargetAchievementReportView = ({
             fontSize: "10.5px",
             fontFamily: "Inter, sans-serif",
             fontWeight: 600,
-            colors: ["#1e293b"],
+            colors: [textTitle],
           },
           formatter: (val) => {
             if (!val || val === 0) return "";
@@ -218,7 +231,7 @@ const TargetAchievementReportView = ({
           colors: ["transparent"],
         },
         grid: {
-          borderColor: "#f1f5f9",
+          borderColor: cardBorder,
           strokeDashArray: 3,
           xaxis: { lines: { show: false } },
           yaxis: { lines: { show: true } },
@@ -228,13 +241,13 @@ const TargetAchievementReportView = ({
           categories,
           labels: {
             style: {
-              colors: "#334155",
+              colors: textSub,
               fontSize: "12px",
               fontFamily: "Inter, sans-serif",
               fontWeight: 600,
             },
           },
-          axisBorder: { color: "#e2e8f0" },
+          axisBorder: { color: cardBorder },
           axisTicks: { show: false },
         },
         yaxis: {
@@ -244,7 +257,7 @@ const TargetAchievementReportView = ({
           tickAmount: 4,
           labels: {
             style: {
-              colors: "#64748b",
+              colors: textSub,
               fontSize: "11px",
               fontFamily: "Inter, sans-serif",
             },
@@ -253,7 +266,7 @@ const TargetAchievementReportView = ({
               return `₹${val}`;
             },
           },
-          axisBorder: { show: true, color: "#e2e8f0" },
+          axisBorder: { show: true, color: cardBorder },
           axisTicks: { show: false },
         },
         legend: {
@@ -263,8 +276,11 @@ const TargetAchievementReportView = ({
           fontFamily: "Inter, sans-serif",
           fontWeight: 500,
           offsetY: -5,
+          labels: {
+            colors: textSub,
+          },
           markers: {
-            radius: 2,
+            radius: 0,
             width: 10,
             height: 10,
           },
@@ -277,7 +293,7 @@ const TargetAchievementReportView = ({
         },
       },
     };
-  }, [chartData, rawRows]);
+  }, [chartData, rawRows, isDark, textTitle, textSub, cardBorder]);
 
   // 2. Team Quota Attainment Donut Gauge
   const attainmentDonutConfig = useMemo(() => {
@@ -290,8 +306,8 @@ const TargetAchievementReportView = ({
           sparkline: { enabled: true },
         },
         labels: ["Won Revenue", "Quota Shortfall"],
-        colors: ["#7f1d1d", "#f1f5f9"], // Maroon (Achieved), Light Slate (Gap)
-        stroke: { width: 2, colors: ["#ffffff"] },
+        colors: [isDark ? "#dc2626" : "#7f1d1d", isDark ? "#21262d" : "#f1f5f9"],
+        stroke: { width: 2, colors: [cardBg] },
         legend: { show: false },
         dataLabels: { enabled: false },
         plotOptions: {
@@ -309,7 +325,7 @@ const TargetAchievementReportView = ({
         },
       },
     };
-  }, [totalWonAchieved, quotaGapAmount]);
+  }, [totalWonAchieved, quotaGapAmount, isDark, cardBg]);
 
   return (
     <div className="target-achievement-report-view">
@@ -318,10 +334,11 @@ const TargetAchievementReportView = ({
         {/* Card 1: Won Revenue Achieved */}
         <Col lg={3} sm={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               transition: "all 0.15s ease",
             }}
@@ -332,9 +349,9 @@ const TargetAchievementReportView = ({
                   style={{
                     width: "44px",
                     height: "44px",
-                    borderRadius: "4px",
-                    backgroundColor: "rgba(127, 29, 29, 0.08)",
-                    color: "#7f1d1d",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(127, 29, 29, 0.25)" : "rgba(127, 29, 29, 0.08)",
+                    color: isDark ? "#f87171" : "#7f1d1d",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -346,17 +363,18 @@ const TargetAchievementReportView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "10.5px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "10.5px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Won Revenue Achieved
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "22px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {formatCurrency(totalWonAchieved)}
@@ -365,7 +383,7 @@ const TargetAchievementReportView = ({
                     <span style={{ color: "#16a34a", fontSize: "11px", fontWeight: 600 }}>
                       <i className="ri-checkbox-circle-fill"></i> Closed Won
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       Sales achievement
                     </span>
                   </div>
@@ -378,10 +396,11 @@ const TargetAchievementReportView = ({
         {/* Card 2: Team Quota Attainment */}
         <Col lg={3} sm={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               transition: "all 0.15s ease",
             }}
@@ -392,9 +411,9 @@ const TargetAchievementReportView = ({
                   style={{
                     width: "44px",
                     height: "44px",
-                    borderRadius: "4px",
-                    backgroundColor: "#eff6ff",
-                    color: "#2563eb",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(37, 99, 235, 0.2)" : "#eff6ff",
+                    color: isDark ? "#60a5fa" : "#2563eb",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -406,26 +425,27 @@ const TargetAchievementReportView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "10.5px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "10.5px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Team Quota Attainment
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "22px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {teamAttainmentPct.toFixed(1)}%
                   </div>
                   <div className="d-flex align-items-center gap-1 mt-1">
-                    <span style={{ color: "#2563eb", fontSize: "11px", fontWeight: 600 }}>
+                    <span style={{ color: isDark ? "#60a5fa" : "#2563eb", fontSize: "11px", fontWeight: 600 }}>
                       <i className="ri-speed-up-fill"></i> Pacing
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       Target: ₹15 Lakhs
                     </span>
                   </div>
@@ -438,10 +458,11 @@ const TargetAchievementReportView = ({
         {/* Card 3: Quota Shortfall / Gap */}
         <Col lg={3} sm={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               transition: "all 0.15s ease",
             }}
@@ -452,9 +473,9 @@ const TargetAchievementReportView = ({
                   style={{
                     width: "44px",
                     height: "44px",
-                    borderRadius: "4px",
-                    backgroundColor: "#fffbeb",
-                    color: "#d97706",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(217, 119, 6, 0.2)" : "#fffbeb",
+                    color: isDark ? "#fbbf24" : "#d97706",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -466,26 +487,27 @@ const TargetAchievementReportView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "10.5px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "10.5px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Quota Shortfall / Gap
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "22px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {formatCurrency(quotaGapAmount)}
                   </div>
                   <div className="d-flex align-items-center gap-1 mt-1">
-                    <span style={{ color: "#d97706", fontSize: "11px", fontWeight: 600 }}>
+                    <span style={{ color: isDark ? "#fbbf24" : "#d97706", fontSize: "11px", fontWeight: 600 }}>
                       <i className="ri-time-line"></i> To Quota
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       Pipeline needed
                     </span>
                   </div>
@@ -498,10 +520,11 @@ const TargetAchievementReportView = ({
         {/* Card 4: Total Target Quota */}
         <Col lg={3} sm={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
@@ -511,9 +534,9 @@ const TargetAchievementReportView = ({
                   style={{
                     width: "44px",
                     height: "44px",
-                    borderRadius: "4px",
-                    backgroundColor: "#f1f5f9",
-                    color: "#475569",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(71, 85, 105, 0.3)" : "#f1f5f9",
+                    color: isDark ? "#94a3b8" : "#475569",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -525,26 +548,27 @@ const TargetAchievementReportView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "10.5px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "10.5px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Total Target Quota
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "22px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {formatCurrency(totalTargetAmount)}
                   </div>
                   <div className="d-flex align-items-center gap-1 mt-1">
-                    <span style={{ color: "#475569", fontSize: "11px", fontWeight: 600 }}>
+                    <span style={{ color: isDark ? "#94a3b8" : "#475569", fontSize: "11px", fontWeight: 600 }}>
                       {rawRows.length} Reps
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       Allocated target
                     </span>
                   </div>
@@ -560,27 +584,37 @@ const TargetAchievementReportView = ({
         {/* Col 1: Target Quota vs Won Revenue (Col lg=7) */}
         <Col lg={7} md={12}>
           <Card
-            className="h-100 bg-white d-flex flex-column"
+            className="h-100 d-flex flex-column"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
-              style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+              className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
+              style={{ backgroundColor: cardBg, borderColor: cardBorder }}
             >
               <div className="d-flex align-items-center gap-2">
                 <i
                   className="ri-bar-chart-2-fill"
                   style={{ color: "#7f1d1d", fontSize: "16px" }}
                 ></i>
-                <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+                <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                   Target Quota vs Won Revenue
                 </span>
               </div>
-              <span className="badge bg-light text-muted border" style={{ fontSize: "11px" }}>
+              <span
+                className="badge border"
+                style={{
+                  backgroundColor: subtleBg,
+                  color: textSub,
+                  borderColor: subtleBorder,
+                  borderRadius: 0,
+                  fontSize: "11px",
+                }}
+              >
                 Target vs Actual Achievement
               </span>
             </div>
@@ -599,34 +633,35 @@ const TargetAchievementReportView = ({
         {/* Col 2: Attainment Donut Gauge & Leaderboard (Col lg=5) */}
         <Col lg={5} md={12}>
           <Card
-            className="h-100 bg-white d-flex flex-column"
+            className="h-100 d-flex flex-column"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex align-items-center justify-content-between gap-2"
-              style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+              className="p-3 border-bottom d-flex align-items-center justify-content-between gap-2"
+              style={{ backgroundColor: cardBg, borderColor: cardBorder }}
             >
               <div className="d-flex align-items-center gap-2">
                 <i
                   className="ri-pie-chart-2-line"
                   style={{ color: "#7f1d1d", fontSize: "16px" }}
                 ></i>
-                <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+                <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                   Attainment Leaderboard
                 </span>
               </div>
               <span
                 style={{
-                  backgroundColor: "rgba(127, 29, 29, 0.08)",
-                  color: "#7f1d1d",
+                  backgroundColor: isDark ? "rgba(127, 29, 29, 0.25)" : "rgba(127, 29, 29, 0.08)",
+                  color: isDark ? "#f87171" : "#7f1d1d",
                   fontSize: "11px",
                   fontWeight: 600,
                   padding: "2px 8px",
-                  borderRadius: "4px",
+                  borderRadius: 0,
                 }}
               >
                 Team Pace: {teamAttainmentPct.toFixed(1)}%
@@ -662,7 +697,7 @@ const TargetAchievementReportView = ({
                       style={{
                         fontSize: "20px",
                         fontWeight: 700,
-                        color: "#0f172a",
+                        color: textTitle,
                         fontFamily: "Inter, sans-serif",
                         lineHeight: "1.1",
                       }}
@@ -672,7 +707,7 @@ const TargetAchievementReportView = ({
                     <div
                       style={{
                         fontSize: "10.5px",
-                        color: "#7f1d1d",
+                        color: isDark ? "#f87171" : "#7f1d1d",
                         fontWeight: 600,
                         fontFamily: "Inter, sans-serif",
                         marginTop: "2px",
@@ -688,17 +723,17 @@ const TargetAchievementReportView = ({
                   <div
                     className="p-2 border"
                     style={{
-                      backgroundColor: "rgba(127, 29, 29, 0.04)",
-                      borderColor: "rgba(127, 29, 29, 0.15)",
-                      borderRadius: "4px",
+                      backgroundColor: isDark ? "rgba(127, 29, 29, 0.15)" : "rgba(127, 29, 29, 0.04)",
+                      borderColor: isDark ? "rgba(127, 29, 29, 0.3)" : "rgba(127, 29, 29, 0.15)",
+                      borderRadius: 0,
                     }}
                   >
                     <div className="d-flex align-items-center justify-content-between">
-                      <span className="d-flex align-items-center gap-1.5 text-muted" style={{ fontSize: "11.5px" }}>
+                      <span className="d-flex align-items-center gap-1.5" style={{ fontSize: "11.5px", color: textSub }}>
                         <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#7f1d1d" }}></span>
                         Won Achieved
                       </span>
-                      <span className="fw-bold font-monospace text-dark" style={{ fontSize: "12px" }}>
+                      <span className="fw-bold font-monospace" style={{ fontSize: "12px", color: textTitle }}>
                         {formatCurrency(totalWonAchieved)}
                       </span>
                     </div>
@@ -707,17 +742,17 @@ const TargetAchievementReportView = ({
                   <div
                     className="p-2 border"
                     style={{
-                      backgroundColor: "#fffbeb",
-                      borderColor: "#fde68a",
-                      borderRadius: "4px",
+                      backgroundColor: isDark ? "rgba(217, 119, 6, 0.15)" : "#fffbeb",
+                      borderColor: isDark ? "rgba(217, 119, 6, 0.3)" : "#fde68a",
+                      borderRadius: 0,
                     }}
                   >
                     <div className="d-flex align-items-center justify-content-between">
-                      <span className="d-flex align-items-center gap-1.5 text-muted" style={{ fontSize: "11.5px" }}>
+                      <span className="d-flex align-items-center gap-1.5" style={{ fontSize: "11.5px", color: textSub }}>
                         <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#d97706" }}></span>
                         Quota Shortfall
                       </span>
-                      <span className="fw-bold font-monospace text-dark" style={{ fontSize: "12px" }}>
+                      <span className="fw-bold font-monospace" style={{ fontSize: "12px", color: textTitle }}>
                         {formatCurrency(quotaGapAmount)}
                       </span>
                     </div>
@@ -739,9 +774,13 @@ const TargetAchievementReportView = ({
                       key={r.employee_id || i}
                       className="p-2 border d-flex align-items-center justify-content-between"
                       style={{
-                        backgroundColor: isLeader ? "rgba(127, 29, 29, 0.03)" : "#ffffff",
-                        borderColor: isLeader ? "rgba(127, 29, 29, 0.15)" : "#e2e8f0",
-                        borderRadius: "4px",
+                        backgroundColor: isLeader
+                          ? (isDark ? "rgba(127, 29, 29, 0.2)" : "rgba(127, 29, 29, 0.04)")
+                          : (isDark ? subtleBg : "#ffffff"),
+                        borderColor: isLeader
+                          ? (isDark ? "rgba(127, 29, 29, 0.4)" : "rgba(127, 29, 29, 0.15)")
+                          : cardBorder,
+                        borderRadius: 0,
                       }}
                     >
                       <div className="d-flex align-items-center gap-2">
@@ -749,9 +788,9 @@ const TargetAchievementReportView = ({
                           style={{
                             width: "28px",
                             height: "28px",
-                            borderRadius: "4px",
-                            backgroundColor: isLeader ? "#7f1d1d" : "#f1f5f9",
-                            color: isLeader ? "#ffffff" : "#475569",
+                            borderRadius: 0,
+                            backgroundColor: isLeader ? "#7f1d1d" : (isDark ? "#21262d" : "#f1f5f9"),
+                            color: isLeader ? "#ffffff" : (isDark ? "#c9d1d9" : "#475569"),
                             display: "inline-flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -764,14 +803,14 @@ const TargetAchievementReportView = ({
                         </span>
                         <div>
                           <div className="d-flex align-items-center gap-1.5">
-                            <span className="text-dark fw-semibold" style={{ fontSize: "12px" }}>
+                            <span className="fw-semibold" style={{ fontSize: "12px", color: textTitle }}>
                               {r.sales_rep}
                             </span>
                             {isLeader && (
                               <i className="ri-vip-crown-fill" style={{ color: "#d97706", fontSize: "12px" }}></i>
                             )}
                           </div>
-                          <span className="text-muted font-monospace" style={{ fontSize: "10.5px" }}>
+                          <span className="font-monospace" style={{ fontSize: "10.5px", color: textSub }}>
                             {formatCurrency(won)} of {formatCurrency(target)}
                           </span>
                         </div>
@@ -781,12 +820,25 @@ const TargetAchievementReportView = ({
                         <span
                           className="badge font-monospace"
                           style={{
-                            backgroundColor: pct >= 50 ? "#f0fdf4" : (pct > 0 ? "#fffbeb" : "#fef2f2"),
-                            color: pct >= 50 ? "#166534" : (pct > 0 ? "#b45309" : "#991b1b"),
+                            backgroundColor: pct >= 50
+                              ? (isDark ? "rgba(22, 163, 74, 0.2)" : "#f0fdf4")
+                              : pct > 0
+                              ? (isDark ? "rgba(217, 119, 6, 0.2)" : "#fffbeb")
+                              : (isDark ? "rgba(239, 68, 68, 0.2)" : "#fef2f2"),
+                            color: pct >= 50
+                              ? (isDark ? "#4ade80" : "#166534")
+                              : pct > 0
+                              ? (isDark ? "#fbbf24" : "#b45309")
+                              : (isDark ? "#f87171" : "#991b1b"),
                             border: "1px solid",
-                            borderColor: pct >= 50 ? "#bbf7d0" : (pct > 0 ? "#fde68a" : "#fecaca"),
+                            borderColor: pct >= 50
+                              ? (isDark ? "rgba(22, 163, 74, 0.4)" : "#bbf7d0")
+                              : pct > 0
+                              ? (isDark ? "rgba(217, 119, 6, 0.4)" : "#fde68a")
+                              : (isDark ? "rgba(239, 68, 68, 0.4)" : "#fecaca"),
                             fontSize: "10.5px",
                             padding: "2px 6px",
+                            borderRadius: 0,
                           }}
                         >
                           {pct.toFixed(1)}%
@@ -796,8 +848,8 @@ const TargetAchievementReportView = ({
                           style={{
                             width: "55px",
                             height: "5px",
-                            backgroundColor: "#e2e8f0",
-                            borderRadius: "2px",
+                            backgroundColor: isDark ? "#21262d" : "#e2e8f0",
+                            borderRadius: 0,
                             overflow: "hidden",
                           }}
                         >
@@ -807,6 +859,7 @@ const TargetAchievementReportView = ({
                             style={{
                               width: `${Math.min(100, pct)}%`,
                               backgroundColor: pct >= 50 ? "#16a34a" : "#f97316",
+                              borderRadius: 0,
                             }}
                           ></div>
                         </div>
@@ -822,24 +875,25 @@ const TargetAchievementReportView = ({
 
       {/* ─── ROW 3: DETAILED QUOTA ATTAINMENT LEDGER (TABLE) ──────────────────── */}
       <Card
-        className="bg-white mb-4"
+        className="mb-4"
         style={{
-          borderRadius: "4px",
-          border: "1px solid #e2e8f0",
+          backgroundColor: cardBg,
+          borderRadius: 0,
+          border: `1px solid ${cardBorder}`,
           boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
       >
         <div
-          className="p-3 bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
+          className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
           style={{
-            borderRadius: "4px 4px 0 0",
-            borderColor: "#e2e8f0",
+            backgroundColor: cardBg,
+            borderColor: cardBorder,
           }}
         >
           <div>
             <h6
-              className="mb-0 fw-bold text-dark d-flex align-items-center gap-2"
-              style={{ fontSize: "14px" }}
+              className="mb-0 fw-bold d-flex align-items-center gap-2"
+              style={{ fontSize: "14px", color: textTitle }}
             >
               <i
                 className="ri-table-line"
@@ -847,7 +901,7 @@ const TargetAchievementReportView = ({
               ></i>
               Detailed Quota Attainment Ledger
             </h6>
-            <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+            <span style={{ fontSize: "11.5px", color: textSub }}>
               Showing {filteredRows.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{" "}
               {Math.min(currentPage * pageSize, filteredRows.length)} of {rawRows.length} sales reps
             </span>
@@ -861,10 +915,11 @@ const TargetAchievementReportView = ({
                 placeholder="Search sales rep..."
                 className="form-control-sm ps-4"
                 style={{
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
-                  borderColor: "#cbd5e1",
-                  backgroundColor: "#ffffff",
+                  borderColor: subtleBorder,
+                  backgroundColor: subtleBg,
+                  color: textTitle,
                 }}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -880,9 +935,11 @@ const TargetAchievementReportView = ({
               className="form-select form-select-sm"
               style={{
                 width: "155px",
-                borderRadius: "4px",
+                borderRadius: 0,
                 fontSize: "12px",
-                borderColor: "#cbd5e1",
+                borderColor: subtleBorder,
+                backgroundColor: subtleBg,
+                color: textTitle,
               }}
               value={attainmentFilter}
               onChange={(e) => setAttainmentFilter(e.target.value)}
@@ -897,10 +954,10 @@ const TargetAchievementReportView = ({
               type="button"
               className="btn btn-sm d-flex align-items-center gap-1"
               style={{
-                backgroundColor: "#ffffff",
-                color: "#7f1d1d",
-                border: "1px solid #e2e8f0",
-                borderRadius: "4px",
+                backgroundColor: isDark ? "rgba(127, 29, 29, 0.15)" : "#ffffff",
+                color: isDark ? "#f87171" : "#7f1d1d",
+                border: `1px solid ${isDark ? "rgba(127, 29, 29, 0.3)" : "#e2e8f0"}`,
+                borderRadius: 0,
                 fontSize: "12px",
                 fontWeight: 500,
                 padding: "5px 12px",
@@ -915,8 +972,8 @@ const TargetAchievementReportView = ({
         <CardBody className="p-0">
           <div className="table-responsive">
             <Table className="align-middle table-nowrap mb-0" hover>
-              <thead style={{ backgroundColor: "#f8fafc" }}>
-                <tr style={{ fontSize: "11.5px", color: "#64748b" }}>
+              <thead style={{ backgroundColor: subtleBg, borderBottom: `1px solid ${cardBorder}` }}>
+                <tr style={{ fontSize: "11.5px", color: textSub }}>
                   <th style={{ width: "40px" }} className="text-center">#</th>
                   <th style={{ minWidth: "160px" }}>SALES REP</th>
                   <th style={{ minWidth: "140px" }} className="text-center">TARGET QUOTA</th>
@@ -930,7 +987,7 @@ const TargetAchievementReportView = ({
               <tbody style={{ fontSize: "12.5px" }}>
                 {paginatedRows.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="text-center py-4 text-muted">
+                    <td colSpan="8" className="text-center py-4" style={{ color: textSub }}>
                       No sales reps match the search and filter criteria.
                     </td>
                   </tr>
@@ -944,25 +1001,25 @@ const TargetAchievementReportView = ({
                     const initials = getRepInitials(r.sales_rep);
 
                     let statusLabel = "Pipeline Needed";
-                    let statusColor = "#991b1b";
-                    let statusBg = "#fef2f2";
-                    let statusBorder = "#fecaca";
+                    let statusColor = isDark ? "#f87171" : "#991b1b";
+                    let statusBg = isDark ? "rgba(239, 68, 68, 0.15)" : "#fef2f2";
+                    let statusBorder = isDark ? "rgba(239, 68, 68, 0.3)" : "#fecaca";
 
                     if (pct >= 50) {
                       statusLabel = "On Track";
-                      statusColor = "#166534";
-                      statusBg = "#f0fdf4";
-                      statusBorder = "#bbf7d0";
+                      statusColor = isDark ? "#4ade80" : "#166534";
+                      statusBg = isDark ? "rgba(22, 163, 74, 0.15)" : "#f0fdf4";
+                      statusBorder = isDark ? "rgba(22, 163, 74, 0.3)" : "#bbf7d0";
                     } else if (pct > 0) {
                       statusLabel = "Active In Pace";
-                      statusColor = "#b45309";
-                      statusBg = "#fffbeb";
-                      statusBorder = "#fde68a";
+                      statusColor = isDark ? "#fbbf24" : "#b45309";
+                      statusBg = isDark ? "rgba(217, 119, 6, 0.15)" : "#fffbeb";
+                      statusBorder = isDark ? "rgba(217, 119, 6, 0.3)" : "#fde68a";
                     }
 
                     return (
-                      <tr key={r.employee_id || idx}>
-                        <td className="text-center text-muted" style={{ fontSize: "11px" }}>
+                      <tr key={r.employee_id || idx} style={{ borderBottom: `1px solid ${cardBorder}` }}>
+                        <td className="text-center" style={{ fontSize: "11px", color: textSub }}>
                           {rowNumber}
                         </td>
                         <td>
@@ -971,10 +1028,12 @@ const TargetAchievementReportView = ({
                               style={{
                                 width: "32px",
                                 height: "32px",
-                                borderRadius: "4px",
+                                borderRadius: 0,
                                 backgroundColor:
-                                  wonAmount > 0 ? "rgba(127, 29, 29, 0.08)" : "#f1f5f9",
-                                color: wonAmount > 0 ? "#7f1d1d" : "#475569",
+                                  wonAmount > 0
+                                    ? (isDark ? "rgba(127, 29, 29, 0.25)" : "rgba(127, 29, 29, 0.08)")
+                                    : (isDark ? "#21262d" : "#f1f5f9"),
+                                color: wonAmount > 0 ? (isDark ? "#f87171" : "#7f1d1d") : (isDark ? "#c9d1d9" : "#475569"),
                                 display: "inline-flex",
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -986,31 +1045,31 @@ const TargetAchievementReportView = ({
                               {initials}
                             </span>
                             <div>
-                              <span className="fw-semibold text-dark d-block">
+                              <span className="fw-semibold d-block" style={{ color: textTitle }}>
                                 {r.sales_rep}
                               </span>
-                              <span className="text-muted" style={{ fontSize: "11px" }}>
+                              <span style={{ fontSize: "11px", color: textSub }}>
                                 Rep #{r.employee_id}
                               </span>
                             </div>
                           </div>
                         </td>
-                        <td className="text-center font-monospace text-muted" style={{ fontSize: "12.5px" }}>
+                        <td className="text-center font-monospace" style={{ fontSize: "12.5px", color: textSub }}>
                           {formatCurrency(targetAmount)}
                         </td>
-                        <td className="text-center fw-bold font-monospace" style={{ fontSize: "13px", color: wonAmount > 0 ? "#7f1d1d" : "#64748b" }}>
+                        <td className="text-center fw-bold font-monospace" style={{ fontSize: "13px", color: wonAmount > 0 ? (isDark ? "#f87171" : "#7f1d1d") : textSub }}>
                           {formatCurrency(wonAmount)}
                         </td>
-                        <td className="text-center font-monospace" style={{ fontSize: "12.5px", color: gapAmount > 0 ? "#d97706" : "#16a34a" }}>
+                        <td className="text-center font-monospace" style={{ fontSize: "12.5px", color: gapAmount > 0 ? (isDark ? "#fbbf24" : "#d97706") : (isDark ? "#4ade80" : "#16a34a") }}>
                           {formatCurrency(gapAmount)}
                         </td>
                         <td className="text-center">
                           <div className="d-inline-flex flex-column" style={{ minWidth: "110px" }}>
                             <div className="d-flex align-items-center justify-content-between mb-1">
-                              <span className="fw-bold font-monospace text-dark" style={{ fontSize: "11.5px" }}>
+                              <span className="fw-bold font-monospace" style={{ fontSize: "11.5px", color: textTitle }}>
                                 {pct.toFixed(1)}%
                               </span>
-                              <span className="text-muted" style={{ fontSize: "10.5px" }}>
+                              <span style={{ fontSize: "10.5px", color: textSub }}>
                                 of quota
                               </span>
                             </div>
@@ -1019,8 +1078,8 @@ const TargetAchievementReportView = ({
                               style={{
                                 height: "5px",
                                 width: "100%",
-                                backgroundColor: "#e2e8f0",
-                                borderRadius: "2px",
+                                backgroundColor: isDark ? "#21262d" : "#e2e8f0",
+                                borderRadius: 0,
                                 overflow: "hidden",
                               }}
                             >
@@ -1029,7 +1088,8 @@ const TargetAchievementReportView = ({
                                 role="progressbar"
                                 style={{
                                   width: `${Math.min(100, pct)}%`,
-                                  backgroundColor: pct >= 50 ? "#16a34a" : (pct > 0 ? "#f97316" : "#cbd5e1"),
+                                  backgroundColor: pct >= 50 ? "#16a34a" : (pct > 0 ? "#f97316" : (isDark ? "#30363d" : "#cbd5e1")),
+                                  borderRadius: 0,
                                 }}
                               ></div>
                             </div>
@@ -1045,7 +1105,7 @@ const TargetAchievementReportView = ({
                               fontSize: "11px",
                               fontWeight: 600,
                               padding: "2.5px 8px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               display: "inline-block",
                             }}
                           >
@@ -1056,10 +1116,12 @@ const TargetAchievementReportView = ({
                           <div className="d-flex align-items-center justify-content-center gap-1">
                             <Link
                               to={`/crm/owners`}
-                              className="btn btn-sm btn-light border p-1"
+                              className="btn btn-sm border p-1"
                               style={{
-                                borderRadius: "4px",
-                                color: "#475569",
+                                borderRadius: 0,
+                                backgroundColor: subtleBg,
+                                borderColor: subtleBorder,
+                                color: textSub,
                                 width: "28px",
                                 height: "28px",
                                 display: "inline-flex",
@@ -1072,10 +1134,12 @@ const TargetAchievementReportView = ({
                             </Link>
                             <Link
                               to={`/crm/opportunities`}
-                              className="btn btn-sm btn-light border p-1"
+                              className="btn btn-sm border p-1"
                               style={{
-                                borderRadius: "4px",
-                                color: "#7f1d1d",
+                                borderRadius: 0,
+                                backgroundColor: subtleBg,
+                                borderColor: subtleBorder,
+                                color: isDark ? "#f87171" : "#7f1d1d",
                                 width: "28px",
                                 height: "28px",
                                 display: "inline-flex",
@@ -1097,14 +1161,24 @@ const TargetAchievementReportView = ({
           </div>
 
           {/* Table Footer Pagination */}
-          <div className="p-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div
+            className="p-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2"
+            style={{ borderColor: cardBorder }}
+          >
             <div className="d-flex align-items-center gap-2">
-              <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+              <span style={{ fontSize: "11.5px", color: textSub }}>
                 Show
               </span>
               <select
                 className="form-select form-select-sm"
-                style={{ width: "65px", fontSize: "11.5px", borderRadius: "4px" }}
+                style={{
+                  width: "65px",
+                  fontSize: "11.5px",
+                  borderRadius: 0,
+                  backgroundColor: subtleBg,
+                  color: textTitle,
+                  borderColor: subtleBorder,
+                }}
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
               >
@@ -1112,7 +1186,7 @@ const TargetAchievementReportView = ({
                 <option value={25}>25</option>
                 <option value={50}>50</option>
               </select>
-              <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+              <span style={{ fontSize: "11.5px", color: textSub }}>
                 Showing {filteredRows.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{" "}
                 {Math.min(currentPage * pageSize, filteredRows.length)} of {filteredRows.length} sales reps
               </span>
@@ -1121,8 +1195,14 @@ const TargetAchievementReportView = ({
             <div className="btn-group btn-group-sm">
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "4px 0 0 4px", fontSize: "11px" }}
+                className="btn btn-sm border"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  backgroundColor: subtleBg,
+                  color: textSub,
+                  borderColor: subtleBorder,
+                }}
                 disabled={currentPage <= 1}
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               >
@@ -1137,14 +1217,21 @@ const TargetAchievementReportView = ({
                   fontSize: "11px",
                   fontWeight: 600,
                   border: "1px solid #7f1d1d",
+                  borderRadius: 0,
                 }}
               >
                 {currentPage}
               </button>
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "0 4px 4px 0", fontSize: "11px" }}
+                className="btn btn-sm border"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  backgroundColor: subtleBg,
+                  color: textSub,
+                  borderColor: subtleBorder,
+                }}
                 disabled={currentPage >= totalPages}
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               >
@@ -1157,10 +1244,11 @@ const TargetAchievementReportView = ({
 
       {/* ─── ROW 4: QUOTA PACING & ATTAINMENT STRIP ─────────────────────────── */}
       <Card
-        className="bg-white mb-4"
+        className="mb-4"
         style={{
-          borderRadius: "4px",
-          border: "1px solid #e2e8f0",
+          backgroundColor: cardBg,
+          borderRadius: 0,
+          border: `1px solid ${cardBorder}`,
           borderLeft: "4px solid #7f1d1d",
           boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
@@ -1173,10 +1261,10 @@ const TargetAchievementReportView = ({
                 style={{
                   width: "36px",
                   height: "36px",
-                  borderRadius: "4px",
-                  backgroundColor: "#fffbeb",
-                  border: "1px solid #fde68a",
-                  color: "#d97706",
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "rgba(217, 119, 6, 0.2)" : "#fffbeb",
+                  border: `1px solid ${isDark ? "rgba(217, 119, 6, 0.4)" : "#fde68a"}`,
+                  color: isDark ? "#fbbf24" : "#d97706",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1186,21 +1274,21 @@ const TargetAchievementReportView = ({
               >
                 <i className="ri-trophy-line"></i>
               </div>
-              <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+              <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                 Quota Pacing & Attainment Insights
               </span>
             </div>
 
             {/* Middle: 3 Key Insights */}
             <div
-              className="d-flex flex-wrap align-items-center gap-3 text-muted"
-              style={{ fontSize: "12px" }}
+              className="d-flex flex-wrap align-items-center gap-3"
+              style={{ fontSize: "12px", color: textSub }}
             >
               <div className="d-flex align-items-center gap-1.5">
                 <i className="ri-funds-box-fill" style={{ color: "#7f1d1d" }}></i>
                 <span>Team achieved {formatCurrency(totalWonAchieved)} ({teamAttainmentPct}%) toward {formatCurrency(totalTargetAmount)} target quota.</span>
               </div>
-              <span className="d-none d-md-inline text-muted">|</span>
+              <span className="d-none d-md-inline" style={{ color: cardBorder }}>|</span>
               <div className="d-flex align-items-center gap-1.5">
                 <i className="ri-vip-crown-fill" style={{ color: "#d97706" }}></i>
                 <span>
@@ -1209,7 +1297,7 @@ const TargetAchievementReportView = ({
                     : "No team targets established for this period."}
                 </span>
               </div>
-              <span className="d-none d-md-inline text-muted">|</span>
+              <span className="d-none d-md-inline" style={{ color: cardBorder }}>|</span>
               <div className="d-flex align-items-center gap-1.5">
                 <i className="ri-alert-fill" style={{ color: "#d97706" }}></i>
                 <span>
@@ -1223,10 +1311,10 @@ const TargetAchievementReportView = ({
             {/* Right: SoftOnCloud Slogan */}
             <div className="d-none d-lg-flex align-items-center gap-2 text-end">
               <div>
-                <span className="fw-bold text-dark d-block" style={{ fontSize: "11.5px" }}>
+                <span className="fw-bold d-block" style={{ fontSize: "11.5px", color: textTitle }}>
                   Target. Velocity. Attainment.
                 </span>
-                <span className="text-muted" style={{ fontSize: "10.5px" }}>
+                <span style={{ fontSize: "10.5px", color: textSub }}>
                   Drive predictable revenue growth.
                 </span>
               </div>
@@ -1234,9 +1322,9 @@ const TargetAchievementReportView = ({
                 style={{
                   width: "32px",
                   height: "32px",
-                  borderRadius: "4px",
-                  backgroundColor: "rgba(127, 29, 29, 0.08)",
-                  color: "#7f1d1d",
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "rgba(127, 29, 29, 0.25)" : "rgba(127, 29, 29, 0.08)",
+                  color: isDark ? "#f87171" : "#7f1d1d",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
