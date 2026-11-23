@@ -48,29 +48,75 @@ const RevenueForecastReportView = ({
     return Array.isArray(reportResult?.chart_data) ? reportResult.chart_data : [];
   }, [reportResult]);
 
+  // Helper for Rep Initials
+  const getInitials = (name) => {
+    const parts = String(name || "").trim().split(" ");
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return (name || "AK").slice(0, 2).toUpperCase();
+  };
+
   // Executive KPI Calculations
-  const grossPipeline = Number(summary.gross_pipeline ?? (rawRows.length > 0 ? rawRows.reduce((a, b) => a + Number(b.amount || 0), 0) : 1850000));
-  const weightedForecast = Number(summary.weighted_forecast ?? (rawRows.length > 0 ? rawRows.reduce((a, b) => a + Number(b.weighted_amount || 0), 0) : 1665000));
-  const activeDealsCount = Number(summary.active_deals_count ?? (rawRows.length > 0 ? rawRows.length : 1));
-  const confidencePct = grossPipeline > 0 ? Math.round((weightedForecast / grossPipeline) * 100) : 90;
+  const grossPipeline = Number(
+    summary.gross_pipeline ??
+      rawRows.reduce((a, b) => a + Number(b.amount || 0), 0) ??
+      0
+  );
+  const weightedForecast = Number(
+    summary.weighted_forecast ??
+      rawRows.reduce((a, b) => a + Number(b.weighted_amount || 0), 0) ??
+      0
+  );
+  const activeDealsCount = Number(
+    summary.active_deals_count ?? rawRows.length ?? 0
+  );
+  const confidencePct =
+    grossPipeline > 0 ? Math.round((weightedForecast / grossPipeline) * 100) : 0;
   const riskHaircut = Math.max(0, grossPipeline - weightedForecast);
-  const avgDealSize = activeDealsCount > 0 ? Math.round(grossPipeline / activeDealsCount) : grossPipeline;
+  const avgDealSize =
+    activeDealsCount > 0 ? Math.round(grossPipeline / activeDealsCount) : 0;
 
   // Next expected close calculation
-  const nextCloseDateStr = rawRows[0]?.expected_close_date || "19 Mar 2027";
+  const nextCloseDateStr = useMemo(() => {
+    const dates = rawRows
+      .map((r) => r.expected_close_date)
+      .filter(Boolean)
+      .map((d) => new Date(d))
+      .filter((d) => !isNaN(d.getTime()))
+      .sort((a, b) => a - b);
+    return dates.length > 0 ? dates[0].toISOString() : null;
+  }, [rawRows]);
+
   const calculateDaysToClose = (dateStr) => {
-    if (!dateStr) return 119;
+    if (!dateStr) return 0;
     try {
       const closeDate = new Date(dateStr);
-      const referenceDate = new Date("2026-11-20T00:00:00");
-      const diffTime = closeDate - referenceDate;
+      const now = new Date();
+      const diffTime = closeDate - now;
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return isNaN(diffDays) ? 119 : Math.max(0, diffDays);
+      return isNaN(diffDays) ? 0 : Math.max(0, diffDays);
     } catch {
-      return 119;
+      return 0;
     }
   };
   const daysToClose = calculateDaysToClose(nextCloseDateStr);
+
+  // Dynamic Rep Forecast Breakdown
+  const repForecastData = useMemo(() => {
+    const map = {};
+    rawRows.forEach((r) => {
+      const rep = r.sales_rep || "Unassigned";
+      if (!map[rep]) map[rep] = { name: rep, deals: 0, gross: 0, weighted: 0 };
+      map[rep].deals += 1;
+      map[rep].gross += Number(r.amount || 0);
+      map[rep].weighted += Number(
+        r.weighted_amount ||
+          Number(r.amount || 0) * (Number(r.probability || 50) / 100)
+      );
+    });
+    return Object.values(map);
+  }, [rawRows]);
 
   // Filtered rows for client search & stage filter
   const filteredRows = useMemo(() => {
@@ -894,43 +940,53 @@ const RevenueForecastReportView = ({
                   <div style={{ width: "65px", textAlign: "right" }}>WEIGHTED</div>
                 </div>
 
-                {/* Rep Row */}
-                <div className="d-flex align-items-center py-1.5" style={{ fontSize: "12px" }}>
-                  <div className="d-flex align-items-center gap-1.5" style={{ width: "120px", flexShrink: 0 }}>
-                    <span
-                      style={{
-                        width: "22px",
-                        height: "22px",
-                        borderRadius: "3px",
-                        backgroundColor: "#fef2f2",
-                        color: "#991b1b",
-                        fontSize: "10px",
-                        fontWeight: 700,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      AK
-                    </span>
-                    <span className="text-dark fw-medium text-truncate" style={{ fontSize: "11.5px" }}>
-                      Amit Kumar
-                    </span>
+                {/* Rep Rows */}
+                {repForecastData.length === 0 ? (
+                  <div className="py-2 text-center text-muted" style={{ fontSize: "12px" }}>
+                    No sales rep forecast data.
                   </div>
+                ) : (
+                  repForecastData.map((rep, idx) => (
+                    <div key={rep.name || idx} className="d-flex align-items-center py-1.5" style={{ fontSize: "12px" }}>
+                      <div className="d-flex align-items-center gap-1.5" style={{ width: "120px", flexShrink: 0 }}>
+                        <span
+                          style={{
+                            width: "22px",
+                            height: "22px",
+                            borderRadius: "3px",
+                            backgroundColor: "#fef2f2",
+                            color: "#991b1b",
+                            fontSize: "10px",
+                            fontWeight: 700,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {getInitials(rep.name)}
+                        </span>
+                        <span className="text-dark fw-medium text-truncate" style={{ fontSize: "11.5px" }}>
+                          {rep.name}
+                        </span>
+                      </div>
 
-                  <div className="text-center font-monospace" style={{ width: "40px", flexShrink: 0 }}>
-                    1
-                  </div>
-                  <div className="text-end font-monospace text-muted" style={{ width: "60px", flexShrink: 0 }}>
-                    {formatShortLakhs(grossPipeline)}
-                  </div>
-                  <div className="text-end font-monospace fw-bold text-dark" style={{ width: "65px", flexShrink: 0 }}>
-                    {formatShortLakhs(weightedForecast)}
-                  </div>
-                </div>
+                      <div className="text-center font-monospace" style={{ width: "40px", flexShrink: 0 }}>
+                        {rep.deals}
+                      </div>
+                      <div className="text-end font-monospace text-muted" style={{ width: "60px", flexShrink: 0 }}>
+                        {formatShortLakhs(rep.gross)}
+                      </div>
+                      <div className="text-end font-monospace fw-bold text-dark" style={{ width: "65px", flexShrink: 0 }}>
+                        {formatShortLakhs(rep.weighted)}
+                      </div>
+                    </div>
+                  ))
+                )}
 
                 <div className="pt-2 mt-2 border-top text-muted" style={{ fontSize: "10.5px" }}>
-                  100% of the forecast sits with one rep.
+                  {repForecastData.length > 0
+                    ? `${repForecastData.length} active sales rep${repForecastData.length > 1 ? "s" : ""} in pipeline.`
+                    : "No forecast pipeline available."}
                 </div>
               </CardBody>
             </Card>
@@ -1063,10 +1119,10 @@ const RevenueForecastReportView = ({
                               className="fw-bold text-dark text-decoration-none d-block"
                               style={{ fontSize: "12.5px" }}
                             >
-                              {r.opportunity_name || "ABC Ltd. - ERP Implementation"}
+                              {r.opportunity_name || "—"}
                             </Link>
                             <span className="text-muted d-block" style={{ fontSize: "11px" }}>
-                              {r.customer_name || "ABC 1 Tech Solutions Ltd."}
+                              {r.customer_name || "—"}
                             </span>
                           </div>
                         </td>
@@ -1105,10 +1161,10 @@ const RevenueForecastReportView = ({
                                 justifyContent: "center",
                               }}
                             >
-                              AK
+                              {getInitials(r.sales_rep)}
                             </span>
                             <span className="text-dark fw-medium" style={{ fontSize: "12px" }}>
-                              {r.sales_rep || "Amit Kumar"}
+                              {r.sales_rep || "Unassigned"}
                             </span>
                           </div>
                         </td>

@@ -1091,8 +1091,8 @@ const Calendar = () => {
           </Row>
 
           <Row>
-            {/* Left Sidebar: Mini Calendar, Type Filters, Agenda, Team (Col xl=3) */}
-            <Col xl={3}>
+            {/* Left Sidebar: Mini Calendar, Type Filters, Agenda, Team (Col xl=3 lg=4) */}
+            <Col xl={3} lg={4}>
               <Card className="card-h-100 rounded-0 border shadow-none mb-3" style={{ borderColor: THEME.grayBorder }}>
                 <CardBody className="p-3">
                   {/* 1. Mini Month Calendar (Callout 3) */}
@@ -1325,12 +1325,12 @@ const Calendar = () => {
               </Card>
             </Col>
 
-            {/* Right Main Calendar Grid: Month / Week / Day / Agenda (Col xl=9) */}
-            <Col xl={9}>
+            {/* Right Main Calendar Grid: Month / Week / Day / Agenda (Col xl=9 lg=8) */}
+            <Col xl={9} lg={8}>
               <Card className="card-h-100 rounded-0 border shadow-none mb-3" style={{ borderColor: THEME.grayBorder }}>
                 {/* Calendar Toolbar Header (Callout 5: Owner filter + Segmented Month/Week/Day/List + Clearer Title) */}
                 <div
-                  className="d-flex flex-wrap align-items-center justify-content-between p-3 border-bottom"
+                  className="d-flex flex-wrap align-items-center justify-content-between p-3 border-bottom gap-2"
                   style={{ borderColor: THEME.grayBorder }}
                 >
                   {/* Left: Prev / Next / Today */}
@@ -1556,9 +1556,33 @@ const Calendar = () => {
                     )}
                     <div className="d-flex justify-content-between">
                       <span className="text-muted">Related Customer:</span>
-                      <span className="fw-semibold text-primary">
-                        {selectedEvent.extendedProps?.relatedTo || "Direct Client"}
-                      </span>
+                      {(() => {
+                        const rel = selectedEvent.extendedProps?.relatedTo;
+                        const matchedAcc = accountOptions.find(
+                          (a) =>
+                            rel &&
+                            rel !== "Direct Client" &&
+                            rel !== "Client Account" &&
+                            ((a.displayName || "").toLowerCase() === rel.toLowerCase() ||
+                             (a.companyName || "").toLowerCase() === rel.toLowerCase() ||
+                             (a.displayName && rel.toLowerCase().includes(a.displayName.toLowerCase())) ||
+                             (a.companyName && rel.toLowerCase().includes(a.companyName.toLowerCase())))
+                        );
+                        return matchedAcc ? (
+                          <Link
+                            to={`/crm/customers/${matchedAcc.accountId}`}
+                            className="fw-semibold text-decoration-none"
+                            style={{ color: THEME.primary }}
+                            title="View Customer Details"
+                          >
+                            {rel}
+                          </Link>
+                        ) : (
+                          <span className="fw-semibold" style={{ color: THEME.primary }}>
+                            {rel || "Direct Client"}
+                          </span>
+                        );
+                      })()}
                     </div>
                     <div className="d-flex justify-content-between">
                       <span className="text-muted">Contact Person:</span>

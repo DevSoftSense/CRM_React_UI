@@ -36,11 +36,16 @@ const OverdueTasksComplianceView = ({
   }, [reportResult]);
 
   // Executive KPI metrics
-  const totalTasks = Number(summary.total_tasks_count ?? 4);
-  const overdueTasks = Number(summary.overdue_tasks_count ?? 2);
+  const totalTasks = Number(summary.total_tasks_count ?? rows.length ?? 0);
+  const overdueTasks = Number(
+    summary.overdue_tasks_count ??
+      rows.filter((r) => Number(r.days_overdue || 0) > 0).length ??
+      0
+  );
   const completedTasks = Math.max(0, totalTasks - overdueTasks);
   const pendingTasks = 0;
-  const complianceRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 50;
+  const complianceRate =
+    totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 100;
 
   // Filtered rows for search and status
   const filteredRows = useMemo(() => {

@@ -57,9 +57,9 @@ const TopSalesRepsTable = ({ reps = [] }) => {
     <Card
       className="border shadow-none h-100 mb-0 bg-white"
       style={{
-        borderRadius: "12px",
-        borderColor: isDark ? "#334155" : "#e2e8f0",
-        backgroundColor: isDark ? "#1e293b" : "#ffffff",
+        borderRadius: 0,
+        borderColor: isDark ? "#262626" : "#e2e8f0",
+        backgroundColor: isDark ? "#121212" : "#ffffff",
       }}
     >
       {/* Top Header: Title + Sort Filter Dropdown */}
@@ -76,14 +76,14 @@ const TopSalesRepsTable = ({ reps = [] }) => {
             onChange={(e) => setSortMode(e.target.value)}
             className="form-select form-select-sm border shadow-none"
             style={{
-              borderRadius: "6px",
+              borderRadius: 0,
               fontSize: "11px",
               fontWeight: 500,
               padding: "4px 8px",
               cursor: "pointer",
-              backgroundColor: isDark ? "#0f172a" : "#ffffff",
+              backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
               color: isDark ? "#cbd5e1" : "#334155",
-              borderColor: isDark ? "#334155" : "#e2e8f0",
+              borderColor: isDark ? "#262626" : "#e2e8f0",
             }}
           >
             <option value="revenue">By Won Revenue</option>
@@ -116,7 +116,7 @@ const TopSalesRepsTable = ({ reps = [] }) => {
                   style={{
                     borderBottom: isLast
                       ? "none"
-                      : `1px solid ${isDark ? "#334155" : "#f1f5f9"}`,
+                      : `1px solid ${isDark ? "#262626" : "#f1f5f9"}`,
                     transition: "background-color 0.15s ease",
                   }}
                 >
@@ -191,7 +191,7 @@ const TopSalesRepsTable = ({ reps = [] }) => {
                           cy={cy}
                           r="2.4"
                           fill={spark.strokeColor}
-                          stroke={isDark ? "#1e293b" : "#ffffff"}
+                          stroke={isDark ? "#121212" : "#ffffff"}
                           strokeWidth="0.8"
                         />
                       ))}

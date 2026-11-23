@@ -73,7 +73,7 @@ const SalesDashboard = () => {
 
   return (
     <div className="page-content" style={{ minHeight: "100vh" }}>
-      <Container fluid className="px-4">
+      <Container fluid className="px-2 px-sm-3 px-md-4">
         <BreadCrumb title="Sales Dashboard" pageTitle="CRM" />
 
         {/* Global Error Banner */}

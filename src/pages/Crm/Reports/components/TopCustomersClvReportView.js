@@ -40,9 +40,26 @@ const TopCustomersClvReportView = ({
   }, [reportResult]);
 
   // Executive KPI Metrics
-  const totalPayingAccounts = Number(summary.total_paying_accounts ?? (rawRows.length > 0 ? rawRows.length : 1));
-  const totalLifetimeRevenue = Number(summary.total_lifetime_revenue ?? 250000);
-  const avgRevenuePerAccount = totalPayingAccounts > 0 ? Math.round(totalLifetimeRevenue / totalPayingAccounts) : 250000;
+  const totalPayingAccounts = Number(
+    summary.total_paying_accounts ?? rawRows.length ?? 0
+  );
+  const totalLifetimeRevenue = Number(
+    summary.total_lifetime_revenue ??
+      rawRows.reduce((a, b) => a + Number(b.lifetime_revenue || 0), 0) ??
+      0
+  );
+  const avgRevenuePerAccount =
+    totalPayingAccounts > 0
+      ? Math.round(totalLifetimeRevenue / totalPayingAccounts)
+      : 0;
+
+  // Top Customer
+  const topCustomer = useMemo(() => {
+    if (rawRows.length === 0) return null;
+    return [...rawRows].sort(
+      (a, b) => Number(b.lifetime_revenue || 0) - Number(a.lifetime_revenue || 0)
+    )[0];
+  }, [rawRows]);
 
   // Filtered rows for client search & deal filter
   const filteredRows = useMemo(() => {
@@ -107,12 +124,10 @@ const TopCustomersClvReportView = ({
     const list =
       chartData.length > 0
         ? chartData
-        : rawRows.length > 0
-        ? rawRows.map((r) => ({
+        : rawRows.map((r) => ({
             customer_name: r.customer_name || r.company_name,
             total_revenue: r.lifetime_revenue,
-          }))
-        : [{ customer_name: "ABC 1 Tech Solutions Ltd.", total_revenue: 250000 }];
+          }));
     const categories = list.map((c) => c.customer_name || `Account #${c.account_id}`);
     const data = list.map((c) => Number(c.total_revenue || 0));
     const maxVal = Math.max(...data, 100000);
@@ -200,22 +215,21 @@ const TopCustomersClvReportView = ({
   // 2. Dynamic Revenue Tier Calculation & Donut Chart
   const tierCounts = useMemo(() => {
     let t1 = 0, t2 = 0, t3 = 0;
-    const dataRows = rawRows.length > 0 ? rawRows : [{ lifetime_revenue: 250000 }];
-    dataRows.forEach((r) => {
+    rawRows.forEach((r) => {
       const rev = Number(r.lifetime_revenue || 0);
       if (rev >= 200000) t1++;
       else if (rev >= 100000) t2++;
       else t3++;
     });
-    const total = t1 + t2 + t3 || 1;
+    const total = t1 + t2 + t3 || 0;
     return {
       t1,
       t2,
       t3,
       total,
-      t1Pct: Math.round((t1 / total) * 100),
-      t2Pct: Math.round((t2 / total) * 100),
-      t3Pct: Math.round((t3 / total) * 100),
+      t1Pct: total > 0 ? Math.round((t1 / total) * 100) : 0,
+      t2Pct: total > 0 ? Math.round((t2 / total) * 100) : 0,
+      t3Pct: total > 0 ? Math.round((t3 / total) * 100) : 0,
     };
   }, [rawRows]);
 
@@ -631,7 +645,17 @@ const TopCustomersClvReportView = ({
                     }}
                   ></span>
                   <p className="mb-0 text-dark" style={{ fontSize: "12px", lineHeight: "1.5" }}>
-                    <span className="fw-semibold">ABC 1 Tech Solutions Ltd.</span> accounts for 100% of realized revenue ({formatCurrency(totalLifetimeRevenue)}).
+                    {topCustomer ? (
+                      <>
+                        <span className="fw-semibold">{topCustomer.customer_name || topCustomer.company_name}</span> accounts for{" "}
+                        {totalLifetimeRevenue > 0
+                          ? `${Math.round((Number(topCustomer.lifetime_revenue || 0) / totalLifetimeRevenue) * 100)}%`
+                          : "100%"}{" "}
+                        of realized revenue ({formatCurrency(totalLifetimeRevenue)}).
+                      </>
+                    ) : (
+                      "No realized customer revenue records found."
+                    )}
                   </p>
                 </div>
 
@@ -647,7 +671,9 @@ const TopCustomersClvReportView = ({
                     }}
                   ></span>
                   <p className="mb-0 text-dark" style={{ fontSize: "12px", lineHeight: "1.5" }}>
-                    Account completed enterprise cloud implementation on schedule.
+                    {topCustomer
+                      ? `Top account lifetime value is ${formatCurrency(topCustomer.lifetime_revenue || 0)} across ${topCustomer.deals_won_count || 1} won deal(s).`
+                      : "Add won deals to populate customer lifetime ranking."}
                   </p>
                 </div>
 

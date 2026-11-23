@@ -222,16 +222,17 @@ const Pipeline = () => {
       });
 
       const list = data?.stages || data?.Stages || [];
-      const summary = data?.summary || data?.Summary || (data?.total_opportunities != null || data?.totalOpportunities != null ? {
-        totalOpportunities: data?.total_opportunities ?? data?.totalOpportunities,
-        totalPipelineValue: data?.total_pipeline_value ?? data?.totalPipelineValue,
-        weightedValue: data?.weighted_pipeline_value ?? data?.weightedPipelineValue ?? data?.weightedValue,
-        avgWinProbability: data?.avg_win_probability ?? data?.avgWinProbability ?? 0,
-        wonCount: data?.won_count ?? data?.wonCount ?? 0,
-        wonAmount: data?.won_amount ?? data?.wonAmount ?? 0,
-        lostCount: data?.lost_count ?? data?.lostCount ?? 0,
-        lostAmount: data?.lost_amount ?? data?.lostAmount ?? 0,
-      } : null);
+      const rawSummary = data?.summary || data?.Summary || data;
+      const summary = rawSummary && (rawSummary.totalOpportunities != null || rawSummary.total_opportunities != null) ? {
+        totalOpportunities: rawSummary.totalOpportunities ?? rawSummary.total_opportunities,
+        totalPipelineValue: rawSummary.totalPipelineValue ?? rawSummary.total_pipeline_value,
+        weightedValue: rawSummary.weightedValue ?? rawSummary.weighted_value ?? rawSummary.weighted_pipeline_value,
+        avgWinProbability: rawSummary.avgWinProbability ?? rawSummary.avg_win_probability,
+        wonCount: rawSummary.wonCount ?? rawSummary.won_count,
+        wonAmount: rawSummary.wonAmount ?? rawSummary.won_amount,
+        lostCount: rawSummary.lostCount ?? rawSummary.lost_count,
+        lostAmount: rawSummary.lostAmount ?? rawSummary.lost_amount,
+      } : null;
 
       setServerSummary(summary);
       setStages(
@@ -317,15 +318,15 @@ const Pipeline = () => {
     const avgProb = probCount > 0 ? Math.round(probSum / probCount) : 0;
 
     return {
-      totalOpportunities: serverSummary?.totalOpportunities ?? totalOpps,
-      totalPipelineValue: serverSummary?.totalPipelineValue ?? totalVal,
-      weightedValue: serverSummary?.weightedValue ?? weightedVal,
-      weightedPipelineValue: serverSummary?.weightedValue ?? weightedVal,
-      avgWinProbability: serverSummary?.avgWinProbability ?? avgProb,
-      wonCount: serverSummary?.wonCount ?? wonCount,
-      wonAmount: serverSummary?.wonAmount ?? wonAmount,
-      lostCount: serverSummary?.lostCount ?? lostCount,
-      lostAmount: serverSummary?.lostAmount ?? lostAmount,
+      totalOpportunities: (serverSummary?.totalOpportunities != null && serverSummary.totalOpportunities > 0) ? serverSummary.totalOpportunities : totalOpps,
+      totalPipelineValue: (serverSummary?.totalPipelineValue != null && serverSummary.totalPipelineValue > 0) ? serverSummary.totalPipelineValue : totalVal,
+      weightedValue: (serverSummary?.weightedValue != null && serverSummary.weightedValue > 0) ? serverSummary.weightedValue : weightedVal,
+      weightedPipelineValue: (serverSummary?.weightedValue != null && serverSummary.weightedValue > 0) ? serverSummary.weightedValue : weightedVal,
+      avgWinProbability: (Number(serverSummary?.avgWinProbability) > 0 ? Number(serverSummary.avgWinProbability) : avgProb),
+      wonCount: (Number(serverSummary?.wonCount) > 0 ? Number(serverSummary.wonCount) : wonCount),
+      wonAmount: (Number(serverSummary?.wonAmount) > 0 ? Number(serverSummary.wonAmount) : wonAmount),
+      lostCount: (Number(serverSummary?.lostCount) > 0 ? Number(serverSummary.lostCount) : lostCount),
+      lostAmount: (Number(serverSummary?.lostAmount) > 0 ? Number(serverSummary.lostAmount) : lostAmount),
     };
   }, [stages, serverSummary]);
 
@@ -852,7 +853,7 @@ const Pipeline = () => {
         ) : (
           <DragDropContext onDragEnd={onDragEnd}>
             <div
-              className="d-flex gap-3 align-items-start overflow-auto pb-4"
+              className="d-flex gap-3 align-items-start overflow-auto pb-4 crm-pipeline-board-container"
               style={{ minHeight: "560px" }}
             >
               {stages.map((stage) => {

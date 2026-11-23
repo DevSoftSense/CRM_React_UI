@@ -40,10 +40,28 @@ const UncontactedLeadsReportView = ({
   }, [reportResult]);
 
   // Executive KPI Metrics
-  const pipelineAtRisk = Number(summary.pipeline_at_risk ?? 250000);
-  const uncontactedLeadsCount = Number(summary.uncontacted_leads_count ?? (rawRows.length > 0 ? rawRows.length : 1));
-  const criticalStaleLeads = Number(summary.critical_stale_leads ?? 1);
-  const avgNeglectDays = Number(summary.avg_neglect_days ?? 22.8);
+  const pipelineAtRisk = Number(
+    summary.pipeline_at_risk ??
+      rawRows.reduce((a, b) => a + Number(b.estimated_value || b.amount || 0), 0) ??
+      0
+  );
+  const uncontactedLeadsCount = Number(
+    summary.uncontacted_leads_count ?? rawRows.length ?? 0
+  );
+  const criticalStaleLeads = Number(
+    summary.critical_stale_leads ??
+      rawRows.filter((r) => Number(r.hours_uncontacted || 0) >= 168).length ??
+      0
+  );
+  const avgNeglectDays = Number(summary.avg_neglect_days ?? 0);
+
+  // Oldest uncontacted lead
+  const oldestLead = useMemo(() => {
+    if (rawRows.length === 0) return null;
+    return [...rawRows].sort(
+      (a, b) => Number(b.hours_uncontacted || 0) - Number(a.hours_uncontacted || 0)
+    )[0];
+  }, [rawRows]);
 
   // Filtered rows
   const filteredRows = useMemo(() => {
@@ -1153,12 +1171,20 @@ const UncontactedLeadsReportView = ({
               <span className="d-none d-md-inline text-muted">|</span>
               <div className="d-flex align-items-center gap-1.5">
                 <i className="ri-alert-fill" style={{ color: "#dc2626" }}></i>
-                <span>₹ 2,50,000 lead value at severe risk at 22.8 days without touchpoint.</span>
+                <span>
+                  {pipelineAtRisk > 0
+                    ? `${formatCurrency(pipelineAtRisk)} lead value at severe risk with zero touchpoints.`
+                    : "Zero pipeline value currently at risk."}
+                </span>
               </div>
               <span className="d-none d-md-inline text-muted">|</span>
               <div className="d-flex align-items-center gap-1.5">
                 <i className="ri-phone-forward-line" style={{ color: "#16a34a" }}></i>
-                <span>Dispatch immediate outreach sequence to re-engage Rajesh Mehta.</span>
+                <span>
+                  {oldestLead
+                    ? `Dispatch immediate outreach sequence to re-engage ${oldestLead.lead_name || "lead"}.`
+                    : "All leads have been contacted promptly."}
+                </span>
               </div>
             </div>
 

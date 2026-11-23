@@ -1025,7 +1025,7 @@ const Activities = () => {
 
         {/* Selected Calendar Date Banner */}
         {selectedCalendarDate && (
-          <Alert color="info" className="rounded-0 py-2 small d-flex justify-content-between align-items-center mb-3">
+          <Alert color="info" className="rounded-0 py-2 small d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <div>
               <i className="ri-calendar-check-line me-2" />
               Filtering activities for <strong>{formatDateStr(selectedCalendarDate)}</strong>
@@ -1195,9 +1195,31 @@ const Activities = () => {
 
                             {/* 3. Related To */}
                             <td>
-                              <div className="fw-medium small" style={{ color: THEME.textHeading }}>
-                                {rowRelated}
-                              </div>
+                              {(() => {
+                                const matchedAcc = accountOptions.find(
+                                  (a) =>
+                                    rowRelated &&
+                                    rowRelated !== "Client Account" &&
+                                    ((a.displayName || "").toLowerCase() === rowRelated.toLowerCase() ||
+                                     (a.companyName || "").toLowerCase() === rowRelated.toLowerCase() ||
+                                     (a.displayName && rowRelated.toLowerCase().includes(a.displayName.toLowerCase())) ||
+                                     (a.companyName && rowRelated.toLowerCase().includes(a.companyName.toLowerCase())))
+                                );
+                                return matchedAcc ? (
+                                  <Link
+                                    to={`/crm/customers/${matchedAcc.accountId}`}
+                                    className="fw-medium small text-decoration-none"
+                                    style={{ color: "#7f1d1d" }}
+                                    title="View Customer Details"
+                                  >
+                                    {rowRelated}
+                                  </Link>
+                                ) : (
+                                  <div className="fw-medium small" style={{ color: THEME.textHeading }}>
+                                    {rowRelated}
+                                  </div>
+                                );
+                              })()}
                               <div className="text-muted" style={{ fontSize: 11 }}>
                                 {rowWith}
                               </div>
@@ -1207,7 +1229,7 @@ const Activities = () => {
                             <td>
                               <div className="d-flex align-items-center gap-2">
                                 <div
-                                  className="d-flex align-items-center justify-content-center rounded-circle small fw-bold"
+                                  className="d-flex align-items-center justify-content-center rounded-0 small fw-bold"
                                   style={{
                                     width: 26,
                                     height: 26,

@@ -34,9 +34,9 @@ const ForecastVsTargetGauge = ({ forecast = {} }) => {
     <Card
       className="border shadow-none h-100 mb-0 bg-white"
       style={{
-        borderRadius: "12px",
-        borderColor: isDark ? "#334155" : "#e2e8f0",
-        backgroundColor: isDark ? "#1e293b" : "#ffffff",
+        borderRadius: 0,
+        borderColor: isDark ? "#262626" : "#e2e8f0",
+        backgroundColor: isDark ? "#121212" : "#ffffff",
       }}
     >
       {/* Top Header: Title + Period Filter */}
@@ -53,14 +53,14 @@ const ForecastVsTargetGauge = ({ forecast = {} }) => {
             onChange={(e) => setPeriodFilter(e.target.value)}
             className="form-select form-select-sm border shadow-none"
             style={{
-              borderRadius: "6px",
+              borderRadius: 0,
               fontSize: "11px",
               fontWeight: 500,
               padding: "4px 8px",
               cursor: "pointer",
-              backgroundColor: isDark ? "#0f172a" : "#ffffff",
+              backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
               color: isDark ? "#cbd5e1" : "#334155",
-              borderColor: isDark ? "#334155" : "#e2e8f0",
+              borderColor: isDark ? "#262626" : "#e2e8f0",
             }}
           >
             <option value="quarter">This Quarter</option>
@@ -84,8 +84,8 @@ const ForecastVsTargetGauge = ({ forecast = {} }) => {
                 style={{
                   width: "38px",
                   height: "150px",
-                  borderRadius: "20px",
-                  backgroundColor: isDark ? "#334155" : "#e2e8f0",
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "#262626" : "#e2e8f0",
                   position: "relative",
                   overflow: "hidden",
                   boxShadow: "inset 0 1px 3px rgba(0,0,0,0.1)",
@@ -100,10 +100,7 @@ const ForecastVsTargetGauge = ({ forecast = {} }) => {
                     right: 0,
                     height: `${clampedPct}%`,
                     backgroundColor: "#7f1d1d",
-                    borderRadius:
-                      clampedPct >= 96
-                        ? "20px"
-                        : "0 0 20px 20px",
+                    borderRadius: 0,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",

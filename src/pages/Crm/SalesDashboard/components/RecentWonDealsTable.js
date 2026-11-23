@@ -22,9 +22,9 @@ const RecentWonDealsTable = ({ deals = [] }) => {
     <Card
       className="border shadow-none h-100 mb-0 bg-white"
       style={{
-        borderRadius: "12px",
-        borderColor: isDark ? "#334155" : "#e2e8f0",
-        backgroundColor: isDark ? "#1e293b" : "#ffffff",
+        borderRadius: 0,
+        borderColor: isDark ? "#262626" : "#e2e8f0",
+        backgroundColor: isDark ? "#121212" : "#ffffff",
       }}
     >
       {/* Top Header: Title */}
@@ -61,11 +61,11 @@ const RecentWonDealsTable = ({ deals = [] }) => {
                 key={idx}
                 className="p-3 position-relative"
                 style={{
-                  borderRadius: "16px",
+                  borderRadius: 0,
                   border: isDark
-                    ? "1.5px solid #881337"
+                    ? "1px solid #7f1d1d"
                     : "1.5px solid #fda4af",
-                  backgroundColor: isDark ? "#0f172a" : "#ffffff",
+                  backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
                   transition: "transform 0.15s ease, box-shadow 0.15s ease",
                 }}
               >
@@ -78,7 +78,7 @@ const RecentWonDealsTable = ({ deals = [] }) => {
                       style={{
                         width: "36px",
                         height: "36px",
-                        borderRadius: "10px",
+                        borderRadius: 0,
                         backgroundColor: isDark
                           ? "rgba(136, 19, 55, 0.25)"
                           : "#fef2f2",
@@ -106,7 +106,7 @@ const RecentWonDealsTable = ({ deals = [] }) => {
                         {d.opportunity_name}
                       </Link>
                       <span
-                        className="fs-12 fw-medium d-block text-truncate"
+                        className="fs-12 fw-semibold d-block text-truncate"
                         style={{
                           color: isDark ? "#94a3b8" : "#475569",
                           maxWidth: "260px",
@@ -124,7 +124,7 @@ const RecentWonDealsTable = ({ deals = [] }) => {
                     style={{
                       backgroundColor: "#d1fae5",
                       color: "#047857",
-                      borderRadius: "14px",
+                      borderRadius: 0,
                       border: "1px solid #a7f3d0",
                     }}
                   >
@@ -137,7 +137,7 @@ const RecentWonDealsTable = ({ deals = [] }) => {
                   className="d-flex align-items-center gap-2 pt-2 mt-1 fs-12 text-nowrap flex-wrap"
                   style={{
                     borderTop: `1px dashed ${
-                      isDark ? "#334155" : "#f1f5f9"
+                      isDark ? "#262626" : "#f1f5f9"
                     }`,
                   }}
                 >

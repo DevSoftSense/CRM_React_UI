@@ -38,22 +38,10 @@ const WinLossAnalysisReportView = ({
 
   // Extract raw data from reportResult
   const rawRows = useMemo(() => {
-    if (Array.isArray(reportResult?.rows) && reportResult.rows.length > 0) {
+    if (Array.isArray(reportResult?.rows)) {
       return reportResult.rows;
     }
-    // Fallback seed row if API hasn't loaded or returns empty
-    return [
-      {
-        opportunity_id: 1,
-        opportunity_name: "Enterprise Cloud CRM & ERP Rollout",
-        customer_name: "ABC 1 Tech Solutions Ltd.",
-        amount: 250000,
-        outcome: "Won",
-        sales_rep: "Amit Kumar",
-        close_date: "04 Nov 2026",
-        cycle_days: 0,
-      },
-    ];
+    return [];
   }, [reportResult]);
 
   const summary = useMemo(() => {
@@ -61,15 +49,36 @@ const WinLossAnalysisReportView = ({
   }, [reportResult]);
 
   // Executive KPI Calculations
-  const wonRevenue = Number(summary.won_revenue ?? (rawRows.filter(r => r.outcome === "Won").reduce((sum, r) => sum + Number(r.amount || 0), 0) || 250000));
-  const lostRevenue = Number(summary.lost_revenue ?? (rawRows.filter(r => r.outcome === "Lost").reduce((sum, r) => sum + Number(r.amount || 0), 0) || 0));
-  const wonDealsCount = Number(summary.won_deals_count ?? rawRows.filter(r => r.outcome === "Won").length ?? 1);
-  const lostDealsCount = Number(summary.lost_deals_count ?? rawRows.filter(r => r.outcome === "Lost").length ?? 0);
+  const wonRevenue = Number(
+    summary.won_revenue ??
+      rawRows
+        .filter((r) => String(r.outcome).toLowerCase() === "won")
+        .reduce((sum, r) => sum + Number(r.amount || 0), 0) ??
+      0
+  );
+  const lostRevenue = Number(
+    summary.lost_revenue ??
+      rawRows
+        .filter((r) => String(r.outcome).toLowerCase() === "lost")
+        .reduce((sum, r) => sum + Number(r.amount || 0), 0) ??
+      0
+  );
+  const wonDealsCount = Number(
+    summary.won_deals_count ??
+      rawRows.filter((r) => String(r.outcome).toLowerCase() === "won").length ??
+      0
+  );
+  const lostDealsCount = Number(
+    summary.lost_deals_count ??
+      rawRows.filter((r) => String(r.outcome).toLowerCase() === "lost").length ??
+      0
+  );
   const totalClosedDeals = wonDealsCount + lostDealsCount;
-  
-  const winRatePct = totalClosedDeals > 0 
-    ? Math.round((wonDealsCount / totalClosedDeals) * 100) 
-    : 100;
+
+  const winRatePct =
+    totalClosedDeals > 0
+      ? Math.round((wonDealsCount / totalClosedDeals) * 100)
+      : 0;
 
   // Average sales cycle in days
   const avgSalesCycle = useMemo(() => {
@@ -126,7 +135,7 @@ const WinLossAnalysisReportView = ({
   const repsData = useMemo(() => {
     const map = {};
     rawRows.forEach((r) => {
-      const rep = r.sales_rep || "Amit Kumar";
+      const rep = r.sales_rep || "Unassigned";
       if (!map[rep]) {
         map[rep] = {
           name: rep,
@@ -197,9 +206,9 @@ const WinLossAnalysisReportView = ({
         {/* Card 1: Won Revenue */}
         <Col xs={12} sm={6} lg={3}>
           <Card
-            className="h-100 bg-white"
+            className="h-100 bg-white rounded-0"
             style={{
-              borderRadius: "4px",
+              borderRadius: 0,
               border: "1px solid #e2e8f0",
               borderTop: "3px solid #16a34a",
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
@@ -208,11 +217,11 @@ const WinLossAnalysisReportView = ({
             <CardBody className="p-3">
               <div className="d-flex align-items-center justify-content-between mb-2">
                 <div
-                  className="d-flex align-items-center justify-content-center flex-shrink-0"
+                  className="d-flex align-items-center justify-content-center flex-shrink-0 rounded-0"
                   style={{
                     width: "36px",
                     height: "36px",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     backgroundColor: "#dcfce7",
                     color: "#16a34a",
                     fontSize: "18px",
@@ -245,7 +254,7 @@ const WinLossAnalysisReportView = ({
                 {formatCurrency(wonRevenue)}
               </div>
               <div className="d-flex align-items-center gap-1.5 mt-2" style={{ fontSize: "11.5px", color: "#16a34a" }}>
-                <span style={{ display: "inline-block", width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#16a34a" }}></span>
+                <span style={{ display: "inline-block", width: "6px", height: "6px", borderRadius: 0, backgroundColor: "#16a34a" }}></span>
                 <span>{wonDealsCount} deal won</span>
               </div>
             </CardBody>
@@ -255,9 +264,9 @@ const WinLossAnalysisReportView = ({
         {/* Card 2: Lost Revenue */}
         <Col xs={12} sm={6} lg={3}>
           <Card
-            className="h-100 bg-white"
+            className="h-100 bg-white rounded-0"
             style={{
-              borderRadius: "4px",
+              borderRadius: 0,
               border: "1px solid #e2e8f0",
               borderTop: "3px solid #ef4444",
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
@@ -266,11 +275,11 @@ const WinLossAnalysisReportView = ({
             <CardBody className="p-3">
               <div className="d-flex align-items-center justify-content-between mb-2">
                 <div
-                  className="d-flex align-items-center justify-content-center flex-shrink-0"
+                  className="d-flex align-items-center justify-content-center flex-shrink-0 rounded-0"
                   style={{
                     width: "36px",
                     height: "36px",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     backgroundColor: "#fee2e2",
                     color: "#ef4444",
                     fontSize: "18px",
@@ -312,9 +321,9 @@ const WinLossAnalysisReportView = ({
         {/* Card 3: Win Rate */}
         <Col xs={12} sm={6} lg={3}>
           <Card
-            className="h-100 bg-white"
+            className="h-100 bg-white rounded-0"
             style={{
-              borderRadius: "4px",
+              borderRadius: 0,
               border: "1px solid #e2e8f0",
               borderTop: "3px solid #10b981",
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
@@ -323,11 +332,11 @@ const WinLossAnalysisReportView = ({
             <CardBody className="p-3">
               <div className="d-flex align-items-center justify-content-between mb-2">
                 <div
-                  className="d-flex align-items-center justify-content-center flex-shrink-0"
+                  className="d-flex align-items-center justify-content-center flex-shrink-0 rounded-0"
                   style={{
                     width: "36px",
                     height: "36px",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     backgroundColor: "#dcfce7",
                     color: "#10b981",
                     fontSize: "18px",
@@ -369,9 +378,9 @@ const WinLossAnalysisReportView = ({
         {/* Card 4: Avg Sales Cycle */}
         <Col xs={12} sm={6} lg={3}>
           <Card
-            className="h-100 bg-white"
+            className="h-100 bg-white rounded-0"
             style={{
-              borderRadius: "4px",
+              borderRadius: 0,
               border: "1px solid #e2e8f0",
               borderTop: "3px solid #f59e0b",
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
@@ -380,11 +389,11 @@ const WinLossAnalysisReportView = ({
             <CardBody className="p-3">
               <div className="d-flex align-items-center justify-content-between mb-2">
                 <div
-                  className="d-flex align-items-center justify-content-center flex-shrink-0"
+                  className="d-flex align-items-center justify-content-center flex-shrink-0 rounded-0"
                   style={{
                     width: "36px",
                     height: "36px",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     backgroundColor: "#fef3c7",
                     color: "#d97706",
                     fontSize: "18px",
@@ -431,9 +440,9 @@ const WinLossAnalysisReportView = ({
           <div className="d-flex flex-column gap-3">
             {/* CARD A: WON VS LOST REVENUE BY MONTH */}
             <Card
-              className="bg-white"
+              className="bg-white rounded-0"
               style={{
-                borderRadius: "4px",
+                borderRadius: 0,
                 border: "1px solid #e2e8f0",
                 boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
@@ -453,21 +462,22 @@ const WinLossAnalysisReportView = ({
                     {/* Legend */}
                     <div className="d-flex align-items-center gap-2" style={{ fontSize: "12px" }}>
                       <span className="d-flex align-items-center gap-1">
-                        <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#16a34a" }}></span>
+                        <span style={{ width: "8px", height: "8px", borderRadius: 0, backgroundColor: "#16a34a" }}></span>
                         <span className="text-muted">Won</span>
                       </span>
                       <span className="d-flex align-items-center gap-1">
-                        <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#dc2626" }}></span>
+                        <span style={{ width: "8px", height: "8px", borderRadius: 0, backgroundColor: "#dc2626" }}></span>
                         <span className="text-muted">Lost</span>
                       </span>
                     </div>
 
                     {/* Metric Mode Toggle */}
-                    <div className="btn-group btn-group-sm" role="group">
+                    <div className="btn-group btn-group-sm rounded-0" role="group">
                       <button
                         type="button"
-                        className="btn btn-sm"
+                        className="btn btn-sm rounded-0"
                         style={{
+                          borderRadius: 0,
                           backgroundColor: metricMode === "revenue" ? "#ffffff" : "#f8fafc",
                           borderColor: "#cbd5e1",
                           color: metricMode === "revenue" ? "#0f172a" : "#64748b",
@@ -482,8 +492,9 @@ const WinLossAnalysisReportView = ({
                       </button>
                       <button
                         type="button"
-                        className="btn btn-sm"
+                        className="btn btn-sm rounded-0"
                         style={{
+                          borderRadius: 0,
                           backgroundColor: metricMode === "count" ? "#ffffff" : "#f8fafc",
                           borderColor: "#cbd5e1",
                           color: metricMode === "count" ? "#0f172a" : "#64748b",
@@ -568,9 +579,19 @@ const WinLossAnalysisReportView = ({
                       {[
                         "Jan", "Feb", "Mar", "Apr", "May", "Jun",
                         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-                      ].map((month, idx) => {
-                        const isNov = month === "Nov";
+                      ].map((month) => {
+                        const monthWonDeals = rawRows.filter((r) => {
+                          if (!r.close_date || String(r.outcome).toLowerCase() !== "won") return false;
+                          const d = new Date(r.close_date);
+                          if (isNaN(d.getTime())) return false;
+                          return d.toLocaleString("en-US", { month: "short" }) === month;
+                        });
+                        const hasWon = monthWonDeals.length > 0;
+                        const monthWonAmt = monthWonDeals.reduce((a, b) => a + Number(b.amount || 0), 0);
+                        const topDeal = monthWonDeals[0];
                         const isHovered = hoveredMonth === month;
+                        const heightPct = Math.min(80, Math.max(15, Math.round((monthWonAmt / 500000) * 100)));
+
                         return (
                           <div
                             key={month}
@@ -578,29 +599,29 @@ const WinLossAnalysisReportView = ({
                             style={{
                               flex: 1,
                               height: "100%",
-                              cursor: isNov ? "pointer" : "default",
+                              cursor: hasWon ? "pointer" : "default",
                             }}
                             onMouseEnter={() => {
-                              if (isNov) setHoveredMonth(month);
+                              if (hasWon) setHoveredMonth(month);
                             }}
                             onMouseLeave={() => {
-                              if (isNov) setHoveredMonth(null);
+                              if (hasWon) setHoveredMonth(null);
                             }}
                           >
-                            {/* If Nov, render the green rising column */}
-                            {isNov && (
+                            {/* If deals won in this month, render the green rising column */}
+                            {hasWon && (
                               <>
-                                {/* Floating Tooltip Card: ONLY VISIBLE ON HOVER */}
-                                {isHovered && (
+                                {/* Floating Tooltip Card */}
+                                {isHovered && topDeal && (
                                   <div
-                                    className="position-absolute"
+                                    className="position-absolute rounded-0"
                                     style={{
                                       bottom: "105%",
                                       right: "50%",
                                       transform: "translateX(15%)",
                                       backgroundColor: "#ffffff",
                                       border: "1px solid #cbd5e1",
-                                      borderRadius: "4px",
+                                      borderRadius: 0,
                                       padding: "8px 12px",
                                       boxShadow: "0 6px 18px rgba(15, 23, 42, 0.12)",
                                       whiteSpace: "nowrap",
@@ -611,26 +632,26 @@ const WinLossAnalysisReportView = ({
                                     }}
                                   >
                                     <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#0f172a" }}>
-                                      Enterprise Cloud CRM & ERP Rollout
+                                      {topDeal.opportunity_name || "—"}
                                     </div>
                                     <div style={{ fontSize: "10.5px", color: "#64748b", marginTop: "1px" }}>
-                                      Won on 04 Nov 2026 • Amit Kumar
+                                      Won on {topDeal.close_date || "—"} • {topDeal.sales_rep || "Unassigned"}
                                     </div>
                                     <div style={{ fontSize: "11px", fontWeight: 700, color: "#16a34a", marginTop: "2px" }}>
-                                      ₹2,50,000 • 0 days cycle
+                                      {formatCurrency(monthWonAmt)} • {topDeal.cycle_days || 0} days cycle
                                     </div>
                                   </div>
                                 )}
 
-                                {/* Nov Pillar */}
+                                {/* Monthly Pillar */}
                                 <div
-                                  className="position-absolute"
+                                  className="position-absolute rounded-0"
                                   style={{
                                     bottom: "50%",
                                     width: "28px",
-                                    height: "38%", // Reaches ~₹2.5L
+                                    height: `${heightPct}%`,
                                     backgroundColor: isHovered ? "#15803d" : "#16a34a",
-                                    borderRadius: "2px 2px 0 0",
+                                    borderRadius: 0,
                                     boxShadow: isHovered
                                       ? "0 0 0 3px rgba(22, 163, 74, 0.35), 0 4px 10px rgba(22, 163, 74, 0.4)"
                                       : "0 2px 6px rgba(22, 163, 74, 0.3)",
@@ -654,7 +675,7 @@ const WinLossAnalysisReportView = ({
                                       whiteSpace: "nowrap",
                                     }}
                                   >
-                                    ₹2.5 L
+                                    {formatShortLakhs(monthWonAmt)}
                                   </div>
                                 </div>
                               </>
@@ -711,9 +732,9 @@ const WinLossAnalysisReportView = ({
 
             {/* CARD B: DEAL SIZE VS SALES CYCLE */}
             <Card
-              className="bg-white"
+              className="bg-white rounded-0"
               style={{
-                borderRadius: "4px",
+                borderRadius: 0,
                 border: "1px solid #e2e8f0",
                 boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
@@ -821,34 +842,54 @@ const WinLossAnalysisReportView = ({
                       Small & fast
                     </div>
 
-                    {/* Enterprise Cloud CRM & ERP Rollout Bubble */}
-                    <div
-                      className="position-absolute d-flex align-items-center gap-2"
-                      style={{
-                        left: "10px", // 0 days cycle
-                        top: "45%",  // ~₹2.5L deal amount
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: "20px",
-                          height: "20px",
-                          borderRadius: "50%",
-                          backgroundColor: "#16a34a",
-                          boxShadow: "0 0 0 4px rgba(22, 163, 74, 0.2)",
-                          cursor: "pointer",
-                        }}
-                        title="Enterprise Cloud CRM & ERP Rollout: ₹2,50,000 (0 days)"
-                      ></div>
-                      <div>
-                        <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#0f172a" }}>
-                          Enterprise Cloud CRM & ERP Rollout
-                        </div>
-                        <div style={{ fontSize: "10.5px", color: "#64748b" }}>
-                          ₹2,50,000 • 0 days
-                        </div>
+                    {/* Dynamic Deal Bubbles */}
+                    {rawRows.length === 0 ? (
+                      <div className="d-flex align-items-center justify-content-center h-100 text-muted" style={{ fontSize: "12px" }}>
+                        No deal cycle records available.
                       </div>
-                    </div>
+                    ) : (
+                      rawRows.map((r, idx) => {
+                        const isWon = String(r.outcome).toLowerCase() === "won";
+                        const cycle = Number(r.cycle_days || 0);
+                        const leftPct = Math.min(85, Math.max(5, Math.round((cycle / 60) * 100)));
+                        const amt = Number(r.amount || 0);
+                        const topPct = Math.min(75, Math.max(20, Math.round(100 - (amt / 500000) * 100)));
+                        const color = isWon ? "#16a34a" : "#dc2626";
+
+                        return (
+                          <div
+                            key={r.opportunity_id || idx}
+                            className="position-absolute d-flex align-items-center gap-2"
+                            style={{
+                              left: `${leftPct}%`,
+                              top: `${topPct}%`,
+                            }}
+                          >
+                            <div
+                              className="rounded-0"
+                              style={{
+                                width: "18px",
+                                height: "18px",
+                                borderRadius: 0,
+                                backgroundColor: color,
+                                boxShadow: `0 0 0 4px ${isWon ? "rgba(22, 163, 74, 0.2)" : "rgba(220, 38, 38, 0.2)"}`,
+                                cursor: "pointer",
+                              }}
+                              title={`${r.opportunity_name || "Deal"}: ${formatCurrency(amt)} (${cycle} days)`}
+                              onClick={() => setSelectedDealForModal(r)}
+                            ></div>
+                            <div>
+                              <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#0f172a" }}>
+                                {r.opportunity_name || "—"}
+                              </div>
+                              <div style={{ fontSize: "10.5px", color: "#64748b" }}>
+                                {formatCurrency(amt)} • {cycle} days
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
 
                   {/* X-Axis Labels */}
@@ -880,9 +921,9 @@ const WinLossAnalysisReportView = ({
           <div className="d-flex flex-column gap-3">
             {/* CARD 1: WIN RATE GAUGE */}
             <Card
-              className="bg-white"
+              className="bg-white rounded-0"
               style={{
-                borderRadius: "4px",
+                borderRadius: 0,
                 border: "1px solid #e2e8f0",
                 boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
@@ -930,9 +971,9 @@ const WinLossAnalysisReportView = ({
 
             {/* CARD 2: KEY TAKEAWAYS */}
             <Card
-              className="bg-white"
+              className="bg-white rounded-0"
               style={{
-                borderRadius: "4px",
+                borderRadius: 0,
                 border: "1px solid #e2e8f0",
                 boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
@@ -944,11 +985,11 @@ const WinLossAnalysisReportView = ({
                   </h6>
                   <Badge
                     color="light"
-                    className="text-muted border"
+                    className="text-muted border rounded-0"
                     style={{
                       fontSize: "11px",
                       fontWeight: 500,
-                      borderRadius: "10px",
+                      borderRadius: 0,
                       padding: "2px 8px",
                       backgroundColor: "#f8fafc",
                     }}
@@ -964,7 +1005,7 @@ const WinLossAnalysisReportView = ({
                       style={{
                         width: "8px",
                         height: "8px",
-                        borderRadius: "50%",
+                        borderRadius: 0,
                         backgroundColor: "#16a34a",
                         flexShrink: 0,
                         marginTop: "5px",
@@ -980,7 +1021,7 @@ const WinLossAnalysisReportView = ({
                       style={{
                         width: "8px",
                         height: "8px",
-                        borderRadius: "50%",
+                        borderRadius: 0,
                         backgroundColor: "#f59e0b",
                         flexShrink: 0,
                         marginTop: "5px",
@@ -996,7 +1037,7 @@ const WinLossAnalysisReportView = ({
                       style={{
                         width: "8px",
                         height: "8px",
-                        borderRadius: "50%",
+                        borderRadius: 0,
                         backgroundColor: "#3b82f6",
                         flexShrink: 0,
                         marginTop: "5px",
@@ -1012,7 +1053,7 @@ const WinLossAnalysisReportView = ({
                       style={{
                         width: "8px",
                         height: "8px",
-                        borderRadius: "50%",
+                        borderRadius: 0,
                         backgroundColor: "#64748b",
                         flexShrink: 0,
                         marginTop: "5px",
@@ -1028,9 +1069,9 @@ const WinLossAnalysisReportView = ({
 
             {/* CARD 3: WIN RATE BY SALES REP */}
             <Card
-              className="bg-white"
+              className="bg-white rounded-0"
               style={{
-                borderRadius: "4px",
+                borderRadius: 0,
                 border: "1px solid #e2e8f0",
                 boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
@@ -1075,13 +1116,14 @@ const WinLossAnalysisReportView = ({
                           <td style={{ padding: "8px 4px" }}>
                             <div className="d-flex align-items-center gap-1.5">
                               <span
+                                className="rounded-0"
                                 style={{
                                   display: "inline-flex",
                                   alignItems: "center",
                                   justifyContent: "center",
                                   width: "22px",
                                   height: "22px",
-                                  borderRadius: "3px",
+                                  borderRadius: 0,
                                   backgroundColor: "#fee2e2",
                                   color: "#7f1d1d",
                                   fontSize: "10px",
@@ -1104,20 +1146,22 @@ const WinLossAnalysisReportView = ({
                           <td style={{ padding: "8px 4px", minWidth: "85px" }}>
                             <div className="d-flex align-items-center gap-1.5">
                               <div
+                                className="rounded-0"
                                 style={{
                                   flex: 1,
                                   height: "6px",
                                   backgroundColor: "#f1f5f9",
-                                  borderRadius: "3px",
+                                  borderRadius: 0,
                                   overflow: "hidden",
                                 }}
                               >
                                 <div
+                                  className="rounded-0"
                                   style={{
                                     width: `${r.winRate}%`,
                                     height: "100%",
                                     backgroundColor: "#16a34a",
-                                    borderRadius: "3px",
+                                    borderRadius: 0,
                                   }}
                                 ></div>
                               </div>
@@ -1152,9 +1196,9 @@ const WinLossAnalysisReportView = ({
 
       {/* 4. ROW 3: CLOSED DEALS LEDGER TABLE */}
       <Card
-        className="bg-white mb-4"
+        className="bg-white mb-4 rounded-0"
         style={{
-          borderRadius: "4px",
+          borderRadius: 0,
           border: "1px solid #e2e8f0",
           boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
@@ -1177,6 +1221,7 @@ const WinLossAnalysisReportView = ({
                 <Input
                   type="text"
                   bsSize="sm"
+                  className="rounded-0"
                   placeholder="Search deal or customer..."
                   value={searchTerm}
                   onChange={(e) => {
@@ -1186,7 +1231,7 @@ const WinLossAnalysisReportView = ({
                   style={{
                     paddingLeft: "28px",
                     fontSize: "12px",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     borderColor: "#cbd5e1",
                   }}
                 />
@@ -1198,10 +1243,10 @@ const WinLossAnalysisReportView = ({
 
               {/* Outcome Filter */}
               <select
-                className="form-select form-select-sm"
+                className="form-select form-select-sm rounded-0"
                 style={{
                   width: "130px",
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
                   borderColor: "#cbd5e1",
                 }}
@@ -1220,9 +1265,9 @@ const WinLossAnalysisReportView = ({
               <Button
                 color="light"
                 size="sm"
-                className="border d-flex align-items-center gap-1"
+                className="border d-flex align-items-center gap-1 rounded-0"
                 style={{
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
                   color: "#475569",
                   borderColor: "#cbd5e1",
@@ -1268,31 +1313,42 @@ const WinLossAnalysisReportView = ({
                       <tr key={r.opportunity_id || idx}>
                         {/* DEAL */}
                         <td>
-                          <span
-                            className="fw-bold text-dark"
-                            style={{ cursor: "pointer", color: "#0f172a" }}
-                            onClick={() => setSelectedDealForModal(r)}
+                          <Link
+                            to={`/crm/opportunities/${r.opportunity_id}`}
+                            className="fw-bold text-dark text-decoration-none hover-underline"
+                            style={{ color: "#0f172a" }}
                           >
-                            {r.opportunity_name || "Enterprise Cloud CRM & ERP Rollout"}
-                          </span>
+                            {r.opportunity_name || "—"}
+                          </Link>
                         </td>
 
                         {/* CUSTOMER */}
                         <td className="text-muted">
-                          {r.customer_name || "ABC 1 Tech Solutions Ltd."}
+                          {r.account_id ? (
+                            <Link
+                              to={`/crm/customers/${r.account_id}`}
+                              className="text-decoration-underline text-secondary"
+                              style={{ fontSize: "12.5px" }}
+                            >
+                              {r.customer_name || "—"}
+                            </Link>
+                          ) : (
+                            r.customer_name || "—"
+                          )}
                         </td>
 
                         {/* SALES REP */}
                         <td>
                           <div className="d-flex align-items-center gap-1.5">
                             <span
+                              className="rounded-0"
                               style={{
                                 display: "inline-flex",
                                 alignItems: "center",
                                 justifyContent: "center",
                                 width: "22px",
                                 height: "22px",
-                                borderRadius: "3px",
+                                borderRadius: 0,
                                 backgroundColor: "#fee2e2",
                                 color: "#7f1d1d",
                                 fontSize: "10.5px",
@@ -1307,7 +1363,7 @@ const WinLossAnalysisReportView = ({
                                 .toUpperCase()}
                             </span>
                             <span className="text-dark fw-medium">
-                              {r.sales_rep || "Amit Kumar"}
+                              {r.sales_rep || "Unassigned"}
                             </span>
                           </div>
                         </td>
@@ -1319,19 +1375,20 @@ const WinLossAnalysisReportView = ({
 
                         {/* CLOSE DATE */}
                         <td className="text-muted">
-                          {r.close_date || "04 Nov 2026"}
+                          {r.close_date || "—"}
                         </td>
 
                         {/* OUTCOME */}
                         <td>
                           {isWon ? (
                             <span
+                              className="rounded-0"
                               style={{
                                 display: "inline-flex",
                                 alignItems: "center",
                                 gap: "4px",
                                 padding: "3px 8px",
-                                borderRadius: "4px",
+                                borderRadius: 0,
                                 backgroundColor: "#dcfce7",
                                 color: "#15803d",
                                 border: "1px solid #bbf7d0",
@@ -1344,12 +1401,13 @@ const WinLossAnalysisReportView = ({
                             </span>
                           ) : (
                             <span
+                              className="rounded-0"
                               style={{
                                 display: "inline-flex",
                                 alignItems: "center",
                                 gap: "4px",
                                 padding: "3px 8px",
-                                borderRadius: "4px",
+                                borderRadius: 0,
                                 backgroundColor: "#fee2e2",
                                 color: "#b91c1c",
                                 border: "1px solid #fecaca",
@@ -1366,12 +1424,13 @@ const WinLossAnalysisReportView = ({
                         {/* CYCLE */}
                         <td>
                           <span
+                            className="rounded-0"
                             style={{
                               display: "inline-flex",
                               alignItems: "center",
                               gap: "4px",
                               padding: "3px 8px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               backgroundColor: cycleDays <= 1 ? "#fef3c7" : "#f1f5f9",
                               color: cycleDays <= 1 ? "#b45309" : "#475569",
                               border: cycleDays <= 1 ? "1px solid #fde68a" : "1px solid #e2e8f0",
@@ -1388,14 +1447,14 @@ const WinLossAnalysisReportView = ({
                         <td className="text-end">
                           <button
                             type="button"
-                            className="btn btn-sm"
+                            className="btn btn-sm rounded-0"
                             style={{
                               backgroundColor: "#ffffff",
                               border: "1px solid #cbd5e1",
                               color: "#334155",
                               fontSize: "12px",
                               fontWeight: 500,
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               padding: "3px 10px",
                             }}
                             onClick={() => setSelectedDealForModal(r)}
@@ -1438,8 +1497,8 @@ const WinLossAnalysisReportView = ({
             <div className="d-flex align-items-center gap-2" style={{ fontSize: "12px", color: "#64748b" }}>
               <span>Rows per page:</span>
               <select
-                className="form-select form-select-sm"
-                style={{ width: "70px", borderRadius: "4px", fontSize: "12px" }}
+                className="form-select form-select-sm rounded-0"
+                style={{ width: "70px", borderRadius: 0, fontSize: "12px" }}
                 value={pageSize}
                 onChange={(e) => {
                   setPageSize(Number(e.target.value));
@@ -1456,18 +1515,18 @@ const WinLossAnalysisReportView = ({
             <div className="d-flex align-items-center gap-1">
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "4px", fontSize: "11px", padding: "4px 8px" }}
+                className="btn btn-sm btn-light border rounded-0"
+                style={{ borderRadius: 0, fontSize: "11px", padding: "4px 8px" }}
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               >
                 &lt; Prev
               </button>
               <span
-                className="badge bg-danger"
+                className="badge bg-danger rounded-0"
                 style={{
                   backgroundColor: "#7f1d1d !important",
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "11px",
                   padding: "6px 10px",
                 }}
@@ -1476,8 +1535,8 @@ const WinLossAnalysisReportView = ({
               </span>
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "4px", fontSize: "11px", padding: "4px 8px" }}
+                className="btn btn-sm btn-light border rounded-0"
+                style={{ borderRadius: 0, fontSize: "11px", padding: "4px 8px" }}
                 disabled={currentPage >= totalPages}
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               >
@@ -1494,9 +1553,11 @@ const WinLossAnalysisReportView = ({
           isOpen={!!selectedDealForModal}
           toggle={() => setSelectedDealForModal(null)}
           centered
+          contentClassName="rounded-0"
         >
           <ModalHeader
             toggle={() => setSelectedDealForModal(null)}
+            className="rounded-0"
             style={{ borderBottom: "1px solid #e2e8f0" }}
           >
             <span className="fw-bold text-dark" style={{ fontSize: "15px" }}>
@@ -1513,8 +1574,19 @@ const WinLossAnalysisReportView = ({
             <div className="row g-3">
               <div className="col-6">
                 <label className="text-muted small mb-1">Customer</label>
-                <div className="fw-semibold text-dark">
-                  {selectedDealForModal.customer_name}
+                <div>
+                  {selectedDealForModal.account_id ? (
+                    <Link
+                      to={`/crm/customers/${selectedDealForModal.account_id}`}
+                      className="fw-semibold text-primary text-decoration-underline"
+                    >
+                      {selectedDealForModal.customer_name}
+                    </Link>
+                  ) : (
+                    <span className="fw-semibold text-dark">
+                      {selectedDealForModal.customer_name}
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="col-6">
@@ -1532,7 +1604,11 @@ const WinLossAnalysisReportView = ({
               <div className="col-6">
                 <label className="text-muted small mb-1">Outcome</label>
                 <div>
-                  <Badge color={selectedDealForModal.outcome === "Won" ? "success" : "danger"}>
+                  <Badge
+                    color={selectedDealForModal.outcome === "Won" ? "success" : "danger"}
+                    className="rounded-0"
+                    style={{ borderRadius: 0 }}
+                  >
                     {selectedDealForModal.outcome}
                   </Badge>
                 </div>
@@ -1551,17 +1627,19 @@ const WinLossAnalysisReportView = ({
               </div>
             </div>
           </ModalBody>
-          <ModalFooter style={{ borderTop: "1px solid #e2e8f0" }}>
+          <ModalFooter className="rounded-0" style={{ borderTop: "1px solid #e2e8f0" }}>
             <Link
               to={`/crm/opportunities/${selectedDealForModal.opportunity_id}`}
-              className="btn btn-sm btn-primary"
-              style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d" }}
+              className="btn btn-sm btn-primary rounded-0"
+              style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d", borderRadius: 0 }}
             >
               Open Full Opportunity
             </Link>
             <Button
               color="light"
               size="sm"
+              className="rounded-0"
+              style={{ borderRadius: 0 }}
               onClick={() => setSelectedDealForModal(null)}
             >
               Close
@@ -1575,9 +1653,11 @@ const WinLossAnalysisReportView = ({
         isOpen={checkDatesModalOpen}
         toggle={() => setCheckDatesModalOpen(false)}
         centered
+        contentClassName="rounded-0"
       >
         <ModalHeader
           toggle={() => setCheckDatesModalOpen(false)}
+          className="rounded-0"
           style={{ borderBottom: "1px solid #e2e8f0" }}
         >
           <span className="fw-bold text-dark" style={{ fontSize: "15px" }}>
@@ -1589,11 +1669,11 @@ const WinLossAnalysisReportView = ({
             Sales cycle duration is calculated as the difference between the deal&apos;s <strong>Created Date</strong> and its <strong>Actual Close Date</strong>.
           </p>
           <div
-            className="p-3 mb-3"
+            className="p-3 mb-3 rounded-0"
             style={{
               backgroundColor: "#fef3c7",
               border: "1px solid #fde68a",
-              borderRadius: "4px",
+              borderRadius: 0,
               fontSize: "12.5px",
               color: "#92400e",
             }}
@@ -1604,8 +1684,8 @@ const WinLossAnalysisReportView = ({
             {rawRows.map((r, i) => (
               <div
                 key={i}
-                className="d-flex align-items-center justify-content-between p-2 border rounded"
-                style={{ fontSize: "12px" }}
+                className="d-flex align-items-center justify-content-between p-2 border rounded-0"
+                style={{ fontSize: "12px", borderRadius: 0 }}
               >
                 <div>
                   <strong>{r.opportunity_name}</strong>
@@ -1613,17 +1693,23 @@ const WinLossAnalysisReportView = ({
                     Close Date: {r.close_date}
                   </div>
                 </div>
-                <Badge color={Number(r.cycle_days) === 0 ? "warning" : "info"}>
+                <Badge
+                  color={Number(r.cycle_days) === 0 ? "warning" : "info"}
+                  className="rounded-0"
+                  style={{ borderRadius: 0 }}
+                >
                   {r.cycle_days} days
                 </Badge>
               </div>
             ))}
           </div>
         </ModalBody>
-        <ModalFooter style={{ borderTop: "1px solid #e2e8f0" }}>
+        <ModalFooter className="rounded-0" style={{ borderTop: "1px solid #e2e8f0" }}>
           <Button
             color="light"
             size="sm"
+            className="rounded-0"
+            style={{ borderRadius: 0 }}
             onClick={() => setCheckDatesModalOpen(false)}
           >
             Done

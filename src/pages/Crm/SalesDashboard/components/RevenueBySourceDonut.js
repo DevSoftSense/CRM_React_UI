@@ -152,9 +152,9 @@ const RevenueBySourceDonut = ({ data = {} }) => {
     <Card
       className="border shadow-none h-100 mb-0 bg-white"
       style={{
-        borderRadius: "12px",
-        borderColor: isDark ? "#334155" : "#e2e8f0",
-        backgroundColor: isDark ? "#1e293b" : "#ffffff",
+        borderRadius: 0,
+        borderColor: isDark ? "#262626" : "#e2e8f0",
+        backgroundColor: isDark ? "#121212" : "#ffffff",
       }}
     >
       {/* Top Header: Indicator + Title */}
@@ -268,7 +268,7 @@ const RevenueBySourceDonut = ({ data = {} }) => {
                         key={s.code}
                         d={pathD}
                         fill={`url(#${s.gradId})`}
-                        stroke={isDark ? "#1e293b" : "#ffffff"}
+                        stroke={isDark ? "#121212" : "#ffffff"}
                         strokeWidth="1.2"
                         style={{
                           cursor: "pointer",
@@ -314,14 +314,14 @@ const RevenueBySourceDonut = ({ data = {} }) => {
                   cx="100"
                   cy="96"
                   r="43"
-                  fill={isDark ? "#1e293b" : "#ffffff"}
+                  fill={isDark ? "#121212" : "#ffffff"}
                   filter="url(#centerDiscShadow)"
                 />
                 <circle
                   cx="100"
                   cy="96"
                   r="43"
-                  stroke={isDark ? "#334155" : "#f1f5f9"}
+                  stroke={isDark ? "#262626" : "#f1f5f9"}
                   strokeWidth="1"
                   fill="none"
                 />
@@ -368,17 +368,17 @@ const RevenueBySourceDonut = ({ data = {} }) => {
                     key={s.code}
                     className="d-flex align-items-center justify-content-between px-2 px-sm-3 py-1.5"
                     style={{
-                      borderRadius: "14px",
+                      borderRadius: 0,
                       backgroundColor: isHovered
                         ? isDark
                           ? "rgba(244, 63, 94, 0.16)"
                           : "#fff1f2"
                         : isDark
-                        ? "#0f172a"
+                        ? "#1a1a1a"
                         : "#ffffff",
                       border: isHovered
                         ? `1px solid ${isDark ? "#f43f5e" : "#fecdd3"}`
-                        : `1px solid ${isDark ? "#334155" : "#f1f5f9"}`,
+                        : `1px solid ${isDark ? "#262626" : "#f1f5f9"}`,
                       boxShadow: isHovered
                         ? "0 4px 12px rgba(244, 63, 94, 0.12)"
                         : "0 1px 3px rgba(0, 0, 0, 0.03)",

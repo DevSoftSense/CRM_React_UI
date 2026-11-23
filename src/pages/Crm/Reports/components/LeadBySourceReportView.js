@@ -40,9 +40,14 @@ const LeadBySourceReportView = ({
   }, [reportResult]);
 
   // Executive KPI Calculations
-  const totalLeads = Number(summary.total_leads ?? (rawRows.length > 0 ? rawRows.length : 1));
-  const totalEstimatedPipeline = Number(summary.total_estimated_pipeline ?? 250000);
-  const avgDealValue = totalLeads > 0 ? Math.round(totalEstimatedPipeline / totalLeads) : 250000;
+  const totalLeads = Number(summary.total_leads ?? rawRows.length ?? 0);
+  const totalEstimatedPipeline = Number(
+    summary.total_estimated_pipeline ??
+      rawRows.reduce((sum, r) => sum + Number(r.estimated_amount || 0), 0) ??
+      0
+  );
+  const avgDealValue =
+    totalLeads > 0 ? Math.round(totalEstimatedPipeline / totalLeads) : 0;
 
   // Filtered rows for client search & source filter
   const filteredRows = useMemo(() => {

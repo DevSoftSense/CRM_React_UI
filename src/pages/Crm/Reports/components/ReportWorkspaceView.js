@@ -130,7 +130,7 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
       <Card
         className="bg-white mb-4"
         style={{
-          borderRadius: "4px",
+          borderRadius: 0,
           border: "1px solid #e2e8f0",
           boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
@@ -142,9 +142,9 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
               <Button
                 color="light"
                 size="sm"
-                className="border d-flex align-items-center gap-1"
+                className="border d-flex align-items-center gap-1 rounded-0"
                 style={{
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
                   fontWeight: 500,
                   color: "#475569",
@@ -181,10 +181,10 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
             <div className="d-flex flex-wrap align-items-center gap-2">
               {/* Date Presets Dropdown */}
               <select
-                className="form-select form-select-sm"
+                className="form-select form-select-sm rounded-0"
                 style={{
                   width: "135px",
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
                   borderColor: "#cbd5e1",
                   color: "#0f172a",
@@ -207,27 +207,29 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
                   <Input
                     type="date"
                     bsSize="sm"
+                    className="rounded-0"
                     value={dateFrom}
                     onChange={(e) => setDateFrom(e.target.value)}
-                    style={{ width: "130px", fontSize: "12px", borderRadius: "4px" }}
+                    style={{ width: "130px", fontSize: "12px", borderRadius: 0 }}
                   />
                   <span className="text-muted small">to</span>
                   <Input
                     type="date"
                     bsSize="sm"
+                    className="rounded-0"
                     value={dateTo}
                     onChange={(e) => setDateTo(e.target.value)}
-                    style={{ width: "130px", fontSize: "12px", borderRadius: "4px" }}
+                    style={{ width: "130px", fontSize: "12px", borderRadius: 0 }}
                   />
                 </div>
               )}
 
               {/* Owner Filter Dropdown */}
               <select
-                className="form-select form-select-sm"
+                className="form-select form-select-sm rounded-0"
                 style={{
                   width: "160px",
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
                   borderColor: "#cbd5e1",
                 }}
@@ -249,9 +251,9 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
               <Button
                 color="light"
                 size="sm"
-                className="border d-flex align-items-center gap-1"
+                className="border d-flex align-items-center gap-1 rounded-0"
                 style={{
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
                   color: "#475569",
                   borderColor: "#e2e8f0",
@@ -269,9 +271,9 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
               <Button
                 color="light"
                 size="sm"
-                className="border d-flex align-items-center gap-1"
+                className="border d-flex align-items-center gap-1 rounded-0"
                 style={{
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
                   color: "#475569",
                   borderColor: "#e2e8f0",
@@ -287,9 +289,9 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
               {/* Export CSV Button */}
               <button
                 type="button"
-                className="btn btn-sm d-flex align-items-center gap-1"
+                className="btn btn-sm d-flex align-items-center gap-1 rounded-0"
                 style={{
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
                   fontWeight: 500,
                   backgroundColor: "#7f1d1d",
@@ -311,8 +313,8 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
       {error && (
         <Alert
           color="danger"
-          className="mb-4 d-flex align-items-center justify-content-between"
-          style={{ borderRadius: "4px" }}
+          className="mb-4 d-flex align-items-center justify-content-between rounded-0"
+          style={{ borderRadius: 0 }}
         >
           <div className="d-flex align-items-center gap-2">
             <i className="ri-error-warning-line fs-18"></i>
@@ -322,8 +324,9 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
             color="danger"
             size="sm"
             outline
+            className="rounded-0"
             onClick={executeReport}
-            style={{ borderRadius: "4px", fontSize: "12px" }}
+            style={{ borderRadius: 0, fontSize: "12px" }}
           >
             Retry
           </Button>

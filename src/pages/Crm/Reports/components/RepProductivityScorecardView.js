@@ -39,20 +39,35 @@ const RepProductivityScorecardView = ({
     return Array.isArray(reportResult?.chart_data) ? reportResult.chart_data : [];
   }, [reportResult]);
 
+  // Helper for Rep Initials
+  const getInitials = (name) => {
+    const parts = String(name || "").trim().split(" ");
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return (name || "RP").slice(0, 2).toUpperCase();
+  };
+
   // Executive KPI Calculations
-  const activeRepsCount = Number(summary.active_reps ?? (rawRows.length > 0 ? rawRows.length : 3));
-  const totalWonRevenue = Number(summary.total_won_revenue ?? 250000);
+  const activeRepsCount = Number(summary.active_reps ?? rawRows.length ?? 0);
+  const totalWonRevenue = Number(summary.total_won_revenue ?? 0);
 
   const totalActivitiesCount = useMemo(() => {
-    return rawRows.reduce((acc, r) => acc + Number(r.activities_logged || 0), 0) || 12;
+    return rawRows.reduce((acc, r) => acc + Number(r.activities_logged || 0), 0);
   }, [rawRows]);
 
   const totalTasksCount = useMemo(() => {
-    return rawRows.reduce((acc, r) => acc + Number(r.tasks_completed || 0), 0) || 2;
+    return rawRows.reduce((acc, r) => acc + Number(r.tasks_completed || 0), 0);
   }, [rawRows]);
 
   const totalDealsWon = useMemo(() => {
-    return rawRows.reduce((acc, r) => acc + Number(r.deals_won || 0), 0) || 1;
+    return rawRows.reduce((acc, r) => acc + Number(r.deals_won || 0), 0);
+  }, [rawRows]);
+
+  // Dynamic Top Leader rep
+  const topLeader = useMemo(() => {
+    if (rawRows.length === 0) return null;
+    return [...rawRows].sort((a, b) => Number(b.won_revenue || 0) - Number(a.won_revenue || 0))[0];
   }, [rawRows]);
 
   // Filtered rows for client search & filter
@@ -133,18 +148,12 @@ const RepProductivityScorecardView = ({
     const list =
       chartData.length > 0
         ? chartData
-        : rawRows.length > 0
-        ? rawRows.map((r) => ({
+        : rawRows.map((r) => ({
             sales_rep: r.sales_rep,
             activities_count: r.activities_logged,
             tasks_completed: r.tasks_completed,
             won_revenue: r.won_revenue,
-          }))
-        : [
-            { sales_rep: "Amit Kumar", activities_count: 11, tasks_completed: 1, won_revenue: 250000 },
-            { sales_rep: "Neha Gupta", activities_count: 1, tasks_completed: 0, won_revenue: 0 },
-            { sales_rep: "Vikram Singh", activities_count: 0, tasks_completed: 1, won_revenue: 0 },
-          ];
+          }));
 
     const categories = list.map((c) => c.sales_rep || "Sales Rep");
     const activitiesData = list.map((c) => Number(c.activities_count || 0));
@@ -267,21 +276,11 @@ const RepProductivityScorecardView = ({
 
   // 2. Won Revenue Share Donut Chart
   const revenueDonutConfig = useMemo(() => {
-    const list =
-      rawRows.length > 0
-        ? rawRows
-        : [
-            { sales_rep: "Amit Kumar", won_revenue: 250000 },
-            { sales_rep: "Neha Gupta", won_revenue: 0 },
-            { sales_rep: "Vikram Singh", won_revenue: 0 },
-          ];
-
+    const list = rawRows;
     const labels = list.map((r) => r.sales_rep || "Sales Rep");
     const rawSeries = list.map((r) => Number(r.won_revenue || 0));
-
-    // If all zero, default top rep to 250000
-    const allZero = rawSeries.every((v) => v === 0);
-    const finalSeries = allZero ? [250000, 0, 0] : rawSeries;
+    const allZero = rawSeries.length === 0 || rawSeries.every((v) => v === 0);
+    const finalSeries = allZero ? (rawSeries.length > 0 ? rawSeries.map(() => 0) : [0]) : rawSeries;
 
     return {
       series: finalSeries,
@@ -641,7 +640,7 @@ const RepProductivityScorecardView = ({
                   borderRadius: "4px",
                 }}
               >
-                Top Leader: Amit Kumar
+                Top Leader: {topLeader ? topLeader.sales_rep : "None"}
               </span>
             </div>
 
@@ -679,7 +678,9 @@ const RepProductivityScorecardView = ({
                         lineHeight: "1.1",
                       }}
                     >
-                      100%
+                      {topLeader && totalWonRevenue > 0
+                        ? `${Math.round((Number(topLeader.won_revenue || 0) / totalWonRevenue) * 100)}%`
+                        : "0%"}
                     </div>
                     <div
                       style={{
@@ -690,7 +691,7 @@ const RepProductivityScorecardView = ({
                         marginTop: "2px",
                       }}
                     >
-                      Amit Kumar
+                      {topLeader ? topLeader.sales_rep : "—"}
                     </div>
                   </div>
                 </div>
@@ -771,48 +772,54 @@ const RepProductivityScorecardView = ({
                   borderRadius: "4px",
                 }}
               >
-                <div className="d-flex align-items-center gap-2.5">
-                  <div
-                    style={{
-                      width: "36px",
-                      height: "36px",
-                      borderRadius: "4px",
-                      backgroundColor: "#7f1d1d",
-                      color: "#ffffff",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "13px",
-                      fontWeight: 700,
-                      flexShrink: 0,
-                    }}
-                  >
-                    AK
-                  </div>
-                  <div>
-                    <div className="d-flex align-items-center gap-1.5">
-                      <span className="fw-bold text-dark" style={{ fontSize: "12.5px" }}>
-                        Amit Kumar
-                      </span>
-                      <span
-                        style={{
-                          backgroundColor: "#fef3c7",
-                          color: "#92400e",
-                          border: "1px solid #fde68a",
-                          fontSize: "10px",
-                          fontWeight: 600,
-                          padding: "1px 6px",
-                          borderRadius: "3px",
-                        }}
-                      >
-                        <i className="ri-vip-crown-fill" style={{ color: "#d97706" }}></i> Quota Leader
+                {topLeader ? (
+                  <div className="d-flex align-items-center gap-2.5">
+                    <div
+                      style={{
+                        width: "36px",
+                        height: "36px",
+                        borderRadius: "4px",
+                        backgroundColor: "#7f1d1d",
+                        color: "#ffffff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "13px",
+                        fontWeight: 700,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {getInitials(topLeader.sales_rep)}
+                    </div>
+                    <div>
+                      <div className="d-flex align-items-center gap-1.5">
+                        <span className="fw-bold text-dark" style={{ fontSize: "12.5px" }}>
+                          {topLeader.sales_rep}
+                        </span>
+                        <span
+                          style={{
+                            backgroundColor: "#fef3c7",
+                            color: "#92400e",
+                            border: "1px solid #fde68a",
+                            fontSize: "10px",
+                            fontWeight: 600,
+                            padding: "1px 6px",
+                            borderRadius: "3px",
+                          }}
+                        >
+                          <i className="ri-vip-crown-fill" style={{ color: "#d97706" }}></i> Quota Leader
+                        </span>
+                      </div>
+                      <span className="text-muted d-block" style={{ fontSize: "11px" }}>
+                        {formatCurrency(topLeader.won_revenue || 0)} Won • {topLeader.activities_logged || 0} activities logged • {topLeader.deals_won || 0} deal{topLeader.deals_won === 1 ? "" : "s"} won
                       </span>
                     </div>
-                    <span className="text-muted d-block" style={{ fontSize: "11px" }}>
-                      ₹ 2,50,000 Won • 11 activities logged • 1 deal won
-                    </span>
                   </div>
-                </div>
+                ) : (
+                  <div className="text-muted py-2" style={{ fontSize: "12px" }}>
+                    No sales rep activity recorded.
+                  </div>
+                )}
 
                 <Link
                   to="/crm/opportunities"
@@ -1286,12 +1293,20 @@ const RepProductivityScorecardView = ({
               <span className="d-none d-md-inline text-muted">|</span>
               <div className="d-flex align-items-center gap-1.5">
                 <i className="ri-vip-crown-fill" style={{ color: "#d97706" }}></i>
-                <span>Amit Kumar leads team velocity with 11 logged touchpoints and ₹ 2,50,000 won.</span>
+                <span>
+                  {topLeader
+                    ? `${topLeader.sales_rep} leads team velocity with ${topLeader.activities_logged || 0} logged touchpoints and ${formatCurrency(topLeader.won_revenue || 0)} won.`
+                    : "No logged sales activities recorded for this period."}
+                </span>
               </div>
               <span className="d-none d-md-inline text-muted">|</span>
               <div className="d-flex align-items-center gap-1.5">
                 <i className="ri-line-chart-line" style={{ color: "#16a34a" }}></i>
-                <span>Targeted follow-up coaching recommended for Neha Gupta and Vikram Singh.</span>
+                <span>
+                  {rawRows.filter((r) => Number(r.won_revenue || 0) === 0).length > 0
+                    ? `Follow-up coaching recommended for ${rawRows.filter((r) => Number(r.won_revenue || 0) === 0).map((r) => r.sales_rep).join(" and ")}.`
+                    : "All active team members have logged performance."}
+                </span>
               </div>
             </div>
 

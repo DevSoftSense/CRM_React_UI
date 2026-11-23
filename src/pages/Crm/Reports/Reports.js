@@ -96,7 +96,7 @@ const Reports = () => {
         />
 
         {error && (
-          <Alert color="danger" className="mb-4" style={{ borderRadius: "8px" }}>
+          <Alert color="danger" className="mb-4" style={{ borderRadius: 0 }}>
             <div className="d-flex align-items-center justify-content-between">
               <div className="d-flex align-items-center gap-2">
                 <i className="ri-error-warning-line fs-18"></i>
@@ -105,7 +105,7 @@ const Reports = () => {
               <button
                 className="btn btn-sm btn-outline-danger"
                 onClick={loadCatalogAndOwners}
-                style={{ borderRadius: "6px" }}
+                style={{ borderRadius: 0 }}
               >
                 Retry
               </button>

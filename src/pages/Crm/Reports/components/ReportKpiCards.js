@@ -29,9 +29,9 @@ const ReportKpiCards = ({ summary }) => {
         return (
           <div className={colClass} key={key}>
             <Card
-              className="h-100 bg-white"
+              className="h-100 bg-white rounded-0"
               style={{
-                borderRadius: "4px",
+                borderRadius: 0,
                 border: "1px solid #e2e8f0",
                 borderTop: `3px solid ${color}`,
                 boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
@@ -63,7 +63,7 @@ const ReportKpiCards = ({ summary }) => {
                   style={{
                     width: "42px",
                     height: "42px",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     backgroundColor: bg,
                     color: color,
                     fontSize: "20px",

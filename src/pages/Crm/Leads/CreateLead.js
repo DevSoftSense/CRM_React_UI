@@ -17,6 +17,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { createLead, getLeadLookups } from "../../../helpers/crmLeadApi";
 import { getOwnerDropdown } from "../../../helpers/crmOwnerApi";
+import { getCampaignDropdown } from "../../../helpers/crmCampaignApi";
 import { toastApiError, toastSuccess } from "../../../helpers/crmToast";
 
 const INDUSTRY_OPTIONS = [
@@ -112,6 +113,7 @@ const emptyForm = () => ({
   expectedCloseDate: "",
   productInterest: "",
   territory: "",
+  campaignId: "",
   campaign: "",
   description: "",
 
@@ -146,6 +148,7 @@ const CreateLead = () => {
     leadRating: [],
   });
   const [ownerOptions, setOwnerOptions] = useState([]);
+  const [campaignOptions, setCampaignOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
@@ -157,9 +160,10 @@ const CreateLead = () => {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [lu, owners] = await Promise.all([
+      const [lu, owners, campaigns] = await Promise.all([
         getLeadLookups(),
         getOwnerDropdown({ limit: 200 }),
+        getCampaignDropdown().catch(() => []),
       ]);
       const leadSource = lu?.leadSource || lu?.lead_source || [];
       const leadStatus = lu?.leadStatus || lu?.lead_status || [];
@@ -168,6 +172,7 @@ const CreateLead = () => {
 
       const ownerList = Array.isArray(owners) ? owners : owners?.items || [];
       setOwnerOptions(ownerList);
+      setCampaignOptions(Array.isArray(campaigns) ? campaigns : []);
 
       // Default status to 'NEW' from database lookups
       const newStatus = leadStatus.find(
@@ -317,6 +322,7 @@ const CreateLead = () => {
     estimatedValue: form.estimatedValue !== "" ? Number(form.estimatedValue) : null,
     currencyCode: form.currencyCode || "INR",
     expectedCloseDate: form.expectedCloseDate || form.reminderDate || null,
+    campaignId: form.campaignId ? Number(form.campaignId) : null,
     description: compileDescription() || null,
     ownerEmployeeId: form.ownerEmployeeId ? Number(form.ownerEmployeeId) : null,
   });
@@ -941,14 +947,23 @@ const CreateLead = () => {
                       <Input
                         type="select"
                         bsSize="sm"
-                        style={{ borderRadius: "3px" }}
-                        value={form.campaign}
-                        onChange={(e) => onFormChange("campaign", e.target.value)}
+                        style={{ borderRadius: "0px" }}
+                        className="rounded-0"
+                        value={form.campaignId}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const selectedCamp = campaignOptions.find((c) => String(c.campaign_id) === String(val));
+                          setForm((prev) => ({
+                            ...prev,
+                            campaignId: val,
+                            campaign: selectedCamp?.campaign_name || "",
+                          }));
+                        }}
                       >
                         <option value="">Select Campaign</option>
-                        {CAMPAIGN_OPTIONS.map((c) => (
-                          <option key={c} value={c}>
-                            {c}
+                        {campaignOptions.map((c) => (
+                          <option key={c.campaign_id} value={c.campaign_id}>
+                            {c.campaign_name} {c.channel_name ? `(${c.channel_name})` : ""}
                           </option>
                         ))}
                       </Input>

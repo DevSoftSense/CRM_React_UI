@@ -270,7 +270,7 @@ const ReportDataTable = ({ rows, reportTitle, reportCode }) => {
             fontSize: "11px",
             fontWeight: 600,
             padding: "2px 8px",
-            borderRadius: "4px",
+            borderRadius: 0,
             textTransform: "capitalize",
           }}
         >
@@ -355,7 +355,7 @@ const ReportDataTable = ({ rows, reportTitle, reportCode }) => {
             fontSize: "11px",
             fontWeight: 700,
             padding: "2px 8px",
-            borderRadius: "4px",
+            borderRadius: 0,
             letterSpacing: "0.3px",
           }}
         >
@@ -511,7 +511,7 @@ const ReportDataTable = ({ rows, reportTitle, reportCode }) => {
             fontSize: "11.5px",
             fontWeight: 600,
             padding: "2px 8px",
-            borderRadius: "4px",
+            borderRadius: 0,
           }}
         >
           {isHigh && (
@@ -632,8 +632,8 @@ const ReportDataTable = ({ rows, reportTitle, reportCode }) => {
               <Input
                 type="text"
                 placeholder="Filter by keyword..."
-                className="form-control-sm ps-4"
-                style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#cbd5e1" }}
+                className="form-control-sm ps-4 rounded-0"
+                style={{ borderRadius: 0, fontSize: "12px", borderColor: "#cbd5e1" }}
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
@@ -656,9 +656,9 @@ const ReportDataTable = ({ rows, reportTitle, reportCode }) => {
             <Button
               color="light"
               size="sm"
-              className="border d-flex align-items-center gap-1"
+              className="border d-flex align-items-center gap-1 rounded-0"
               style={{
-                borderRadius: "4px",
+                borderRadius: 0,
                 fontSize: "12px",
                 fontWeight: 500,
                 color: "#7f1d1d",
@@ -682,7 +682,7 @@ const ReportDataTable = ({ rows, reportTitle, reportCode }) => {
               style={{
                 width: "48px",
                 height: "48px",
-                borderRadius: "4px",
+                borderRadius: 0,
                 backgroundColor: "rgba(127, 29, 29, 0.08)",
                 color: "#7f1d1d",
                 fontSize: "20px",
@@ -806,8 +806,8 @@ const ReportDataTable = ({ rows, reportTitle, reportCode }) => {
               <Button
                 color="light"
                 size="sm"
-                className="border"
-                style={{ borderRadius: "4px", fontSize: "12px", padding: "4px 10px", borderColor: "#e2e8f0" }}
+                className="border rounded-0"
+                style={{ borderRadius: 0, fontSize: "12px", padding: "4px 10px", borderColor: "#e2e8f0" }}
                 disabled={validCurrentPage <= 1}
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               >
@@ -822,8 +822,8 @@ const ReportDataTable = ({ rows, reportTitle, reportCode }) => {
               <Button
                 color="light"
                 size="sm"
-                className="border"
-                style={{ borderRadius: "4px", fontSize: "12px", padding: "4px 10px", borderColor: "#e2e8f0" }}
+                className="border rounded-0"
+                style={{ borderRadius: 0, fontSize: "12px", padding: "4px 10px", borderColor: "#e2e8f0" }}
                 disabled={validCurrentPage >= totalPages}
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               >

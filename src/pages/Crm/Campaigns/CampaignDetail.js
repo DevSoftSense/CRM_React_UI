@@ -25,7 +25,7 @@ import {
   Table,
   TabPane,
 } from "reactstrap";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import classnames from "classnames";
 import BreadCrumb from "../../../Components/Common/BreadCrumb";
 import DeleteModal from "../../../Components/Common/DeleteModal";
@@ -88,10 +88,20 @@ const getStatusBadgeClass = (statusCode) => {
 const CampaignDetail = () => {
   const { campaignId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [campaign, setCampaign] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("leads");
+  const [activeTab, setActiveTab] = useState(
+    searchParams.get("tab") === "deals" ? "deals" : "leads"
+  );
+
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam === "deals" || tabParam === "leads") {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
 
   const [lookups, setLookups] = useState({
     channels: [],

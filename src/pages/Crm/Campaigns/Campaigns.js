@@ -714,19 +714,49 @@ const Campaigns = () => {
 
                         {/* Leads Generated */}
                         <td className="text-center">
-                          <Badge className="rounded-0 bg-info-subtle text-info border border-info-subtle px-2 py-1 fs-12">
-                            {c.leadsCount}
-                          </Badge>
+                          {c.leadsCount > 0 ? (
+                            <Link
+                              to={`/crm/campaigns/${c.campaignId}?tab=leads`}
+                              title="View Attributed Leads"
+                              className="text-decoration-none"
+                            >
+                              <Badge
+                                className="rounded-0 bg-info-subtle text-info border border-info-subtle px-2 py-1 fs-12"
+                                style={{ cursor: "pointer" }}
+                              >
+                                {c.leadsCount}
+                              </Badge>
+                            </Link>
+                          ) : (
+                            <Badge className="rounded-0 bg-light text-muted border px-2 py-1 fs-12">
+                              0
+                            </Badge>
+                          )}
                         </td>
 
                         {/* Pipeline Value */}
                         <td>
-                          <div className="fw-semibold text-dark fs-12">
-                            {formatCurrency(c.pipelineValue, c.currencyCode)}
-                          </div>
-                          <div className="fs-11 text-muted">
-                            {c.opportunitiesCount} {c.opportunitiesCount === 1 ? "Deal" : "Deals"}
-                          </div>
+                          {c.opportunitiesCount > 0 ? (
+                            <Link
+                              to={`/crm/campaigns/${c.campaignId}?tab=deals`}
+                              title="View Attributed Deals"
+                              className="text-decoration-none"
+                            >
+                              <div className="fw-semibold text-dark fs-12 hover-maroon">
+                                {formatCurrency(c.pipelineValue, c.currencyCode)}
+                              </div>
+                              <div className="fs-11 text-primary fw-medium">
+                                {c.opportunitiesCount} {c.opportunitiesCount === 1 ? "Deal" : "Deals"}
+                              </div>
+                            </Link>
+                          ) : (
+                            <>
+                              <div className="fw-semibold text-dark fs-12">
+                                {formatCurrency(c.pipelineValue, c.currencyCode)}
+                              </div>
+                              <div className="fs-11 text-muted">0 Deals</div>
+                            </>
+                          )}
                         </td>
 
                         {/* Won Revenue & ROI */}

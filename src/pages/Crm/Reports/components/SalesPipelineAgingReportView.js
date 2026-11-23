@@ -15,8 +15,11 @@ import {
   ModalFooter,
   FormGroup,
   Label,
+  Spinner,
 } from "reactstrap";
 import { formatCurrency, formatNumber } from "../utils/reportUtils";
+import { createActivity } from "../../../../helpers/crmActivityApi";
+import { toastSuccess, toastApiError } from "../../../../helpers/crmToast";
 
 const SalesPipelineAgingReportView = ({
   reportResult,
@@ -35,8 +38,31 @@ const SalesPipelineAgingReportView = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedDealForModal, setSelectedDealForModal] = useState(null);
   const [followUpDeal, setFollowUpDeal] = useState(null);
+  const [followUpType, setFollowUpType] = useState("CALL");
+  const [followUpNotes, setFollowUpNotes] = useState("");
+  const [savingFollowUp, setSavingFollowUp] = useState(false);
   const [editTargetsOpen, setEditTargetsOpen] = useState(false);
   const [hoveredDot, setHoveredDot] = useState(null);
+
+  const handleSaveFollowUp = async () => {
+    if (!followUpDeal) return;
+    try {
+      setSavingFollowUp(true);
+      await createActivity({
+        reason: `Follow-up: ${followUpDeal.opportunity_name}`,
+        actType: followUpType || "CALL",
+        callNotes: followUpNotes || `Followed up on deal ${followUpDeal.opportunity_name} at stage ${followUpDeal.stage_name}.`,
+        employeeId: followUpDeal.owner_employee_id || (selectedOwnerId ? Number(selectedOwnerId) : null),
+      });
+      toastSuccess("Follow-up activity logged successfully!");
+      setFollowUpDeal(null);
+      setFollowUpNotes("");
+    } catch (err) {
+      toastApiError(err, "Failed to log follow-up.");
+    } finally {
+      setSavingFollowUp(false);
+    }
+  };
 
   // Target days configuration per stage (customizable via modal)
   const [stageTargets, setStageTargets] = useState({
@@ -47,23 +73,10 @@ const SalesPipelineAgingReportView = ({
   });
 
   const rawRows = useMemo(() => {
-    if (Array.isArray(reportResult?.rows) && reportResult.rows.length > 0) {
+    if (Array.isArray(reportResult?.rows)) {
       return reportResult.rows;
     }
-    // Default fallback row matching CRM seed data
-    return [
-      {
-        opportunity_id: 2,
-        opportunity_name: "ABC Ltd. – ERP Implementation",
-        customer_name: "ABC 1 Tech Solutions Ltd.",
-        amount: 1850000,
-        stage_name: "Qualified",
-        sales_rep: "Amit Kumar",
-        days_in_stage: 21,
-        expected_close_date: "19 Mar 2027",
-        aging_status: "Slow",
-      },
-    ];
+    return [];
   }, [reportResult]);
 
   const summary = useMemo(() => {
@@ -88,10 +101,10 @@ const SalesPipelineAgingReportView = ({
   const slowDealsCount = useMemo(() => {
     return rawRows.filter(
       (r) => Number(r.days_in_stage) > 14 && Number(r.days_in_stage) <= 30
-    ).length || 1;
+    ).length;
   }, [rawRows]);
 
-  // Slower deal banner details
+  // Slower deal details
   const slowingDeal = useMemo(() => {
     return (
       rawRows.find((r) => Number(r.days_in_stage) > 14) || rawRows[0] || null
@@ -99,8 +112,8 @@ const SalesPipelineAgingReportView = ({
   }, [rawRows]);
 
   const daysUntilStuck = slowingDeal
-    ? Math.max(0, 30 - Number(slowingDeal.days_in_stage || 21))
-    : 9;
+    ? Math.max(0, 30 - Number(slowingDeal.days_in_stage || 0))
+    : 0;
 
   // Format short Lakhs for badges/headers
   const formatShortLakhs = (amt) => {
@@ -145,76 +158,66 @@ const SalesPipelineAgingReportView = ({
     return filteredRows.slice(start, start + pageSize);
   }, [filteredRows, currentPage, pageSize]);
 
-  // Stage breakdown details
+  // Stage breakdown details dynamically calculated from data
   const stageBreakdownData = useMemo(() => {
-    return [
-      {
-        name: "Prospecting",
-        deals: 0,
-        avgDays: 0,
-        amount: null,
-        color: "#dc2626",
-        isActive: false,
-      },
-      {
-        name: "Qualified",
-        deals: 1,
-        avgDays: 21,
-        amount: 1850000,
-        color: "#f59e0b",
-        isActive: true,
-      },
-      {
-        name: "Proposal",
-        deals: 0,
-        avgDays: 0,
-        amount: null,
-        color: "#8b5cf6",
-        isActive: false,
-      },
-      {
-        name: "Negotiation",
-        deals: 0,
-        avgDays: 0,
-        amount: null,
-        color: "#3b82f6",
-        isActive: false,
-      },
-      {
-        name: "Closed Won",
-        deals: 1,
-        avgDays: 16,
-        amount: 250000,
-        color: "#16a34a",
-        isActive: false,
-      },
+    const stageDefs = [
+      { name: "Prospecting", color: "#dc2626" },
+      { name: "Qualified", color: "#f59e0b" },
+      { name: "Proposal", color: "#8b5cf6" },
+      { name: "Negotiation", color: "#3b82f6" },
+      { name: "Closed Won", color: "#16a34a" },
     ];
-  }, []);
+    return stageDefs.map((def) => {
+      const matchRows = rawRows.filter(
+        (r) => String(r.stage_name || "").toUpperCase() === def.name.toUpperCase()
+      );
+      const totalAmt = matchRows.reduce((a, b) => a + Number(b.amount || 0), 0);
+      const totalDays = matchRows.reduce((a, b) => a + Number(b.days_in_stage || 0), 0);
+      return {
+        name: def.name,
+        deals: matchRows.length,
+        avgDays: matchRows.length > 0 ? Math.round(totalDays / matchRows.length) : 0,
+        amount: matchRows.length > 0 ? totalAmt : null,
+        color: def.color,
+        isActive: matchRows.length > 0,
+      };
+    });
+  }, [rawRows]);
 
-  // Aging heatmap data (deals per cell)
+  // Aging heatmap data dynamically computed from data
   const heatmapData = useMemo(() => {
-    return [
-      { stage: "Prospecting", d0_14: 0, d15_30: 0, d30_plus: 0 },
-      { stage: "Qualified", d0_14: 0, d15_30: 1, d30_plus: 0 },
-      { stage: "Proposal", d0_14: 0, d15_30: 0, d30_plus: 0 },
-      { stage: "Negotiation", d0_14: 0, d15_30: 0, d30_plus: 0 },
-      { stage: "Closed Won", d0_14: 0, d15_30: 0, d30_plus: 0 },
-    ];
-  }, []);
+    const stages = ["Prospecting", "Qualified", "Proposal", "Negotiation", "Closed Won"];
+    return stages.map((stage) => {
+      const stageRows = rawRows.filter(
+        (r) => String(r.stage_name || "").toUpperCase() === stage.toUpperCase()
+      );
+      return {
+        stage,
+        d0_14: stageRows.filter((r) => Number(r.days_in_stage || 0) <= 14).length,
+        d15_30: stageRows.filter((r) => Number(r.days_in_stage || 0) > 14 && Number(r.days_in_stage || 0) <= 30).length,
+        d30_plus: stageRows.filter((r) => Number(r.days_in_stage || 0) > 30).length,
+      };
+    });
+  }, [rawRows]);
 
-  // Aging by Sales Rep
+  // Aging by Sales Rep dynamically computed from data
   const repAgingData = useMemo(() => {
-    return [
-      {
-        name: "Amit Kumar",
-        deals: 1,
-        slow: 1,
-        stuck: 0,
-        avgDays: 21,
-        value: 1850000,
-      },
-    ];
-  }, []);
+    const map = {};
+    rawRows.forEach((r) => {
+      const rep = r.sales_rep || "Unassigned";
+      if (!map[rep]) map[rep] = { name: rep, deals: 0, slow: 0, stuck: 0, totalDays: 0, value: 0 };
+      map[rep].deals += 1;
+      const days = Number(r.days_in_stage || 0);
+      map[rep].totalDays += days;
+      map[rep].value += Number(r.amount || 0);
+      if (days > 30) map[rep].stuck += 1;
+      else if (days > 14) map[rep].slow += 1;
+    });
+    return Object.values(map).map((item) => ({
+      ...item,
+      avgDays: item.deals > 0 ? Math.round(item.totalDays / item.deals) : 0,
+    }));
+  }, [rawRows]);
 
   return (
     <div className="sales-pipeline-aging-report-view">
@@ -223,9 +226,9 @@ const SalesPipelineAgingReportView = ({
         {/* Card 1: Stuck Deals */}
         <Col xs={12} sm={6} lg={3}>
           <Card
-            className="h-100 bg-white"
+            className="h-100 bg-white rounded-0"
             style={{
-              borderRadius: "4px",
+              borderRadius: 0,
               border: "1px solid #e2e8f0",
               borderTop: "3px solid #ef4444",
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
@@ -238,7 +241,7 @@ const SalesPipelineAgingReportView = ({
                   style={{
                     width: "36px",
                     height: "36px",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     backgroundColor: "#fee2e2",
                     color: "#ef4444",
                     fontSize: "18px",
@@ -279,9 +282,9 @@ const SalesPipelineAgingReportView = ({
         {/* Card 2: Slow Deals */}
         <Col xs={12} sm={6} lg={3}>
           <Card
-            className="h-100 bg-white"
+            className="h-100 bg-white rounded-0"
             style={{
-              borderRadius: "4px",
+              borderRadius: 0,
               border: "1px solid #e2e8f0",
               borderTop: "3px solid #f59e0b",
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
@@ -294,7 +297,7 @@ const SalesPipelineAgingReportView = ({
                   style={{
                     width: "36px",
                     height: "36px",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     backgroundColor: "#fef3c7",
                     color: "#d97706",
                     fontSize: "18px",
@@ -335,9 +338,9 @@ const SalesPipelineAgingReportView = ({
         {/* Card 3: Active Pipeline Deals */}
         <Col xs={12} sm={6} lg={3}>
           <Card
-            className="h-100 bg-white"
+            className="h-100 bg-white rounded-0"
             style={{
-              borderRadius: "4px",
+              borderRadius: 0,
               border: "1px solid #e2e8f0",
               borderTop: "3px solid #3b82f6",
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
@@ -350,7 +353,7 @@ const SalesPipelineAgingReportView = ({
                   style={{
                     width: "36px",
                     height: "36px",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     backgroundColor: "#eff6ff",
                     color: "#3b82f6",
                     fontSize: "18px",
@@ -391,9 +394,9 @@ const SalesPipelineAgingReportView = ({
         {/* Card 4: Total Pipeline Value */}
         <Col xs={12} sm={6} lg={3}>
           <Card
-            className="h-100 bg-white"
+            className="h-100 bg-white rounded-0"
             style={{
-              borderRadius: "4px",
+              borderRadius: 0,
               border: "1px solid #e2e8f0",
               borderTop: "3px solid #7f1d1d",
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
@@ -406,7 +409,7 @@ const SalesPipelineAgingReportView = ({
                   style={{
                     width: "36px",
                     height: "36px",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     backgroundColor: "#fee2e2",
                     color: "#7f1d1d",
                     fontSize: "18px",
@@ -452,9 +455,9 @@ const SalesPipelineAgingReportView = ({
           <div className="d-flex flex-column gap-3">
             {/* CARD A: DEAL AGING BY STAGE */}
             <Card
-              className="bg-white"
+              className="bg-white rounded-0"
               style={{
-                borderRadius: "4px",
+                borderRadius: 0,
                 border: "1px solid #e2e8f0",
                 boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
@@ -491,8 +494,9 @@ const SalesPipelineAgingReportView = ({
                     <div className="btn-group btn-group-sm" role="group">
                       <button
                         type="button"
-                        className="btn btn-sm"
+                        className="btn btn-sm rounded-0"
                         style={{
+                          borderRadius: 0,
                           backgroundColor: viewMode === "days" ? "#ffffff" : "#f8fafc",
                           borderColor: "#cbd5e1",
                           color: viewMode === "days" ? "#0f172a" : "#64748b",
@@ -507,8 +511,9 @@ const SalesPipelineAgingReportView = ({
                       </button>
                       <button
                         type="button"
-                        className="btn btn-sm"
+                        className="btn btn-sm rounded-0"
                         style={{
+                          borderRadius: 0,
                           backgroundColor: viewMode === "value" ? "#ffffff" : "#f8fafc",
                           borderColor: "#cbd5e1",
                           color: viewMode === "value" ? "#0f172a" : "#64748b",
@@ -646,8 +651,9 @@ const SalesPipelineAgingReportView = ({
                         "Negotiation",
                         "Closed Won",
                       ].map((stage, idx) => {
-                        const isQualified = stage === "Qualified";
-                        const isWon = stage === "Closed Won";
+                        const stageDeals = rawRows.filter(
+                          (r) => String(r.stage_name || "").toUpperCase() === stage.toUpperCase()
+                        );
                         return (
                           <div
                             key={stage}
@@ -659,144 +665,123 @@ const SalesPipelineAgingReportView = ({
                             }}
                           >
                             {/* Empty stage "No deals" indicator */}
-                            {!isQualified && !isWon && (
+                            {stageDeals.length === 0 && (
                               <span style={{ fontSize: "10.5px", color: "#94a3b8" }}>
                                 No deals
                               </span>
                             )}
 
-                            {/* Qualified Stage: The slowing deal dot at 21 days */}
-                            {isQualified && (
-                              <div
-                                className="position-absolute"
-                                style={{
-                                  bottom: "47%", // 21 days on 0-45d scale
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  alignItems: "center",
-                                }}
-                              >
-                                {/* Dotted line going up to 30d boundary */}
-                                <div
-                                  style={{
-                                    position: "absolute",
-                                    bottom: "100%",
-                                    width: "1px",
-                                    height: "40px",
-                                    borderLeft: "1.5px dashed #b45309",
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      position: "absolute",
-                                      left: "6px",
-                                      top: "8px",
-                                      fontSize: "10px",
-                                      fontWeight: 600,
-                                      color: "#b45309",
-                                      whiteSpace: "nowrap",
-                                    }}
-                                  >
-                                    9 days until stuck
-                                  </span>
-                                </div>
+                            {/* Dynamic Deal Dots */}
+                            {stageDeals.map((deal, dealIdx) => {
+                              const days = Number(deal.days_in_stage || 0);
+                              const bottomPct = Math.min(88, Math.max(12, Math.round((days / 45) * 100)));
+                              const isWon = stage === "Closed Won" || String(deal.stage_name || "").toUpperCase().includes("WON");
+                              const isSlow = days > 14 && days <= 30;
+                              const isStuck = days > 30;
+                              const dotColor = isWon ? "#16a34a" : isStuck ? "#ef4444" : isSlow ? "#f59e0b" : "#16a34a";
+                              const dealKey = `${stage}-${deal.opportunity_id || dealIdx}`;
 
-                                {/* Hover Deal Tooltip Card - HOVER ONLY */}
-                                {hoveredDot === "qualified" && (
-                                  <div
-                                    className="position-absolute"
-                                    style={{
-                                      bottom: "115%",
-                                      left: "50%",
-                                      transform: "translateX(15px)",
-                                      backgroundColor: "#ffffff",
-                                      border: "1px solid #cbd5e1",
-                                      borderRadius: "4px",
-                                      padding: "8px 12px",
-                                      boxShadow: "0 6px 18px rgba(15, 23, 42, 0.12)",
-                                      whiteSpace: "nowrap",
-                                      zIndex: 30,
-                                      minWidth: "230px",
-                                      pointerEvents: "none",
-                                      animation: "fadeIn 0.15s ease-in-out",
-                                    }}
-                                  >
-                                    <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#0f172a" }}>
-                                      ABC Ltd. – ERP Implementation
-                                    </div>
-                                    <div style={{ fontSize: "10.5px", color: "#64748b", marginTop: "1px" }}>
-                                      Amit Kumar • closes 19 Mar 2027
-                                    </div>
-                                    <div style={{ fontSize: "11px", fontWeight: 700, color: "#d97706", marginTop: "2px" }}>
-                                      ₹18,50,000 • 21 days in Qualified
-                                    </div>
-                                  </div>
-                                )}
-
-                                {/* Dot Circle: 21 days */}
+                              return (
                                 <div
+                                  key={dealKey}
+                                  className="position-absolute"
                                   style={{
-                                    width: "28px",
-                                    height: "28px",
-                                    borderRadius: "50%",
-                                    backgroundColor: "#f59e0b",
-                                    color: "#ffffff",
-                                    fontSize: "11px",
-                                    fontWeight: 700,
+                                    bottom: `${bottomPct}%`,
                                     display: "flex",
+                                    flexDirection: "column",
                                     alignItems: "center",
-                                    justifyContent: "center",
-                                    boxShadow:
-                                      hoveredDot === "qualified"
-                                        ? "0 0 0 4px rgba(245, 158, 11, 0.35), 0 4px 8px rgba(245, 158, 11, 0.4)"
-                                        : "0 2px 6px rgba(245, 158, 11, 0.4)",
-                                    cursor: "pointer",
-                                    transition: "all 0.15s ease",
+                                    zIndex: 5,
                                   }}
-                                  onMouseEnter={() => setHoveredDot("qualified")}
-                                  onMouseLeave={() => setHoveredDot(null)}
-                                  onClick={() => setSelectedDealForModal(slowingDeal)}
                                 >
-                                  21
-                                </div>
-                              </div>
-                            )}
+                                  {/* If slow deal approaching 30d boundary */}
+                                  {isSlow && !isWon && (
+                                    <div
+                                      style={{
+                                        position: "absolute",
+                                        bottom: "100%",
+                                        width: "1px",
+                                        height: "36px",
+                                        borderLeft: "1.5px dashed #b45309",
+                                      }}
+                                    >
+                                      <span
+                                        style={{
+                                          position: "absolute",
+                                          left: "6px",
+                                          top: "6px",
+                                          fontSize: "10px",
+                                          fontWeight: 600,
+                                          color: "#b45309",
+                                          whiteSpace: "nowrap",
+                                        }}
+                                      >
+                                        {Math.max(0, 30 - days)} days until stuck
+                                      </span>
+                                    </div>
+                                  )}
 
-                            {/* Closed Won Stage: Green Ring */}
-                            {isWon && (
-                              <div
-                                className="position-absolute"
-                                style={{
-                                  bottom: "36%", // 16 days
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    fontSize: "10px",
-                                    fontWeight: 600,
-                                    color: "#16a34a",
-                                    whiteSpace: "nowrap",
-                                    marginBottom: "4px",
-                                  }}
-                                >
-                                  Won in 16 d
-                                </span>
-                                <div
-                                  style={{
-                                    width: "22px",
-                                    height: "22px",
-                                    borderRadius: "50%",
-                                    border: "3px solid #16a34a",
-                                    backgroundColor: "transparent",
-                                    cursor: "pointer",
-                                  }}
-                                  title="Closed Won deal: 16 days cycle"
-                                ></div>
-                              </div>
-                            )}
+                                  {/* Hover Deal Tooltip Card */}
+                                  {hoveredDot === dealKey && (
+                                    <div
+                                      className="position-absolute"
+                                      style={{
+                                        bottom: "115%",
+                                        left: "50%",
+                                        transform: "translateX(15px)",
+                                        backgroundColor: "#ffffff",
+                                        border: "1px solid #cbd5e1",
+                                        borderRadius: "4px",
+                                        padding: "8px 12px",
+                                        boxShadow: "0 6px 18px rgba(15, 23, 42, 0.12)",
+                                        whiteSpace: "nowrap",
+                                        zIndex: 30,
+                                        minWidth: "230px",
+                                        pointerEvents: "none",
+                                        animation: "fadeIn 0.15s ease-in-out",
+                                      }}
+                                    >
+                                      <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#0f172a" }}>
+                                        {deal.opportunity_name || "—"}
+                                      </div>
+                                      <div style={{ fontSize: "10.5px", color: "#64748b", marginTop: "1px" }}>
+                                        {deal.sales_rep || "Unassigned"} • {deal.expected_close_date ? `closes ${deal.expected_close_date}` : "No close date"}
+                                      </div>
+                                      <div style={{ fontSize: "11px", fontWeight: 700, color: dotColor, marginTop: "2px" }}>
+                                        {formatCurrency(Number(deal.amount || 0))} • {days} days in {deal.stage_name || stage}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Dot Circle */}
+                                  <div
+                                    style={{
+                                      width: isWon ? "22px" : "28px",
+                                      height: isWon ? "22px" : "28px",
+                                      borderRadius: "50%",
+                                      backgroundColor: isWon ? "transparent" : dotColor,
+                                      border: isWon ? `3px solid ${dotColor}` : "none",
+                                      color: isWon ? dotColor : "#ffffff",
+                                      fontSize: "11px",
+                                      fontWeight: 700,
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      boxShadow:
+                                        hoveredDot === dealKey
+                                          ? `0 0 0 4px rgba(245, 158, 11, 0.35), 0 4px 8px rgba(0, 0, 0, 0.2)`
+                                          : "0 2px 6px rgba(0, 0, 0, 0.15)",
+                                      cursor: "pointer",
+                                      transition: "all 0.15s ease",
+                                    }}
+                                    onMouseEnter={() => setHoveredDot(dealKey)}
+                                    onMouseLeave={() => setHoveredDot(null)}
+                                    onClick={() => setSelectedDealForModal(deal)}
+                                  >
+                                    {isWon ? "" : days}
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         );
                       })}
@@ -853,9 +838,9 @@ const SalesPipelineAgingReportView = ({
 
             {/* CARD B: DAYS IN STAGE VS TARGET */}
             <Card
-              className="bg-white"
+              className="bg-white rounded-0"
               style={{
-                borderRadius: "4px",
+                borderRadius: 0,
                 border: "1px solid #e2e8f0",
                 boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
@@ -1100,9 +1085,9 @@ const SalesPipelineAgingReportView = ({
           <div className="d-flex flex-column gap-3">
             {/* CARD 1: STAGE BREAKDOWN */}
             <Card
-              className="bg-white"
+              className="bg-white rounded-0"
               style={{
-                borderRadius: "4px",
+                borderRadius: 0,
                 border: "1px solid #e2e8f0",
                 boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
@@ -1166,9 +1151,9 @@ const SalesPipelineAgingReportView = ({
 
             {/* CARD 2: AGING HEATMAP */}
             <Card
-              className="bg-white"
+              className="bg-white rounded-0"
               style={{
-                borderRadius: "4px",
+                borderRadius: 0,
                 border: "1px solid #e2e8f0",
                 boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
@@ -1263,9 +1248,9 @@ const SalesPipelineAgingReportView = ({
 
             {/* CARD 3: AGING BY SALES REP */}
             <Card
-              className="bg-white"
+              className="bg-white rounded-0"
               style={{
-                borderRadius: "4px",
+                borderRadius: 0,
                 border: "1px solid #e2e8f0",
                 boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
@@ -1356,9 +1341,9 @@ const SalesPipelineAgingReportView = ({
 
       {/* 4. ROW 3: ACTIVE DEALS LEDGER TABLE */}
       <Card
-        className="bg-white mb-4"
+        className="bg-white mb-4 rounded-0"
         style={{
-          borderRadius: "4px",
+          borderRadius: 0,
           border: "1px solid #e2e8f0",
           boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
@@ -1382,6 +1367,7 @@ const SalesPipelineAgingReportView = ({
                   type="text"
                   bsSize="sm"
                   placeholder="Search deal or customer..."
+                  className="rounded-0"
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
@@ -1390,7 +1376,7 @@ const SalesPipelineAgingReportView = ({
                   style={{
                     paddingLeft: "28px",
                     fontSize: "12px",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     borderColor: "#cbd5e1",
                   }}
                 />
@@ -1402,10 +1388,10 @@ const SalesPipelineAgingReportView = ({
 
               {/* Aging Filter */}
               <select
-                className="form-select form-select-sm"
+                className="form-select form-select-sm rounded-0"
                 style={{
                   width: "130px",
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
                   borderColor: "#cbd5e1",
                 }}
@@ -1425,9 +1411,9 @@ const SalesPipelineAgingReportView = ({
               <Button
                 color="light"
                 size="sm"
-                className="border d-flex align-items-center gap-1"
+                className="border d-flex align-items-center gap-1 rounded-0"
                 style={{
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
                   color: "#475569",
                   borderColor: "#cbd5e1",
@@ -1475,18 +1461,39 @@ const SalesPipelineAgingReportView = ({
                       <tr key={r.opportunity_id || idx}>
                         {/* DEAL */}
                         <td>
-                          <span
-                            className="fw-bold text-dark"
-                            style={{ cursor: "pointer", color: "#0f172a" }}
-                            onClick={() => setSelectedDealForModal(r)}
-                          >
-                            {r.opportunity_name}
-                          </span>
+                          <div className="d-flex align-items-center">
+                            <Link
+                              to={`/crm/opportunities/${r.opportunity_id}`}
+                              className="fw-bold text-dark text-decoration-none"
+                              style={{ color: "#0f172a" }}
+                              title="Open Opportunity Details"
+                            >
+                              {r.opportunity_name}
+                            </Link>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-link p-0 ms-1 text-muted"
+                              onClick={() => setSelectedDealForModal(r)}
+                              title="Quick Summary"
+                            >
+                              <i className="ri-information-line fs-13" />
+                            </button>
+                          </div>
                         </td>
 
                         {/* CUSTOMER */}
-                        <td className="text-muted">
-                          {r.customer_name}
+                        <td>
+                          {r.account_id ? (
+                            <Link
+                              to={`/crm/customers/${r.account_id}`}
+                              className="text-primary fw-medium text-decoration-none"
+                              title="View Customer Profile"
+                            >
+                              {r.customer_name}
+                            </Link>
+                          ) : (
+                            <span className="text-muted">{r.customer_name}</span>
+                          )}
                         </td>
 
                         {/* SALES REP */}
@@ -1499,7 +1506,7 @@ const SalesPipelineAgingReportView = ({
                                 justifyContent: "center",
                                 width: "22px",
                                 height: "22px",
-                                borderRadius: "3px",
+                                borderRadius: 0,
                                 backgroundColor: "#fee2e2",
                                 color: "#7f1d1d",
                                 fontSize: "10.5px",
@@ -1525,7 +1532,7 @@ const SalesPipelineAgingReportView = ({
                             style={{
                               display: "inline-block",
                               padding: "2px 8px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               backgroundColor: "#ecfeff",
                               color: "#0e7490",
                               border: "1px solid #a5f3fc",
@@ -1548,7 +1555,7 @@ const SalesPipelineAgingReportView = ({
                             style={{
                               display: "inline-block",
                               padding: "2px 8px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               backgroundColor: "#fef3c7",
                               color: "#b45309",
                               border: "1px solid #fde68a",
@@ -1568,7 +1575,7 @@ const SalesPipelineAgingReportView = ({
                                 width: "50px",
                                 height: "6px",
                                 backgroundColor: "#f1f5f9",
-                                borderRadius: "3px",
+                                borderRadius: 0,
                                 overflow: "hidden",
                               }}
                             >
@@ -1577,7 +1584,7 @@ const SalesPipelineAgingReportView = ({
                                   width: `${pct}%`,
                                   height: "100%",
                                   backgroundColor: "#f59e0b",
-                                  borderRadius: "3px",
+                                  borderRadius: 0,
                                 }}
                               ></div>
                             </div>
@@ -1596,17 +1603,20 @@ const SalesPipelineAgingReportView = ({
                         <td className="text-end">
                           <button
                             type="button"
-                            className="btn btn-sm"
+                            className="btn btn-sm rounded-0"
                             style={{
                               backgroundColor: "#7f1d1d",
                               borderColor: "#7f1d1d",
                               color: "#ffffff",
                               fontSize: "12px",
                               fontWeight: 500,
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               padding: "4px 12px",
                             }}
-                            onClick={() => setFollowUpDeal(r)}
+                            onClick={() => {
+                              setFollowUpDeal(r);
+                              setFollowUpNotes(`Follow-up on deal: ${r.opportunity_name}. Status: ${r.aging_status || "Slow"} (${days} days in ${r.stage_name}).`);
+                            }}
                           >
                             Follow up
                           </button>
@@ -1646,8 +1656,8 @@ const SalesPipelineAgingReportView = ({
             <div className="d-flex align-items-center gap-2" style={{ fontSize: "12px", color: "#64748b" }}>
               <span>Rows per page:</span>
               <select
-                className="form-select form-select-sm"
-                style={{ width: "70px", borderRadius: "4px", fontSize: "12px" }}
+                className="form-select form-select-sm rounded-0"
+                style={{ width: "70px", borderRadius: 0, fontSize: "12px" }}
                 value={pageSize}
                 onChange={(e) => {
                   setPageSize(Number(e.target.value));
@@ -1664,18 +1674,18 @@ const SalesPipelineAgingReportView = ({
             <div className="d-flex align-items-center gap-1">
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "4px", fontSize: "11px", padding: "4px 8px" }}
+                className="btn btn-sm btn-light border rounded-0"
+                style={{ borderRadius: 0, fontSize: "11px", padding: "4px 8px" }}
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               >
                 &lt; Prev
               </button>
               <span
-                className="badge bg-danger"
+                className="badge bg-danger rounded-0"
                 style={{
                   backgroundColor: "#7f1d1d !important",
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "11px",
                   padding: "6px 10px",
                 }}
@@ -1684,8 +1694,8 @@ const SalesPipelineAgingReportView = ({
               </span>
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "4px", fontSize: "11px", padding: "4px 8px" }}
+                className="btn btn-sm btn-light border rounded-0"
+                style={{ borderRadius: 0, fontSize: "11px", padding: "4px 8px" }}
                 disabled={currentPage >= totalPages}
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               >
@@ -1702,10 +1712,11 @@ const SalesPipelineAgingReportView = ({
           isOpen={!!selectedDealForModal}
           toggle={() => setSelectedDealForModal(null)}
           centered
+          contentClassName="rounded-0 border-0 shadow-lg"
         >
           <ModalHeader
+            className="rounded-0 bg-light border-bottom py-3"
             toggle={() => setSelectedDealForModal(null)}
-            style={{ borderBottom: "1px solid #e2e8f0" }}
           >
             <span className="fw-bold text-dark" style={{ fontSize: "15px" }}>
               Deal Stage &amp; Aging Summary
@@ -1757,10 +1768,10 @@ const SalesPipelineAgingReportView = ({
               </div>
             </div>
           </ModalBody>
-          <ModalFooter style={{ borderTop: "1px solid #e2e8f0" }}>
+          <ModalFooter className="rounded-0 border-top py-2">
             <Link
               to={`/crm/opportunities/${selectedDealForModal.opportunity_id || 2}`}
-              className="btn btn-sm btn-primary"
+              className="btn btn-sm btn-primary rounded-0 text-white"
               style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d" }}
             >
               Open Full Opportunity
@@ -1768,6 +1779,7 @@ const SalesPipelineAgingReportView = ({
             <Button
               color="light"
               size="sm"
+              className="rounded-0"
               onClick={() => setSelectedDealForModal(null)}
             >
               Close
@@ -1780,12 +1792,13 @@ const SalesPipelineAgingReportView = ({
       {followUpDeal && (
         <Modal
           isOpen={!!followUpDeal}
-          toggle={() => setFollowUpDeal(null)}
+          toggle={() => !savingFollowUp && setFollowUpDeal(null)}
           centered
+          contentClassName="rounded-0 border-0 shadow-lg"
         >
           <ModalHeader
-            toggle={() => setFollowUpDeal(null)}
-            style={{ borderBottom: "1px solid #e2e8f0" }}
+            className="rounded-0 bg-light border-bottom py-3"
+            toggle={() => !savingFollowUp && setFollowUpDeal(null)}
           >
             <span className="fw-bold text-dark" style={{ fontSize: "15px" }}>
               Log Follow-up Action
@@ -1797,10 +1810,15 @@ const SalesPipelineAgingReportView = ({
             </p>
             <FormGroup className="mb-3">
               <Label className="small fw-semibold text-dark">Activity Type</Label>
-              <select className="form-select form-select-sm" defaultValue="CALL">
+              <select
+                className="form-select form-select-sm rounded-0"
+                value={followUpType}
+                onChange={(e) => setFollowUpType(e.target.value)}
+              >
                 <option value="CALL">Phone Call</option>
                 <option value="MEETING">Demo / Meeting</option>
                 <option value="EMAIL">Follow-up Email</option>
+                <option value="NOTE">Quick Note</option>
               </select>
             </FormGroup>
             <FormGroup className="mb-3">
@@ -1808,26 +1826,32 @@ const SalesPipelineAgingReportView = ({
               <Input
                 type="textarea"
                 rows="3"
+                className="rounded-0"
                 placeholder="Discuss pending proposal requirements and timeline..."
-                defaultValue="Followed up regarding Qualified stage review. Scheduled alignment call with IT team."
+                value={followUpNotes}
+                onChange={(e) => setFollowUpNotes(e.target.value)}
               />
             </FormGroup>
           </ModalBody>
-          <ModalFooter style={{ borderTop: "1px solid #e2e8f0" }}>
-            <Button
-              color="primary"
-              size="sm"
-              style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d" }}
-              onClick={() => setFollowUpDeal(null)}
-            >
-              Save Follow-up
-            </Button>
+          <ModalFooter className="rounded-0 border-top py-2">
             <Button
               color="light"
               size="sm"
+              className="rounded-0"
+              disabled={savingFollowUp}
               onClick={() => setFollowUpDeal(null)}
             >
               Cancel
+            </Button>
+            <Button
+              className="rounded-0 text-white"
+              size="sm"
+              style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d" }}
+              disabled={savingFollowUp}
+              onClick={handleSaveFollowUp}
+            >
+              {savingFollowUp ? <Spinner size="sm" className="me-1" /> : null}
+              Save Follow-up
             </Button>
           </ModalFooter>
         </Modal>
@@ -1838,10 +1862,11 @@ const SalesPipelineAgingReportView = ({
         isOpen={editTargetsOpen}
         toggle={() => setEditTargetsOpen(false)}
         centered
+        contentClassName="rounded-0 border-0 shadow-lg"
       >
         <ModalHeader
+          className="rounded-0 bg-light border-bottom py-3"
           toggle={() => setEditTargetsOpen(false)}
-          style={{ borderBottom: "1px solid #e2e8f0" }}
         >
           <span className="fw-bold text-dark" style={{ fontSize: "15px" }}>
             Edit Target Days in Stage
@@ -1862,21 +1887,22 @@ const SalesPipelineAgingReportView = ({
                     type="number"
                     min="1"
                     max="90"
+                    className="rounded-0"
                     value={days}
                     onChange={(e) => {
                       const val = Number(e.target.value) || 1;
                       setStageTargets((prev) => ({ ...prev, [stage]: val }));
                     }}
                   />
-                  <span className="input-group-text">days</span>
+                  <span className="input-group-text rounded-0">days</span>
                 </div>
               </div>
             </FormGroup>
           ))}
         </ModalBody>
-        <ModalFooter style={{ borderTop: "1px solid #e2e8f0" }}>
+        <ModalFooter className="rounded-0 border-top py-2">
           <Button
-            color="primary"
+            className="rounded-0 text-white"
             size="sm"
             style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d" }}
             onClick={() => setEditTargetsOpen(false)}
@@ -1886,6 +1912,7 @@ const SalesPipelineAgingReportView = ({
           <Button
             color="light"
             size="sm"
+            className="rounded-0"
             onClick={() => setEditTargetsOpen(false)}
           >
             Cancel
