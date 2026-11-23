@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useSelector } from "react-redux";
 import ReactApexChart from "react-apexcharts";
 import { Link } from "react-router-dom";
 import {
@@ -22,6 +23,18 @@ const TopCustomersClvReportView = ({
   onOwnerChange,
   onExport,
 }) => {
+  const layoutMode = useSelector((state) => state.Layout?.layoutModeType);
+  const isDark = layoutMode === "dark";
+
+  // Dynamic Theme Colors
+  const cardBg = isDark ? "#161b22" : "#ffffff";
+  const cardBorder = isDark ? "#21262d" : "#e2e8f0";
+  const subtleBg = isDark ? "#0d1117" : "#f8fafc";
+  const subtleBorder = isDark ? "#30363d" : "#e2e8f0";
+  const textTitle = isDark ? "#f0f6fc" : "#0f172a";
+  const textSub = isDark ? "#8b949e" : "#64748b";
+  const primaryColor = "#7f1d1d";
+
   const [searchTerm, setSearchTerm] = useState("");
   const [dealFilter, setDealFilter] = useState("ALL");
   const [pageSize, setPageSize] = useState(10);
@@ -151,13 +164,13 @@ const TopCustomersClvReportView = ({
           bar: {
             horizontal: true,
             barHeight: "35%",
-            borderRadius: 4,
+            borderRadius: 0,
             dataLabels: {
               position: "top",
             },
           },
         },
-        colors: ["#7f1d1d"], // SoftOnCloud Maroon
+        colors: [isDark ? "#dc2626" : "#7f1d1d"], // SoftOnCloud Maroon/Red
         dataLabels: {
           enabled: true,
           textAnchor: "start",
@@ -166,12 +179,12 @@ const TopCustomersClvReportView = ({
             fontSize: "11px",
             fontFamily: "Inter, sans-serif",
             fontWeight: 600,
-            colors: ["#1e293b"],
+            colors: [textTitle],
           },
           formatter: (val) => formatCurrency(val),
         },
         grid: {
-          borderColor: "#f1f5f9",
+          borderColor: cardBorder,
           strokeDashArray: 3,
           xaxis: { lines: { show: true } },
           yaxis: { lines: { show: false } },
@@ -182,19 +195,19 @@ const TopCustomersClvReportView = ({
           max: xMax,
           labels: {
             style: {
-              colors: "#64748b",
+              colors: textSub,
               fontSize: "11px",
               fontFamily: "Inter, sans-serif",
             },
             formatter: (val) => formatCurrency(val),
           },
-          axisBorder: { color: "#e2e8f0" },
+          axisBorder: { color: cardBorder },
           axisTicks: { show: false },
         },
         yaxis: {
           labels: {
             style: {
-              colors: "#334155",
+              colors: textSub,
               fontSize: "12px",
               fontFamily: "Inter, sans-serif",
               fontWeight: 600,
@@ -210,7 +223,7 @@ const TopCustomersClvReportView = ({
         },
       },
     };
-  }, [chartData, rawRows]);
+  }, [chartData, rawRows, isDark, textTitle, textSub, cardBorder]);
 
   // 2. Dynamic Revenue Tier Calculation & Donut Chart
   const tierCounts = useMemo(() => {
@@ -243,8 +256,8 @@ const TopCustomersClvReportView = ({
           sparkline: { enabled: true },
         },
         labels: ["Tier 1 (> ₹2L)", "Tier 2 (₹1L - ₹2L)", "Tier 3 (< ₹1L)"],
-        colors: ["#7f1d1d", "#f87171", "#cbd5e1"], // Maroon, Rose, Slate
-        stroke: { width: 2, colors: ["#ffffff"] },
+        colors: [isDark ? "#dc2626" : "#7f1d1d", isDark ? "#38bdf8" : "#f87171", isDark ? "#64748b" : "#cbd5e1"],
+        stroke: { width: 2, colors: [cardBg] },
         plotOptions: {
           pie: {
             donut: {
@@ -260,7 +273,7 @@ const TopCustomersClvReportView = ({
         },
       },
     };
-  }, [tierCounts]);
+  }, [tierCounts, isDark, cardBg]);
 
   return (
     <div className="top-customers-clv-report-view">
@@ -269,10 +282,11 @@ const TopCustomersClvReportView = ({
         {/* Card 1: Total Lifetime Revenue (CLV) */}
         <Col lg={4} md={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               transition: "all 0.15s ease",
             }}
@@ -283,9 +297,9 @@ const TopCustomersClvReportView = ({
                   style={{
                     width: "48px",
                     height: "48px",
-                    borderRadius: "4px",
-                    backgroundColor: "rgba(127, 29, 29, 0.08)",
-                    color: "#7f1d1d",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(127, 29, 29, 0.25)" : "rgba(127, 29, 29, 0.08)",
+                    color: isDark ? "#f87171" : "#7f1d1d",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -297,17 +311,18 @@ const TopCustomersClvReportView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "11px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "11px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Total Lifetime Revenue (CLV)
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "26px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {formatCurrency(totalLifetimeRevenue)}
@@ -316,7 +331,7 @@ const TopCustomersClvReportView = ({
                     <span style={{ color: "#16a34a", fontSize: "11px", fontWeight: 600 }}>
                       <i className="ri-checkbox-circle-fill"></i> Closed Won
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       Realized client value
                     </span>
                   </div>
@@ -329,10 +344,11 @@ const TopCustomersClvReportView = ({
         {/* Card 2: Active Paying Customers */}
         <Col lg={4} md={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               transition: "all 0.15s ease",
             }}
@@ -343,9 +359,9 @@ const TopCustomersClvReportView = ({
                   style={{
                     width: "48px",
                     height: "48px",
-                    borderRadius: "4px",
-                    backgroundColor: "#eff6ff",
-                    color: "#2563eb",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(37, 99, 235, 0.2)" : "#eff6ff",
+                    color: isDark ? "#60a5fa" : "#2563eb",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -357,26 +373,27 @@ const TopCustomersClvReportView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "11px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "11px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Active Paying Customers
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "26px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {totalPayingAccounts}
                   </div>
                   <div className="d-flex align-items-center gap-1 mt-1">
-                    <span style={{ color: "#2563eb", fontSize: "11px", fontWeight: 600 }}>
+                    <span style={{ color: isDark ? "#60a5fa" : "#2563eb", fontSize: "11px", fontWeight: 600 }}>
                       <i className="ri-repeat-line"></i> 100%
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       Repeat business ready
                     </span>
                   </div>
@@ -389,10 +406,11 @@ const TopCustomersClvReportView = ({
         {/* Card 3: Avg Revenue Per Customer (ARPU) */}
         <Col lg={4} md={12}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
@@ -402,9 +420,9 @@ const TopCustomersClvReportView = ({
                   style={{
                     width: "48px",
                     height: "48px",
-                    borderRadius: "4px",
-                    backgroundColor: "#fffbeb",
-                    color: "#d97706",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(217, 119, 6, 0.2)" : "#fffbeb",
+                    color: isDark ? "#fbbf24" : "#d97706",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -416,26 +434,27 @@ const TopCustomersClvReportView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "11px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "11px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Avg Revenue Per Customer (ARPU)
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "26px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {formatCurrency(avgRevenuePerAccount)}
                   </div>
                   <div className="d-flex align-items-center gap-1 mt-1">
-                    <span style={{ color: "#d97706", fontSize: "11px", fontWeight: 600 }}>
+                    <span style={{ color: isDark ? "#fbbf24" : "#d97706", fontSize: "11px", fontWeight: 600 }}>
                       <i className="ri-star-fill"></i> Tier 1
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       Enterprise customer tier
                     </span>
                   </div>
@@ -446,13 +465,13 @@ const TopCustomersClvReportView = ({
                 style={{
                   width: "28px",
                   height: "28px",
-                  borderRadius: "50%",
-                  backgroundColor: "#f8fafc",
-                  border: "1px solid #e2e8f0",
+                  borderRadius: 0,
+                  backgroundColor: subtleBg,
+                  border: `1px solid ${subtleBorder}`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "#64748b",
+                  color: textSub,
                   fontSize: "14px",
                 }}
               >
@@ -468,27 +487,37 @@ const TopCustomersClvReportView = ({
         {/* Col 1: Top Customer Revenue Ranking (Col lg=5) */}
         <Col lg={5} md={12}>
           <Card
-            className="h-100 bg-white d-flex flex-column"
+            className="h-100 d-flex flex-column"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
-              style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+              className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
+              style={{ backgroundColor: cardBg, borderColor: cardBorder }}
             >
               <div className="d-flex align-items-center gap-2">
                 <i
                   className="ri-bar-chart-horizontal-fill"
                   style={{ color: "#7f1d1d", fontSize: "16px" }}
                 ></i>
-                <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+                <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                   Top Customer Revenue Ranking
                 </span>
               </div>
-              <span className="badge bg-light text-muted border" style={{ fontSize: "11px" }}>
+              <span
+                className="badge border"
+                style={{
+                  backgroundColor: subtleBg,
+                  color: textSub,
+                  borderColor: subtleBorder,
+                  borderRadius: 0,
+                  fontSize: "11px",
+                }}
+              >
                 By Realized Won Revenue
               </span>
             </div>
@@ -507,22 +536,23 @@ const TopCustomersClvReportView = ({
         {/* Col 2: Revenue Tier & Contribution (Col lg=4) */}
         <Col lg={4} md={6}>
           <Card
-            className="h-100 bg-white d-flex flex-column"
+            className="h-100 d-flex flex-column"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex align-items-center gap-2"
-              style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+              className="p-3 border-bottom d-flex align-items-center gap-2"
+              style={{ backgroundColor: cardBg, borderColor: cardBorder }}
             >
               <i
                 className="ri-pie-chart-2-line"
                 style={{ color: "#7f1d1d", fontSize: "16px" }}
               ></i>
-              <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+              <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                 Revenue Tier & Contribution
               </span>
             </div>
@@ -554,7 +584,7 @@ const TopCustomersClvReportView = ({
                     style={{
                       fontSize: "20px",
                       fontWeight: 700,
-                      color: "#0f172a",
+                      color: textTitle,
                       fontFamily: "Inter, sans-serif",
                       lineHeight: "1.1",
                     }}
@@ -564,7 +594,7 @@ const TopCustomersClvReportView = ({
                   <div
                     style={{
                       fontSize: "11px",
-                      color: "#7f1d1d",
+                      color: isDark ? "#f87171" : "#7f1d1d",
                       fontWeight: 600,
                       fontFamily: "Inter, sans-serif",
                       marginTop: "2px",
@@ -583,25 +613,25 @@ const TopCustomersClvReportView = ({
                 <div className="d-flex align-items-center justify-content-between">
                   <span className="d-flex align-items-center gap-2">
                     <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#7f1d1d" }}></span>
-                    <span style={{ color: "#334155", fontWeight: 500 }}>&gt; ₹2 Lakhs</span>
+                    <span style={{ color: textSub, fontWeight: 500 }}>&gt; ₹2 Lakhs</span>
                   </span>
-                  <span className="fw-bold text-dark font-monospace">{tierCounts.t1} ({tierCounts.t1Pct}%)</span>
+                  <span className="fw-bold font-monospace" style={{ color: textTitle }}>{tierCounts.t1} ({tierCounts.t1Pct}%)</span>
                 </div>
 
                 <div className="d-flex align-items-center justify-content-between">
                   <span className="d-flex align-items-center gap-2">
                     <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#f87171" }}></span>
-                    <span style={{ color: "#334155", fontWeight: 500 }}>₹1L - ₹2L</span>
+                    <span style={{ color: textSub, fontWeight: 500 }}>₹1L - ₹2L</span>
                   </span>
-                  <span className="fw-bold text-muted font-monospace">{tierCounts.t2} ({tierCounts.t2Pct}%)</span>
+                  <span className="fw-bold font-monospace" style={{ color: textSub }}>{tierCounts.t2} ({tierCounts.t2Pct}%)</span>
                 </div>
 
                 <div className="d-flex align-items-center justify-content-between">
                   <span className="d-flex align-items-center gap-2">
-                    <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#cbd5e1" }}></span>
-                    <span style={{ color: "#64748b", fontWeight: 500 }}>&lt; ₹1 Lakh</span>
+                    <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: isDark ? "#64748b" : "#cbd5e1" }}></span>
+                    <span style={{ color: textSub, fontWeight: 500 }}>&lt; ₹1 Lakh</span>
                   </span>
-                  <span className="fw-bold text-muted font-monospace">{tierCounts.t3} ({tierCounts.t3Pct}%)</span>
+                  <span className="fw-bold font-monospace" style={{ color: textSub }}>{tierCounts.t3} ({tierCounts.t3Pct}%)</span>
                 </div>
               </div>
             </CardBody>
@@ -611,22 +641,23 @@ const TopCustomersClvReportView = ({
         {/* Col 3: Client Value Insights (Col lg=3) */}
         <Col lg={3} md={6}>
           <Card
-            className="h-100 bg-white d-flex flex-column"
+            className="h-100 d-flex flex-column"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex align-items-center gap-2"
-              style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+              className="p-3 border-bottom d-flex align-items-center gap-2"
+              style={{ backgroundColor: cardBg, borderColor: cardBorder }}
             >
               <i
                 className="ri-lightbulb-line"
                 style={{ color: "#7f1d1d", fontSize: "16px" }}
               ></i>
-              <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+              <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                 Client Value Insights
               </span>
             </div>
@@ -644,7 +675,7 @@ const TopCustomersClvReportView = ({
                       flexShrink: 0,
                     }}
                   ></span>
-                  <p className="mb-0 text-dark" style={{ fontSize: "12px", lineHeight: "1.5" }}>
+                  <p className="mb-0" style={{ fontSize: "12px", lineHeight: "1.5", color: textTitle }}>
                     {topCustomer ? (
                       <>
                         <span className="fw-semibold">{topCustomer.customer_name || topCustomer.company_name}</span> accounts for{" "}
@@ -670,7 +701,7 @@ const TopCustomersClvReportView = ({
                       flexShrink: 0,
                     }}
                   ></span>
-                  <p className="mb-0 text-dark" style={{ fontSize: "12px", lineHeight: "1.5" }}>
+                  <p className="mb-0" style={{ fontSize: "12px", lineHeight: "1.5", color: textTitle }}>
                     {topCustomer
                       ? `Top account lifetime value is ${formatCurrency(topCustomer.lifetime_revenue || 0)} across ${topCustomer.deals_won_count || 1} won deal(s).`
                       : "Add won deals to populate customer lifetime ranking."}
@@ -688,7 +719,7 @@ const TopCustomersClvReportView = ({
                       flexShrink: 0,
                     }}
                   ></span>
-                  <p className="mb-0 text-dark" style={{ fontSize: "12px", lineHeight: "1.5" }}>
+                  <p className="mb-0" style={{ fontSize: "12px", lineHeight: "1.5", color: textTitle }}>
                     Prime candidate for annual maintenance and upsell expansion.
                   </p>
                 </div>
@@ -699,10 +730,10 @@ const TopCustomersClvReportView = ({
                   to="/crm/customers"
                   className="btn btn-sm d-inline-flex align-items-center gap-1"
                   style={{
-                    backgroundColor: "#7f1d1d",
-                    borderColor: "#7f1d1d",
+                    backgroundColor: primaryColor,
+                    borderColor: primaryColor,
                     color: "#ffffff",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     fontSize: "12px",
                     fontWeight: 500,
                     padding: "5px 14px",
@@ -718,32 +749,34 @@ const TopCustomersClvReportView = ({
 
       {/* ─── ROW 3: DETAILED DATA LEDGER (TABLE) ─────────────────────────────── */}
       <Card
-        className="bg-white mb-4"
+        className="mb-4"
         style={{
-          borderRadius: "4px",
-          border: "1px solid #e2e8f0",
-          boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+          borderRadius: 0,
+          border: "1px solid " + cardBorder,
+          backgroundColor: cardBg,
+          boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
       >
         <div
-          className="p-3 bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
+          className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
           style={{
-            borderRadius: "4px 4px 0 0",
-            borderColor: "#e2e8f0",
+            borderRadius: 0,
+            borderColor: cardBorder,
+            backgroundColor: cardBg,
           }}
         >
           <div>
             <h6
-              className="mb-0 fw-bold text-dark d-flex align-items-center gap-2"
-              style={{ fontSize: "14px" }}
+              className="mb-0 fw-bold d-flex align-items-center gap-2"
+              style={{ fontSize: "14px", color: textTitle }}
             >
               <i
                 className="ri-table-line"
-                style={{ color: "#7f1d1d", fontSize: "16px" }}
+                style={{ color: isDark ? "#f87171" : "#7f1d1d", fontSize: "16px" }}
               ></i>
               Detailed Data Ledger
             </h6>
-            <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+            <span style={{ fontSize: "11.5px", color: textSub }}>
               Showing 1 to {filteredRows.length} of {rawRows.length} customer records
             </span>
           </div>
@@ -756,17 +789,18 @@ const TopCustomersClvReportView = ({
                 placeholder="Search customer or email..."
                 className="form-control-sm ps-4"
                 style={{
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
-                  borderColor: "#cbd5e1",
-                  backgroundColor: "#ffffff",
+                  borderColor: subtleBorder,
+                  backgroundColor: subtleBg,
+                  color: textTitle,
                 }}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <i
-                className="ri-search-line position-absolute top-50 start-0 translate-middle-y ms-2 text-muted"
-                style={{ fontSize: "12px" }}
+                className="ri-search-line position-absolute top-50 start-0 translate-middle-y ms-2"
+                style={{ fontSize: "12px", color: textSub }}
               ></i>
             </div>
 
@@ -775,9 +809,11 @@ const TopCustomersClvReportView = ({
               className="form-select form-select-sm"
               style={{
                 width: "135px",
-                borderRadius: "4px",
+                borderRadius: 0,
                 fontSize: "12px",
-                borderColor: "#cbd5e1",
+                borderColor: subtleBorder,
+                backgroundColor: subtleBg,
+                color: textTitle,
               }}
               value={dealFilter}
               onChange={(e) => setDealFilter(e.target.value)}
@@ -792,10 +828,10 @@ const TopCustomersClvReportView = ({
               type="button"
               className="btn btn-sm d-flex align-items-center gap-1"
               style={{
-                backgroundColor: "#ffffff",
-                color: "#7f1d1d",
-                border: "1px solid #e2e8f0",
-                borderRadius: "4px",
+                backgroundColor: isDark ? "rgba(127, 29, 29, 0.15)" : "#ffffff",
+                color: isDark ? "#f87171" : "#7f1d1d",
+                border: "1px solid " + (isDark ? "rgba(127, 29, 29, 0.3)" : "#e2e8f0"),
+                borderRadius: 0,
                 fontSize: "12px",
                 fontWeight: 500,
                 padding: "5px 12px",
@@ -810,8 +846,8 @@ const TopCustomersClvReportView = ({
         <CardBody className="p-0">
           <div className="table-responsive">
             <Table className="align-middle table-nowrap mb-0" hover>
-              <thead style={{ backgroundColor: "#f8fafc" }}>
-                <tr style={{ fontSize: "11.5px", color: "#64748b" }}>
+              <thead style={{ backgroundColor: subtleBg }}>
+                <tr style={{ fontSize: "11.5px", color: textSub, borderBottom: "1px solid " + cardBorder }}>
                   <th style={{ width: "40px" }} className="text-center">#</th>
                   <th>CUSTOMER NAME</th>
                   <th>COMPANY NAME</th>
@@ -825,7 +861,7 @@ const TopCustomersClvReportView = ({
               <tbody style={{ fontSize: "12.5px" }}>
                 {paginatedRows.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="text-center py-4 text-muted">
+                    <td colSpan="8" className="text-center py-4" style={{ color: textSub }}>
                       No customer revenue records match the search criteria.
                     </td>
                   </tr>
@@ -836,8 +872,8 @@ const TopCustomersClvReportView = ({
                     const rowNumber = (currentPage - 1) * pageSize + idx + 1;
 
                     return (
-                      <tr key={r.account_id || idx}>
-                        <td className="text-center text-muted" style={{ fontSize: "11px" }}>
+                      <tr key={r.account_id || idx} style={{ borderBottom: "1px solid " + cardBorder }}>
+                        <td className="text-center" style={{ fontSize: "11px", color: textSub }}>
                           {rowNumber}
                         </td>
                         <td>
@@ -846,35 +882,35 @@ const TopCustomersClvReportView = ({
                               style={{
                                 width: "26px",
                                 height: "26px",
-                                borderRadius: "4px",
-                                backgroundColor: "rgba(127, 29, 29, 0.08)",
-                                color: "#7f1d1d",
+                                borderRadius: 0,
+                                backgroundColor: isDark ? "rgba(127, 29, 29, 0.2)" : "rgba(127, 29, 29, 0.08)",
+                                color: isDark ? "#f87171" : "#7f1d1d",
                                 display: "inline-flex",
                                 alignItems: "center",
-                                justifyContent: "center",
+                                justifyCenter: "center",
                                 fontSize: "13px",
                               }}
                             >
-                              <i className="ri-vip-crown-line"></i>
+                              <i className="ri-vip-crown-line m-auto"></i>
                             </span>
-                            <span className="fw-semibold text-dark">
+                            <span className="fw-semibold" style={{ color: textTitle }}>
                               {r.customer_name}
                             </span>
                           </div>
                         </td>
-                        <td className="text-muted">
+                        <td style={{ color: textSub }}>
                           {r.company_name}
                         </td>
                         <td>
                           <span
                             style={{
-                              backgroundColor: "#f0fdf4",
-                              color: "#166534",
-                              border: "1px solid #bbf7d0",
+                              backgroundColor: isDark ? "rgba(22, 163, 74, 0.2)" : "#f0fdf4",
+                              color: isDark ? "#4ade80" : "#166534",
+                              border: "1px solid " + (isDark ? "rgba(22, 163, 74, 0.4)" : "#bbf7d0"),
                               fontSize: "11.5px",
                               fontWeight: 600,
                               padding: "2.5px 8px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               display: "inline-flex",
                               alignItems: "center",
                               gap: "4px",
@@ -885,34 +921,54 @@ const TopCustomersClvReportView = ({
                           </span>
                         </td>
                         <td>
-                          <span className="text-dark d-inline-flex align-items-center gap-1.5" style={{ fontSize: "12px" }}>
-                            <i className="ri-mail-line text-muted"></i>
+                          <span className="d-inline-flex align-items-center gap-1" style={{ fontSize: "12px", color: textTitle }}>
+                            <i className="ri-mail-line" style={{ color: textSub }}></i>
                             {r.email || "—"}
                           </span>
                         </td>
                         <td>
-                          <span className="text-dark d-inline-flex align-items-center gap-1.5 font-monospace" style={{ fontSize: "12px" }}>
-                            <i className="ri-phone-line text-muted"></i>
+                          <span className="d-inline-flex align-items-center gap-1 font-monospace" style={{ fontSize: "12px", color: textTitle }}>
+                            <i className="ri-phone-line" style={{ color: textSub }}></i>
                             {r.phone || "—"}
                           </span>
                         </td>
-                        <td className="fw-bold text-dark font-monospace" style={{ fontSize: "13px" }}>
+                        <td className="fw-bold font-monospace" style={{ fontSize: "13px", color: wonAmount > 0 ? (isDark ? "#f87171" : "#7f1d1d") : textSub }}>
                           {formatCurrency(wonAmount)}
                         </td>
                         <td className="text-center">
                           <div className="d-flex align-items-center justify-content-center gap-1">
                             <Link
                               to={`/crm/customers/${r.account_id}`}
-                              className="btn btn-sm btn-light border p-1"
-                              style={{ borderRadius: "4px", color: "#475569", width: "26px", height: "26px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                              className="btn btn-sm p-1"
+                              style={{
+                                borderRadius: 0,
+                                backgroundColor: subtleBg,
+                                border: "1px solid " + subtleBorder,
+                                color: textSub,
+                                width: "26px",
+                                height: "26px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
                               title="View Customer Account"
                             >
                               <i className="ri-eye-line" style={{ fontSize: "13px" }}></i>
                             </Link>
                             <Link
                               to={`/crm/opportunities`}
-                              className="btn btn-sm btn-light border p-1"
-                              style={{ borderRadius: "4px", color: "#7f1d1d", width: "26px", height: "26px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                              className="btn btn-sm p-1"
+                              style={{
+                                borderRadius: 0,
+                                backgroundColor: subtleBg,
+                                border: "1px solid " + subtleBorder,
+                                color: isDark ? "#f87171" : "#7f1d1d",
+                                width: "26px",
+                                height: "26px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
                               title="View Customer Deals"
                             >
                               <i className="ri-money-dollar-circle-line" style={{ fontSize: "13px" }}></i>
@@ -928,14 +984,24 @@ const TopCustomersClvReportView = ({
           </div>
 
           {/* Table Footer Pagination */}
-          <div className="p-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div
+            className="p-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2"
+            style={{ borderColor: cardBorder }}
+          >
             <div className="d-flex align-items-center gap-2">
-              <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+              <span style={{ fontSize: "11.5px", color: textSub }}>
                 Show
               </span>
               <select
                 className="form-select form-select-sm"
-                style={{ width: "65px", fontSize: "11.5px", borderRadius: "4px" }}
+                style={{
+                  width: "65px",
+                  fontSize: "11.5px",
+                  borderRadius: 0,
+                  borderColor: subtleBorder,
+                  backgroundColor: subtleBg,
+                  color: textTitle,
+                }}
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
               >
@@ -943,7 +1009,7 @@ const TopCustomersClvReportView = ({
                 <option value={25}>25</option>
                 <option value={50}>50</option>
               </select>
-              <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+              <span style={{ fontSize: "11.5px", color: textSub }}>
                 Showing {filteredRows.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to {Math.min(currentPage * pageSize, filteredRows.length)} of {filteredRows.length} records
               </span>
             </div>
@@ -951,8 +1017,14 @@ const TopCustomersClvReportView = ({
             <div className="btn-group btn-group-sm">
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "4px 0 0 4px", fontSize: "11px" }}
+                className="btn btn-sm"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  backgroundColor: subtleBg,
+                  borderColor: subtleBorder,
+                  color: textTitle,
+                }}
                 disabled={currentPage <= 1}
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               >
@@ -962,19 +1034,26 @@ const TopCustomersClvReportView = ({
                 type="button"
                 className="btn btn-sm"
                 style={{
-                  backgroundColor: "#7f1d1d",
+                  backgroundColor: primaryColor,
                   color: "#ffffff",
                   fontSize: "11px",
                   fontWeight: 600,
-                  border: "1px solid #7f1d1d",
+                  border: "1px solid " + primaryColor,
+                  borderRadius: 0,
                 }}
               >
                 {currentPage}
               </button>
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "0 4px 4px 0", fontSize: "11px" }}
+                className="btn btn-sm"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  backgroundColor: subtleBg,
+                  borderColor: subtleBorder,
+                  color: textTitle,
+                }}
                 disabled={currentPage >= totalPages}
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               >
@@ -987,12 +1066,13 @@ const TopCustomersClvReportView = ({
 
       {/* ─── ROW 4: RETENTION & CLV EXECUTIVE STRIP ──────────────────────────── */}
       <Card
-        className="bg-white mb-4"
+        className="mb-4"
         style={{
-          borderRadius: "4px",
-          border: "1px solid #e2e8f0",
-          borderLeft: "4px solid #7f1d1d",
-          boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+          borderRadius: 0,
+          border: "1px solid " + cardBorder,
+          borderLeft: "4px solid " + primaryColor,
+          backgroundColor: cardBg,
+          boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
       >
         <CardBody className="p-3">
@@ -1003,10 +1083,10 @@ const TopCustomersClvReportView = ({
                 style={{
                   width: "36px",
                   height: "36px",
-                  borderRadius: "4px",
-                  backgroundColor: "#fffbeb",
-                  border: "1px solid #fde68a",
-                  color: "#d97706",
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "rgba(217, 119, 6, 0.2)" : "#fffbeb",
+                  border: "1px solid " + (isDark ? "rgba(217, 119, 6, 0.4)" : "#fde68a"),
+                  color: isDark ? "#fbbf24" : "#d97706",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1016,28 +1096,28 @@ const TopCustomersClvReportView = ({
               >
                 <i className="ri-trophy-line"></i>
               </div>
-              <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+              <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                 Lifetime Value Insights
               </span>
             </div>
 
             {/* Middle: 3 Key Insights */}
             <div
-              className="d-flex flex-wrap align-items-center gap-3 text-muted"
-              style={{ fontSize: "12px" }}
+              className="d-flex flex-wrap align-items-center gap-3"
+              style={{ fontSize: "12px", color: textSub }}
             >
               <div className="d-flex align-items-center gap-1.5">
-                <i className="ri-vip-crown-fill" style={{ color: "#7f1d1d" }}></i>
+                <i className="ri-vip-crown-fill" style={{ color: isDark ? "#f87171" : "#7f1d1d" }}></i>
                 <span>Top tier enterprise accounts drive 100% of realized revenue.</span>
               </div>
-              <span className="d-none d-md-inline text-muted">|</span>
+              <span className="d-none d-md-inline" style={{ color: cardBorder }}>|</span>
               <div className="d-flex align-items-center gap-1.5">
-                <i className="ri-repeat-line" style={{ color: "#7f1d1d" }}></i>
+                <i className="ri-repeat-line" style={{ color: isDark ? "#f87171" : "#7f1d1d" }}></i>
                 <span>Repeat business accounts show 40% shorter sales cycles.</span>
               </div>
-              <span className="d-none d-md-inline text-muted">|</span>
+              <span className="d-none d-md-inline" style={{ color: cardBorder }}>|</span>
               <div className="d-flex align-items-center gap-1.5">
-                <i className="ri-line-chart-line" style={{ color: "#16a34a" }}></i>
+                <i className="ri-line-chart-line" style={{ color: isDark ? "#4ade80" : "#16a34a" }}></i>
                 <span>Prioritize high-CLV accounts for quarterly account reviews and renewals.</span>
               </div>
             </div>
@@ -1045,10 +1125,10 @@ const TopCustomersClvReportView = ({
             {/* Right: SoftOnCloud Slogan */}
             <div className="d-none d-lg-flex align-items-center gap-2 text-end">
               <div>
-                <span className="fw-bold text-dark d-block" style={{ fontSize: "11.5px" }}>
+                <span className="fw-bold d-block" style={{ fontSize: "11.5px", color: textTitle }}>
                   Value. Retention. Growth.
                 </span>
-                <span className="text-muted" style={{ fontSize: "10.5px" }}>
+                <span style={{ fontSize: "10.5px", color: textSub }}>
                   Maximize client lifetime value.
                 </span>
               </div>
@@ -1056,9 +1136,9 @@ const TopCustomersClvReportView = ({
                 style={{
                   width: "32px",
                   height: "32px",
-                  borderRadius: "4px",
-                  backgroundColor: "rgba(127, 29, 29, 0.08)",
-                  color: "#7f1d1d",
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "rgba(127, 29, 29, 0.2)" : "rgba(127, 29, 29, 0.08)",
+                  color: isDark ? "#f87171" : "#7f1d1d",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",

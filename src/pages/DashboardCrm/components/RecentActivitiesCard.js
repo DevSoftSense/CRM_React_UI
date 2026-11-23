@@ -146,8 +146,8 @@ const RecentActivitiesCard = ({ activities = [] }) => {
       >
         <div className="d-flex align-items-center">
           <div
-            className="rounded-circle d-flex align-items-center justify-content-center me-2"
-            style={{ width: "24px", height: "24px", backgroundColor: "#fff1f2", color: "#991b1b" }}
+            className="rounded-0 d-flex align-items-center justify-content-center me-2"
+            style={{ width: "24px", height: "24px", backgroundColor: "rgba(153, 27, 27, 0.15)", color: "#991b1b" }}
           >
             <i className="ri-history-line" style={{ fontSize: "0.95rem" }} />
           </div>
@@ -165,12 +165,12 @@ const RecentActivitiesCard = ({ activities = [] }) => {
             <div className="d-flex align-items-center me-2 gap-1">
               <button
                 type="button"
-                className="btn btn-sm p-0 rounded-circle border-0 d-flex align-items-center justify-content-center"
+                className="btn btn-sm p-0 rounded-0 border-0 d-flex align-items-center justify-content-center"
                 style={{
                   width: "22px",
                   height: "22px",
-                  backgroundColor: "#f1f5f9",
-                  color: "#475569",
+                  backgroundColor: "var(--vz-card-bg-fill, #f1f5f9)",
+                  color: "var(--vz-body-color, #475569)",
                   cursor: "pointer",
                   transition: "all 0.15s ease",
                 }}
@@ -181,12 +181,12 @@ const RecentActivitiesCard = ({ activities = [] }) => {
               </button>
               <button
                 type="button"
-                className="btn btn-sm p-0 rounded-circle border-0 d-flex align-items-center justify-content-center"
+                className="btn btn-sm p-0 rounded-0 border-0 d-flex align-items-center justify-content-center"
                 style={{
                   width: "22px",
                   height: "22px",
-                  backgroundColor: "#f1f5f9",
-                  color: "#475569",
+                  backgroundColor: "var(--vz-card-bg-fill, #f1f5f9)",
+                  color: "var(--vz-body-color, #475569)",
                   cursor: "pointer",
                   transition: "all 0.15s ease",
                 }}
@@ -392,7 +392,7 @@ const RecentActivitiesCard = ({ activities = [] }) => {
                 style={{
                   width: "100%",
                   background: "linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)",
-                  borderRadius: "14px",
+                  borderRadius: 0,
                   border: "1px solid #fecaca",
                   padding: "6px 8px",
                   display: "flex",
@@ -489,7 +489,7 @@ const RecentActivitiesCard = ({ activities = [] }) => {
                         style={{
                           width: "10px",
                           height: "10px",
-                          borderRadius: "50%",
+                          borderRadius: 0,
                           backgroundColor: theme.dotColor,
                           border: "2px solid #ffffff",
                           boxShadow: `0 0 0 1px ${theme.dotColor}50, 0 1px 2px rgba(0,0,0,0.08)`,
@@ -504,7 +504,7 @@ const RecentActivitiesCard = ({ activities = [] }) => {
                         style={{
                           height: "48px",
                           backgroundColor: "#ffffff",
-                          borderRadius: "14px",
+                          borderRadius: 0,
                           border: "1px solid #f1f5f9",
                           boxShadow: "0 1px 3px rgba(15,23,42,0.04)",
                           padding: "0 10px",
@@ -521,13 +521,13 @@ const RecentActivitiesCard = ({ activities = [] }) => {
                           e.currentTarget.style.boxShadow = "0 1px 3px rgba(15,23,42,0.04)";
                         }}
                       >
-                        {/* Left Circular Icon */}
+                        {/* Left Icon Box */}
                         <div
                           className="d-flex align-items-center justify-content-center me-2 flex-shrink-0"
                           style={{
                             width: "28px",
                             height: "28px",
-                            borderRadius: "50%",
+                            borderRadius: 0,
                             backgroundColor: theme.iconBg,
                             color: theme.iconColor,
                             fontSize: "0.85rem",
@@ -566,12 +566,12 @@ const RecentActivitiesCard = ({ activities = [] }) => {
                         {/* Right Time Badge & 3-Dots */}
                         <div className="d-flex align-items-center flex-shrink-0 gap-1">
                           <span
-                            className="d-inline-flex align-items-center"
+                            className="d-inline-flex align-items-center crm-activity-time-badge"
                             style={{
                               backgroundColor: theme.timeBg,
                               color: theme.timeColor,
                               border: `1px solid ${theme.timeBorder}`,
-                              borderRadius: "10px",
+                              borderRadius: 0,
                               padding: "2px 6px",
                               fontSize: "0.65rem",
                               fontWeight: 600,

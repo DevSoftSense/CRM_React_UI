@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useSelector } from "react-redux";
 import ReactApexChart from "react-apexcharts";
 import { Link } from "react-router-dom";
 import {
@@ -35,6 +36,21 @@ const WinLossAnalysisReportView = ({
   const [selectedDealForModal, setSelectedDealForModal] = useState(null);
   const [checkDatesModalOpen, setCheckDatesModalOpen] = useState(false);
   const [hoveredMonth, setHoveredMonth] = useState(null);
+
+  // Dynamic Theme Integration
+  const { layoutModeType } = useSelector((state) => ({
+    layoutModeType: state.Layout.layoutModeType,
+  }));
+  const isDark = layoutModeType === "dark";
+
+  // Dynamic Theme Palette
+  const cardBg = isDark ? "#121212" : "#ffffff";
+  const cardBorder = isDark ? "#2d3748" : "#e2e8f0";
+  const subtleBg = isDark ? "#1a202c" : "#f8fafc";
+  const subtleBorder = isDark ? "#334155" : "#cbd5e1";
+  const textTitle = isDark ? "#f8fafc" : "#0f172a";
+  const textSub = isDark ? "#94a3b8" : "#64748b";
+  const primaryColor = isDark ? "#fca5a5" : "#7f1d1d";
 
   // Extract raw data from reportResult
   const rawRows = useMemo(() => {
@@ -175,7 +191,7 @@ const WinLossAnalysisReportView = ({
           startAngle: -100,
           endAngle: 100,
           track: {
-            background: "#f1f5f9",
+            background: isDark ? "#2d3748" : "#f1f5f9",
             strokeWidth: "90%",
             margin: 5,
           },
@@ -185,7 +201,7 @@ const WinLossAnalysisReportView = ({
               offsetY: -8,
               fontSize: "26px",
               fontWeight: 700,
-              color: "#0f172a",
+              color: textTitle,
               formatter: () => `${winRatePct}%`,
             },
           },
@@ -197,7 +213,7 @@ const WinLossAnalysisReportView = ({
       },
       labels: ["Win Rate"],
     };
-  }, [winRatePct]);
+  }, [winRatePct, isDark, textTitle]);
 
   return (
     <div className="win-loss-analysis-report-view">
@@ -206,12 +222,13 @@ const WinLossAnalysisReportView = ({
         {/* Card 1: Won Revenue */}
         <Col xs={12} sm={6} lg={3}>
           <Card
-            className="h-100 bg-white rounded-0"
+            className="h-100 rounded-0"
             style={{
               borderRadius: 0,
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              border: `1px solid ${cardBorder}`,
               borderTop: "3px solid #16a34a",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              boxShadow: isDark ? "0 1px 3px rgba(0, 0, 0, 0.25)" : "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <CardBody className="p-3">
@@ -222,20 +239,20 @@ const WinLossAnalysisReportView = ({
                     width: "36px",
                     height: "36px",
                     borderRadius: 0,
-                    backgroundColor: "#dcfce7",
+                    backgroundColor: isDark ? "rgba(22, 163, 74, 0.15)" : "#dcfce7",
                     color: "#16a34a",
                     fontSize: "18px",
                   }}
                 >
                   <i className="ri-money-rupee-circle-line"></i>
                 </div>
-                <span style={{ fontSize: "11px", color: "#94a3b8" }}>No prior data</span>
+                <span style={{ fontSize: "11px", color: textSub }}>No prior data</span>
               </div>
               <div
                 style={{
                   fontSize: "11px",
                   fontWeight: 700,
-                  color: "#64748b",
+                  color: textSub,
                   letterSpacing: "0.5px",
                   textTransform: "uppercase",
                 }}
@@ -247,13 +264,13 @@ const WinLossAnalysisReportView = ({
                 style={{
                   fontSize: "24px",
                   fontWeight: 700,
-                  color: "#0f172a",
+                  color: textTitle,
                   letterSpacing: "-0.5px",
                 }}
               >
                 {formatCurrency(wonRevenue)}
               </div>
-              <div className="d-flex align-items-center gap-1.5 mt-2" style={{ fontSize: "11.5px", color: "#16a34a" }}>
+              <div className="d-flex align-items-center gap-1.5 mt-2" style={{ fontSize: "11.5px", color: isDark ? "#4ade80" : "#16a34a" }}>
                 <span style={{ display: "inline-block", width: "6px", height: "6px", borderRadius: 0, backgroundColor: "#16a34a" }}></span>
                 <span>{wonDealsCount} deal won</span>
               </div>
@@ -264,12 +281,13 @@ const WinLossAnalysisReportView = ({
         {/* Card 2: Lost Revenue */}
         <Col xs={12} sm={6} lg={3}>
           <Card
-            className="h-100 bg-white rounded-0"
+            className="h-100 rounded-0"
             style={{
               borderRadius: 0,
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              border: `1px solid ${cardBorder}`,
               borderTop: "3px solid #ef4444",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              boxShadow: isDark ? "0 1px 3px rgba(0, 0, 0, 0.25)" : "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <CardBody className="p-3">
@@ -280,20 +298,20 @@ const WinLossAnalysisReportView = ({
                     width: "36px",
                     height: "36px",
                     borderRadius: 0,
-                    backgroundColor: "#fee2e2",
+                    backgroundColor: isDark ? "rgba(239, 68, 68, 0.15)" : "#fee2e2",
                     color: "#ef4444",
                     fontSize: "18px",
                   }}
                 >
                   <i className="ri-close-circle-line"></i>
                 </div>
-                <span style={{ fontSize: "11px", color: "#94a3b8" }}>No prior data</span>
+                <span style={{ fontSize: "11px", color: textSub }}>No prior data</span>
               </div>
               <div
                 style={{
                   fontSize: "11px",
                   fontWeight: 700,
-                  color: "#64748b",
+                  color: textSub,
                   letterSpacing: "0.5px",
                   textTransform: "uppercase",
                 }}
@@ -305,13 +323,13 @@ const WinLossAnalysisReportView = ({
                 style={{
                   fontSize: "24px",
                   fontWeight: 700,
-                  color: "#0f172a",
+                  color: textTitle,
                   letterSpacing: "-0.5px",
                 }}
               >
                 {formatCurrency(lostRevenue)}
               </div>
-              <div className="d-flex align-items-center gap-1.5 mt-2" style={{ fontSize: "11.5px", color: "#64748b" }}>
+              <div className="d-flex align-items-center gap-1.5 mt-2" style={{ fontSize: "11.5px", color: textSub }}>
                 <span>{lostDealsCount} deals lost</span>
               </div>
             </CardBody>
@@ -321,12 +339,13 @@ const WinLossAnalysisReportView = ({
         {/* Card 3: Win Rate */}
         <Col xs={12} sm={6} lg={3}>
           <Card
-            className="h-100 bg-white rounded-0"
+            className="h-100 rounded-0"
             style={{
               borderRadius: 0,
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              border: `1px solid ${cardBorder}`,
               borderTop: "3px solid #10b981",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              boxShadow: isDark ? "0 1px 3px rgba(0, 0, 0, 0.25)" : "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <CardBody className="p-3">
@@ -337,20 +356,20 @@ const WinLossAnalysisReportView = ({
                     width: "36px",
                     height: "36px",
                     borderRadius: 0,
-                    backgroundColor: "#dcfce7",
+                    backgroundColor: isDark ? "rgba(16, 185, 129, 0.15)" : "#dcfce7",
                     color: "#10b981",
                     fontSize: "18px",
                   }}
                 >
                   <i className="ri-checkbox-circle-line"></i>
                 </div>
-                <span style={{ fontSize: "11px", color: "#94a3b8" }}>No prior data</span>
+                <span style={{ fontSize: "11px", color: textSub }}>No prior data</span>
               </div>
               <div
                 style={{
                   fontSize: "11px",
                   fontWeight: 700,
-                  color: "#64748b",
+                  color: textSub,
                   letterSpacing: "0.5px",
                   textTransform: "uppercase",
                 }}
@@ -362,13 +381,13 @@ const WinLossAnalysisReportView = ({
                 style={{
                   fontSize: "24px",
                   fontWeight: 700,
-                  color: "#0f172a",
+                  color: textTitle,
                   letterSpacing: "-0.5px",
                 }}
               >
                 {winRatePct}%
               </div>
-              <div className="d-flex align-items-center gap-1.5 mt-2" style={{ fontSize: "11.5px", color: "#64748b" }}>
+              <div className="d-flex align-items-center gap-1.5 mt-2" style={{ fontSize: "11.5px", color: textSub }}>
                 <span>{wonDealsCount} won of {totalClosedDeals} closed deal</span>
               </div>
             </CardBody>
@@ -378,12 +397,13 @@ const WinLossAnalysisReportView = ({
         {/* Card 4: Avg Sales Cycle */}
         <Col xs={12} sm={6} lg={3}>
           <Card
-            className="h-100 bg-white rounded-0"
+            className="h-100 rounded-0"
             style={{
               borderRadius: 0,
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              border: `1px solid ${cardBorder}`,
               borderTop: "3px solid #f59e0b",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              boxShadow: isDark ? "0 1px 3px rgba(0, 0, 0, 0.25)" : "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <CardBody className="p-3">
@@ -394,20 +414,20 @@ const WinLossAnalysisReportView = ({
                     width: "36px",
                     height: "36px",
                     borderRadius: 0,
-                    backgroundColor: "#fef3c7",
-                    color: "#d97706",
+                    backgroundColor: isDark ? "rgba(245, 158, 11, 0.15)" : "#fef3c7",
+                    color: isDark ? "#fbbf24" : "#d97706",
                     fontSize: "18px",
                   }}
                 >
                   <i className="ri-time-line"></i>
                 </div>
-                <span style={{ fontSize: "11px", color: "#94a3b8" }}>No prior data</span>
+                <span style={{ fontSize: "11px", color: textSub }}>No prior data</span>
               </div>
               <div
                 style={{
                   fontSize: "11px",
                   fontWeight: 700,
-                  color: "#64748b",
+                  color: textSub,
                   letterSpacing: "0.5px",
                   textTransform: "uppercase",
                 }}
@@ -419,13 +439,13 @@ const WinLossAnalysisReportView = ({
                 style={{
                   fontSize: "24px",
                   fontWeight: 700,
-                  color: "#0f172a",
+                  color: textTitle,
                   letterSpacing: "-0.5px",
                 }}
               >
                 {avgSalesCycle} days
               </div>
-              <div className="d-flex align-items-center gap-1.5 mt-2" style={{ fontSize: "11.5px", color: "#64748b" }}>
+              <div className="d-flex align-items-center gap-1.5 mt-2" style={{ fontSize: "11.5px", color: textSub }}>
                 <span>Avg deal size {formatCurrency(avgDealSize)}</span>
               </div>
             </CardBody>
@@ -440,21 +460,25 @@ const WinLossAnalysisReportView = ({
           <div className="d-flex flex-column gap-3">
             {/* CARD A: WON VS LOST REVENUE BY MONTH */}
             <Card
-              className="bg-white rounded-0"
+              className="rounded-0"
               style={{
                 borderRadius: 0,
-                border: "1px solid #e2e8f0",
-                boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+                backgroundColor: cardBg,
+                border: `1px solid ${cardBorder}`,
+                boxShadow: isDark ? "0 1px 3px rgba(0, 0, 0, 0.25)" : "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
             >
               <CardBody className="p-3 p-md-4">
                 {/* Header */}
-                <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-2 border-bottom">
+                <div
+                  className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3 pb-2"
+                  style={{ borderBottom: `1px solid ${cardBorder}` }}
+                >
                   <div>
-                    <h6 className="fw-bold mb-0 text-dark" style={{ fontSize: "15px" }}>
+                    <h6 className="fw-bold mb-0" style={{ fontSize: "15px", color: textTitle }}>
                       Won vs Lost revenue by month
                     </h6>
-                    <span className="text-muted" style={{ fontSize: "12px" }}>
+                    <span style={{ fontSize: "12px", color: textSub }}>
                       Won deals rise above the line, lost deals fall below it
                     </span>
                   </div>
@@ -463,11 +487,11 @@ const WinLossAnalysisReportView = ({
                     <div className="d-flex align-items-center gap-2" style={{ fontSize: "12px" }}>
                       <span className="d-flex align-items-center gap-1">
                         <span style={{ width: "8px", height: "8px", borderRadius: 0, backgroundColor: "#16a34a" }}></span>
-                        <span className="text-muted">Won</span>
+                        <span style={{ color: textSub }}>Won</span>
                       </span>
                       <span className="d-flex align-items-center gap-1">
                         <span style={{ width: "8px", height: "8px", borderRadius: 0, backgroundColor: "#dc2626" }}></span>
-                        <span className="text-muted">Lost</span>
+                        <span style={{ color: textSub }}>Lost</span>
                       </span>
                     </div>
 
@@ -478,13 +502,13 @@ const WinLossAnalysisReportView = ({
                         className="btn btn-sm rounded-0"
                         style={{
                           borderRadius: 0,
-                          backgroundColor: metricMode === "revenue" ? "#ffffff" : "#f8fafc",
-                          borderColor: "#cbd5e1",
-                          color: metricMode === "revenue" ? "#0f172a" : "#64748b",
+                          backgroundColor: metricMode === "revenue" ? (isDark ? "#21262d" : "#ffffff") : (isDark ? "#121212" : "#f8fafc"),
+                          borderColor: subtleBorder,
+                          color: metricMode === "revenue" ? textTitle : textSub,
                           fontWeight: metricMode === "revenue" ? 600 : 400,
                           fontSize: "11.5px",
                           padding: "3px 10px",
-                          boxShadow: metricMode === "revenue" ? "0 1px 2px rgba(0,0,0,0.05)" : "none",
+                          boxShadow: metricMode === "revenue" ? "0 1px 2px rgba(0,0,0,0.15)" : "none",
                         }}
                         onClick={() => setMetricMode("revenue")}
                       >
@@ -495,13 +519,13 @@ const WinLossAnalysisReportView = ({
                         className="btn btn-sm rounded-0"
                         style={{
                           borderRadius: 0,
-                          backgroundColor: metricMode === "count" ? "#ffffff" : "#f8fafc",
-                          borderColor: "#cbd5e1",
-                          color: metricMode === "count" ? "#0f172a" : "#64748b",
+                          backgroundColor: metricMode === "count" ? (isDark ? "#21262d" : "#ffffff") : (isDark ? "#121212" : "#f8fafc"),
+                          borderColor: subtleBorder,
+                          color: metricMode === "count" ? textTitle : textSub,
                           fontWeight: metricMode === "count" ? 600 : 400,
                           fontSize: "11.5px",
                           padding: "3px 10px",
-                          boxShadow: metricMode === "count" ? "0 1px 2px rgba(0,0,0,0.05)" : "none",
+                          boxShadow: metricMode === "count" ? "0 1px 2px rgba(0,0,0,0.15)" : "none",
                         }}
                         onClick={() => setMetricMode("count")}
                       >
@@ -516,7 +540,7 @@ const WinLossAnalysisReportView = ({
                   className="position-relative py-3"
                   style={{
                     minHeight: "260px",
-                    background: "#ffffff",
+                    background: cardBg,
                     userSelect: "none",
                   }}
                 >
@@ -529,19 +553,19 @@ const WinLossAnalysisReportView = ({
                       bottom: "40px",
                       width: "55px",
                       fontSize: "10.5px",
-                      color: "#94a3b8",
+                      color: textSub,
                       textAlign: "right",
                       paddingRight: "8px",
                       fontWeight: 500,
                     }}
                   >
-                    <span style={{ color: "#16a34a", fontWeight: 700 }}>▲ WON</span>
+                    <span style={{ color: isDark ? "#4ade80" : "#16a34a", fontWeight: 700 }}>▲ WON</span>
                     <span>₹3 L</span>
                     <span>₹1.5 L</span>
-                    <span style={{ color: "#64748b", fontWeight: 600 }}>₹0</span>
+                    <span style={{ color: textSub, fontWeight: 600 }}>₹0</span>
                     <span>-₹1.5 L</span>
                     <span>-₹3 L</span>
-                    <span style={{ color: "#dc2626", fontWeight: 700 }}>▼ LOST</span>
+                    <span style={{ color: isDark ? "#f87171" : "#dc2626", fontWeight: 700 }}>▼ LOST</span>
                   </div>
 
                   {/* Chart Grid Lines & Baseline */}
@@ -555,8 +579,8 @@ const WinLossAnalysisReportView = ({
                     }}
                   >
                     {/* Top grid lines */}
-                    <div style={{ position: "absolute", top: "15%", left: 0, right: 0, borderTop: "1px dashed #f1f5f9" }}></div>
-                    <div style={{ position: "absolute", top: "35%", left: 0, right: 0, borderTop: "1px dashed #f1f5f9" }}></div>
+                    <div style={{ position: "absolute", top: "15%", left: 0, right: 0, borderTop: isDark ? "1px dashed #262626" : "1px dashed #f1f5f9" }}></div>
+                    <div style={{ position: "absolute", top: "35%", left: 0, right: 0, borderTop: isDark ? "1px dashed #262626" : "1px dashed #f1f5f9" }}></div>
                     {/* Center Baseline (0 Line) */}
                     <div
                       style={{
@@ -564,12 +588,12 @@ const WinLossAnalysisReportView = ({
                         top: "50%",
                         left: 0,
                         right: 0,
-                        borderTop: "1.5px solid #94a3b8",
+                        borderTop: isDark ? "1.5px solid #475569" : "1.5px solid #94a3b8",
                       }}
                     ></div>
                     {/* Bottom grid lines */}
-                    <div style={{ position: "absolute", top: "65%", left: 0, right: 0, borderTop: "1px dashed #f1f5f9" }}></div>
-                    <div style={{ position: "absolute", top: "85%", left: 0, right: 0, borderTop: "1px dashed #f1f5f9" }}></div>
+                    <div style={{ position: "absolute", top: "65%", left: 0, right: 0, borderTop: isDark ? "1px dashed #262626" : "1px dashed #f1f5f9" }}></div>
+                    <div style={{ position: "absolute", top: "85%", left: 0, right: 0, borderTop: isDark ? "1px dashed #262626" : "1px dashed #f1f5f9" }}></div>
 
                     {/* Columns Grid across 12 months */}
                     <div
@@ -619,11 +643,11 @@ const WinLossAnalysisReportView = ({
                                       bottom: "105%",
                                       right: "50%",
                                       transform: "translateX(15%)",
-                                      backgroundColor: "#ffffff",
-                                      border: "1px solid #cbd5e1",
+                                      backgroundColor: isDark ? "#1a202c" : "#ffffff",
+                                      border: `1px solid ${cardBorder}`,
                                       borderRadius: 0,
                                       padding: "8px 12px",
-                                      boxShadow: "0 6px 18px rgba(15, 23, 42, 0.12)",
+                                      boxShadow: isDark ? "0 6px 18px rgba(0, 0, 0, 0.4)" : "0 6px 18px rgba(15, 23, 42, 0.12)",
                                       whiteSpace: "nowrap",
                                       zIndex: 30,
                                       minWidth: "220px",
@@ -631,13 +655,13 @@ const WinLossAnalysisReportView = ({
                                       animation: "fadeIn 0.15s ease-in-out",
                                     }}
                                   >
-                                    <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#0f172a" }}>
+                                    <div style={{ fontSize: "11.5px", fontWeight: 700, color: textTitle }}>
                                       {topDeal.opportunity_name || "—"}
                                     </div>
-                                    <div style={{ fontSize: "10.5px", color: "#64748b", marginTop: "1px" }}>
+                                    <div style={{ fontSize: "10.5px", color: textSub, marginTop: "1px" }}>
                                       Won on {topDeal.close_date || "—"} • {topDeal.sales_rep || "Unassigned"}
                                     </div>
-                                    <div style={{ fontSize: "11px", fontWeight: 700, color: "#16a34a", marginTop: "2px" }}>
+                                    <div style={{ fontSize: "11px", fontWeight: 700, color: isDark ? "#4ade80" : "#16a34a", marginTop: "2px" }}>
                                       {formatCurrency(monthWonAmt)} • {topDeal.cycle_days || 0} days cycle
                                     </div>
                                   </div>
@@ -650,10 +674,10 @@ const WinLossAnalysisReportView = ({
                                     bottom: "50%",
                                     width: "28px",
                                     height: `${heightPct}%`,
-                                    backgroundColor: isHovered ? "#15803d" : "#16a34a",
+                                    backgroundColor: isHovered ? (isDark ? "#16a34a" : "#15803d") : (isDark ? "#22c55e" : "#16a34a"),
                                     borderRadius: 0,
                                     boxShadow: isHovered
-                                      ? "0 0 0 3px rgba(22, 163, 74, 0.35), 0 4px 10px rgba(22, 163, 74, 0.4)"
+                                      ? "0 0 0 3px rgba(34, 197, 94, 0.35), 0 4px 10px rgba(34, 197, 94, 0.4)"
                                       : "0 2px 6px rgba(22, 163, 74, 0.3)",
                                     transition: "all 0.15s ease",
                                     cursor: "pointer",
@@ -670,7 +694,7 @@ const WinLossAnalysisReportView = ({
                                       transform: "translateX(-50%)",
                                       fontSize: "10.5px",
                                       fontWeight: 700,
-                                      color: isHovered ? "#15803d" : "#16a34a",
+                                      color: isDark ? "#4ade80" : "#16a34a",
                                       marginBottom: "2px",
                                       whiteSpace: "nowrap",
                                     }}
@@ -707,7 +731,7 @@ const WinLossAnalysisReportView = ({
                           flex: 1,
                           textAlign: "center",
                           fontSize: "11px",
-                          color: m === "Nov" ? "#0f172a" : "#94a3b8",
+                          color: m === "Nov" ? textTitle : textSub,
                           fontWeight: m === "Nov" ? 700 : 500,
                         }}
                       >
@@ -719,10 +743,11 @@ const WinLossAnalysisReportView = ({
 
                 {/* Footnote */}
                 <div
-                  className="mt-3 pt-2 text-muted"
+                  className="mt-3 pt-2"
                   style={{
                     fontSize: "12px",
-                    borderTop: "1px solid #f1f5f9",
+                    color: textSub,
+                    borderTop: `1px solid ${cardBorder}`,
                   }}
                 >
                   Lost deals will appear as red bars below the line. Right now there are none.
@@ -732,20 +757,24 @@ const WinLossAnalysisReportView = ({
 
             {/* CARD B: DEAL SIZE VS SALES CYCLE */}
             <Card
-              className="bg-white rounded-0"
+              className="rounded-0"
               style={{
                 borderRadius: 0,
-                border: "1px solid #e2e8f0",
-                boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+                backgroundColor: cardBg,
+                border: `1px solid ${cardBorder}`,
+                boxShadow: isDark ? "0 1px 3px rgba(0, 0, 0, 0.25)" : "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
             >
               <CardBody className="p-3 p-md-4">
                 {/* Header */}
-                <div className="mb-3 pb-2 border-bottom">
-                  <h6 className="fw-bold mb-0 text-dark" style={{ fontSize: "15px" }}>
+                <div
+                  className="mb-3 pb-2"
+                  style={{ borderBottom: `1px solid ${cardBorder}` }}
+                >
+                  <h6 className="fw-bold mb-0" style={{ fontSize: "15px", color: textTitle }}>
                     Deal size vs sales cycle
                   </h6>
-                  <span className="text-muted" style={{ fontSize: "12px" }}>
+                  <span style={{ fontSize: "12px", color: textSub }}>
                     Each bubble is a closed deal. Top-left is the best: big and fast.
                   </span>
                 </div>
@@ -755,7 +784,7 @@ const WinLossAnalysisReportView = ({
                   className="position-relative py-2"
                   style={{
                     minHeight: "220px",
-                    background: "#ffffff",
+                    background: cardBg,
                     userSelect: "none",
                   }}
                 >
@@ -768,7 +797,7 @@ const WinLossAnalysisReportView = ({
                       bottom: "35px",
                       width: "50px",
                       fontSize: "10.5px",
-                      color: "#94a3b8",
+                      color: textSub,
                       textAlign: "right",
                       paddingRight: "8px",
                       fontWeight: 500,
@@ -788,18 +817,18 @@ const WinLossAnalysisReportView = ({
                       right: "20px",
                       top: "15px",
                       bottom: "35px",
-                      borderLeft: "1px solid #cbd5e1",
-                      borderBottom: "1px solid #cbd5e1",
+                      borderLeft: isDark ? "1px solid #334155" : "1px solid #cbd5e1",
+                      borderBottom: isDark ? "1px solid #334155" : "1px solid #cbd5e1",
                     }}
                   >
                     {/* Horizontal grid lines */}
-                    <div style={{ position: "absolute", top: "33%", left: 0, right: 0, borderTop: "1px dashed #f1f5f9" }}></div>
-                    <div style={{ position: "absolute", top: "66%", left: 0, right: 0, borderTop: "1px dashed #f1f5f9" }}></div>
+                    <div style={{ position: "absolute", top: "33%", left: 0, right: 0, borderTop: isDark ? "1px dashed #262626" : "1px dashed #f1f5f9" }}></div>
+                    <div style={{ position: "absolute", top: "66%", left: 0, right: 0, borderTop: isDark ? "1px dashed #262626" : "1px dashed #f1f5f9" }}></div>
 
                     {/* Vertical grid lines */}
-                    <div style={{ position: "absolute", left: "25%", top: 0, bottom: 0, borderLeft: "1px dashed #f1f5f9" }}></div>
-                    <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, borderLeft: "1px dashed #f1f5f9" }}></div>
-                    <div style={{ position: "absolute", left: "75%", top: 0, bottom: 0, borderLeft: "1px dashed #f1f5f9" }}></div>
+                    <div style={{ position: "absolute", left: "25%", top: 0, bottom: 0, borderLeft: isDark ? "1px dashed #262626" : "1px dashed #f1f5f9" }}></div>
+                    <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, borderLeft: isDark ? "1px dashed #262626" : "1px dashed #f1f5f9" }}></div>
+                    <div style={{ position: "absolute", left: "75%", top: 0, bottom: 0, borderLeft: isDark ? "1px dashed #262626" : "1px dashed #f1f5f9" }}></div>
 
                     {/* Quadrant Labels */}
                     <div
@@ -809,7 +838,7 @@ const WinLossAnalysisReportView = ({
                         left: "15px",
                         fontSize: "11px",
                         fontWeight: 700,
-                        color: "#16a34a",
+                        color: isDark ? "#4ade80" : "#16a34a",
                         letterSpacing: "0.4px",
                       }}
                     >
@@ -823,7 +852,7 @@ const WinLossAnalysisReportView = ({
                         right: "15px",
                         fontSize: "11px",
                         fontWeight: 500,
-                        color: "#94a3b8",
+                        color: textSub,
                       }}
                     >
                       Slow & big
@@ -836,7 +865,7 @@ const WinLossAnalysisReportView = ({
                         left: "15px",
                         fontSize: "11px",
                         fontWeight: 500,
-                        color: "#94a3b8",
+                        color: textSub,
                       }}
                     >
                       Small & fast
@@ -844,7 +873,7 @@ const WinLossAnalysisReportView = ({
 
                     {/* Dynamic Deal Bubbles */}
                     {rawRows.length === 0 ? (
-                      <div className="d-flex align-items-center justify-content-center h-100 text-muted" style={{ fontSize: "12px" }}>
+                      <div className="d-flex align-items-center justify-content-center h-100" style={{ fontSize: "12px", color: textSub }}>
                         No deal cycle records available.
                       </div>
                     ) : (
@@ -854,7 +883,7 @@ const WinLossAnalysisReportView = ({
                         const leftPct = Math.min(85, Math.max(5, Math.round((cycle / 60) * 100)));
                         const amt = Number(r.amount || 0);
                         const topPct = Math.min(75, Math.max(20, Math.round(100 - (amt / 500000) * 100)));
-                        const color = isWon ? "#16a34a" : "#dc2626";
+                        const color = isWon ? (isDark ? "#22c55e" : "#16a34a") : (isDark ? "#ef4444" : "#dc2626");
 
                         return (
                           <div
@@ -872,17 +901,17 @@ const WinLossAnalysisReportView = ({
                                 height: "18px",
                                 borderRadius: 0,
                                 backgroundColor: color,
-                                boxShadow: `0 0 0 4px ${isWon ? "rgba(22, 163, 74, 0.2)" : "rgba(220, 38, 38, 0.2)"}`,
+                                boxShadow: `0 0 0 4px ${isWon ? (isDark ? "rgba(34, 197, 94, 0.25)" : "rgba(22, 163, 74, 0.2)") : (isDark ? "rgba(239, 68, 68, 0.25)" : "rgba(220, 38, 38, 0.2)")}`,
                                 cursor: "pointer",
                               }}
                               title={`${r.opportunity_name || "Deal"}: ${formatCurrency(amt)} (${cycle} days)`}
                               onClick={() => setSelectedDealForModal(r)}
                             ></div>
                             <div>
-                              <div style={{ fontSize: "11.5px", fontWeight: 700, color: "#0f172a" }}>
+                              <div style={{ fontSize: "11.5px", fontWeight: 700, color: textTitle }}>
                                 {r.opportunity_name || "—"}
                               </div>
-                              <div style={{ fontSize: "10.5px", color: "#64748b" }}>
+                              <div style={{ fontSize: "10.5px", color: textSub }}>
                                 {formatCurrency(amt)} • {cycle} days
                               </div>
                             </div>
@@ -900,7 +929,7 @@ const WinLossAnalysisReportView = ({
                       right: "20px",
                       bottom: "10px",
                       fontSize: "11px",
-                      color: "#94a3b8",
+                      color: textSub,
                       fontWeight: 500,
                     }}
                   >
@@ -921,19 +950,20 @@ const WinLossAnalysisReportView = ({
           <div className="d-flex flex-column gap-3">
             {/* CARD 1: WIN RATE GAUGE */}
             <Card
-              className="bg-white rounded-0"
+              className="rounded-0"
               style={{
                 borderRadius: 0,
-                border: "1px solid #e2e8f0",
-                boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+                backgroundColor: cardBg,
+                border: `1px solid ${cardBorder}`,
+                boxShadow: isDark ? "0 1px 3px rgba(0, 0, 0, 0.25)" : "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
             >
               <CardBody className="p-3">
                 <div className="d-flex align-items-center justify-content-between mb-2">
-                  <h6 className="fw-bold mb-0 text-dark" style={{ fontSize: "14px" }}>
+                  <h6 className="fw-bold mb-0" style={{ fontSize: "14px", color: textTitle }}>
                     Win rate
                   </h6>
-                  <span className="text-muted" style={{ fontSize: "11.5px" }}>
+                  <span style={{ fontSize: "11.5px", color: textSub }}>
                     by closed deals
                   </span>
                 </div>
@@ -948,11 +978,11 @@ const WinLossAnalysisReportView = ({
                   />
                   {/* Gauge subtext */}
                   <div
-                    className="text-muted"
                     style={{
                       fontSize: "12px",
                       fontWeight: 500,
                       marginTop: "-20px",
+                      color: textSub,
                     }}
                   >
                     {wonDealsCount} won • {lostDealsCount} lost
@@ -960,7 +990,7 @@ const WinLossAnalysisReportView = ({
                   {/* Scale marks */}
                   <div
                     className="d-flex justify-content-between px-4 mt-2"
-                    style={{ fontSize: "11px", color: "#94a3b8", fontWeight: 500 }}
+                    style={{ fontSize: "11px", color: textSub, fontWeight: 500 }}
                   >
                     <span>0%</span>
                     <span>100%</span>
@@ -971,27 +1001,30 @@ const WinLossAnalysisReportView = ({
 
             {/* CARD 2: KEY TAKEAWAYS */}
             <Card
-              className="bg-white rounded-0"
+              className="rounded-0"
               style={{
                 borderRadius: 0,
-                border: "1px solid #e2e8f0",
-                boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+                backgroundColor: cardBg,
+                border: `1px solid ${cardBorder}`,
+                boxShadow: isDark ? "0 1px 3px rgba(0, 0, 0, 0.25)" : "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
             >
               <CardBody className="p-3">
                 <div className="d-flex align-items-center justify-content-between mb-3">
-                  <h6 className="fw-bold mb-0 text-dark" style={{ fontSize: "14px" }}>
+                  <h6 className="fw-bold mb-0" style={{ fontSize: "14px", color: textTitle }}>
                     Key takeaways
                   </h6>
                   <Badge
                     color="light"
-                    className="text-muted border rounded-0"
+                    className="border rounded-0"
                     style={{
                       fontSize: "11px",
                       fontWeight: 500,
                       borderRadius: 0,
                       padding: "2px 8px",
-                      backgroundColor: "#f8fafc",
+                      backgroundColor: subtleBg,
+                      borderColor: subtleBorder,
+                      color: textSub,
                     }}
                   >
                     Auto
@@ -1011,7 +1044,7 @@ const WinLossAnalysisReportView = ({
                         marginTop: "5px",
                       }}
                     ></span>
-                    <span style={{ fontSize: "12.5px", color: "#1e293b", lineHeight: "1.4" }}>
+                    <span style={{ fontSize: "12.5px", color: textTitle, lineHeight: "1.4" }}>
                       <strong>{formatCurrency(wonRevenue)}</strong> won from {wonDealsCount} deal. No deals lost this year.
                     </span>
                   </div>
@@ -1027,7 +1060,7 @@ const WinLossAnalysisReportView = ({
                         marginTop: "5px",
                       }}
                     ></span>
-                    <span style={{ fontSize: "12.5px", color: "#1e293b", lineHeight: "1.4" }}>
+                    <span style={{ fontSize: "12.5px", color: textTitle, lineHeight: "1.4" }}>
                       The deal closed in <strong>{avgSalesCycle} days</strong>. Check the created date.
                     </span>
                   </div>
@@ -1043,7 +1076,7 @@ const WinLossAnalysisReportView = ({
                         marginTop: "5px",
                       }}
                     ></span>
-                    <span style={{ fontSize: "12.5px", color: "#1e293b", lineHeight: "1.4" }}>
+                    <span style={{ fontSize: "12.5px", color: textTitle, lineHeight: "1.4" }}>
                       Win rate needs about 10 closed deals to be reliable.
                     </span>
                   </div>
@@ -1059,7 +1092,7 @@ const WinLossAnalysisReportView = ({
                         marginTop: "5px",
                       }}
                     ></span>
-                    <span style={{ fontSize: "12.5px", color: "#1e293b", lineHeight: "1.4" }}>
+                    <span style={{ fontSize: "12.5px", color: textTitle, lineHeight: "1.4" }}>
                       Add a Lost reason to unlock loss analysis.
                     </span>
                   </div>
@@ -1069,19 +1102,20 @@ const WinLossAnalysisReportView = ({
 
             {/* CARD 3: WIN RATE BY SALES REP */}
             <Card
-              className="bg-white rounded-0"
+              className="rounded-0"
               style={{
                 borderRadius: 0,
-                border: "1px solid #e2e8f0",
-                boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+                backgroundColor: cardBg,
+                border: `1px solid ${cardBorder}`,
+                boxShadow: isDark ? "0 1px 3px rgba(0, 0, 0, 0.25)" : "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
             >
               <CardBody className="p-3">
                 <div className="mb-2">
-                  <h6 className="fw-bold mb-0 text-dark" style={{ fontSize: "14px" }}>
+                  <h6 className="fw-bold mb-0" style={{ fontSize: "14px", color: textTitle }}>
                     Win rate by sales rep
                   </h6>
-                  <span className="text-muted" style={{ fontSize: "11.5px" }}>
+                  <span style={{ fontSize: "11.5px", color: textSub }}>
                     Click a rep to filter the page
                   </span>
                 </div>
@@ -1090,7 +1124,7 @@ const WinLossAnalysisReportView = ({
                 <div className="table-responsive">
                   <Table className="table-sm table-borderless align-middle mb-0" style={{ fontSize: "12px" }}>
                     <thead>
-                      <tr className="border-bottom" style={{ color: "#94a3b8", fontSize: "10.5px" }}>
+                      <tr style={{ borderBottom: `1px solid ${cardBorder}`, color: textSub, fontSize: "10.5px" }}>
                         <th style={{ padding: "6px 4px", fontWeight: 600 }}>REP</th>
                         <th className="text-center" style={{ padding: "6px 4px", fontWeight: 600 }}>WON</th>
                         <th className="text-center" style={{ padding: "6px 4px", fontWeight: 600 }}>LOST</th>
@@ -1103,7 +1137,6 @@ const WinLossAnalysisReportView = ({
                         <tr
                           key={i}
                           style={{ cursor: "pointer" }}
-                          className="hover-bg-light"
                           onClick={() => {
                             const found = owners.find(
                               (o) => (o.fullName || o.full_name) === r.name
@@ -1124,23 +1157,23 @@ const WinLossAnalysisReportView = ({
                                   width: "22px",
                                   height: "22px",
                                   borderRadius: 0,
-                                  backgroundColor: "#fee2e2",
-                                  color: "#7f1d1d",
+                                  backgroundColor: isDark ? "#334155" : "#fee2e2",
+                                  color: isDark ? "#f87171" : "#7f1d1d",
                                   fontSize: "10px",
                                   fontWeight: 700,
                                 }}
                               >
                                 {r.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
                               </span>
-                              <span className="fw-semibold text-dark text-truncate" style={{ maxWidth: "80px" }}>
+                              <span className="fw-semibold text-truncate" style={{ maxWidth: "80px", color: textTitle }}>
                                 {r.name}
                               </span>
                             </div>
                           </td>
-                          <td className="text-center fw-semibold text-dark" style={{ padding: "8px 4px" }}>
+                          <td className="text-center fw-semibold" style={{ padding: "8px 4px", color: textTitle }}>
                             {r.won}
                           </td>
-                          <td className="text-center text-muted" style={{ padding: "8px 4px" }}>
+                          <td className="text-center" style={{ padding: "8px 4px", color: textSub }}>
                             {r.lost}
                           </td>
                           <td style={{ padding: "8px 4px", minWidth: "85px" }}>
@@ -1150,7 +1183,7 @@ const WinLossAnalysisReportView = ({
                                 style={{
                                   flex: 1,
                                   height: "6px",
-                                  backgroundColor: "#f1f5f9",
+                                  backgroundColor: isDark ? "#2d3748" : "#f1f5f9",
                                   borderRadius: 0,
                                   overflow: "hidden",
                                 }}
@@ -1165,12 +1198,12 @@ const WinLossAnalysisReportView = ({
                                   }}
                                 ></div>
                               </div>
-                              <span style={{ fontSize: "11px", fontWeight: 700, color: "#16a34a" }}>
+                              <span style={{ fontSize: "11px", fontWeight: 700, color: isDark ? "#4ade80" : "#16a34a" }}>
                                 {r.winRate}%
                               </span>
                             </div>
                           </td>
-                          <td className="text-end fw-bold text-dark" style={{ padding: "8px 4px" }}>
+                          <td className="text-end fw-bold" style={{ padding: "8px 4px", color: textTitle }}>
                             {formatShortLakhs(r.revenue)}
                           </td>
                         </tr>
@@ -1180,10 +1213,11 @@ const WinLossAnalysisReportView = ({
                 </div>
 
                 <div
-                  className="mt-2 pt-2 text-muted"
+                  className="mt-2 pt-2"
                   style={{
                     fontSize: "11px",
-                    borderTop: "1px solid #f1f5f9",
+                    color: textSub,
+                    borderTop: `1px solid ${cardBorder}`,
                   }}
                 >
                   One rep so far. Rankings appear with 2+ reps.
@@ -1196,21 +1230,22 @@ const WinLossAnalysisReportView = ({
 
       {/* 4. ROW 3: CLOSED DEALS LEDGER TABLE */}
       <Card
-        className="bg-white mb-4 rounded-0"
+        className="mb-4 rounded-0"
         style={{
           borderRadius: 0,
-          border: "1px solid #e2e8f0",
-          boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+          backgroundColor: cardBg,
+          border: `1px solid ${cardBorder}`,
+          boxShadow: isDark ? "0 1px 3px rgba(0, 0, 0, 0.25)" : "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
       >
         <CardBody className="p-3">
           {/* Table Header Controls */}
           <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
             <div>
-              <h6 className="fw-bold mb-0 text-dark" style={{ fontSize: "15px" }}>
+              <h6 className="fw-bold mb-0" style={{ fontSize: "15px", color: textTitle }}>
                 Closed Deals Ledger
               </h6>
-              <span className="text-muted" style={{ fontSize: "12px" }}>
+              <span style={{ fontSize: "12px", color: textSub }}>
                 Showing {filteredRows.length} of {rawRows.length} {rawRows.length === 1 ? "deal" : "deals"}
               </span>
             </div>
@@ -1232,12 +1267,14 @@ const WinLossAnalysisReportView = ({
                     paddingLeft: "28px",
                     fontSize: "12px",
                     borderRadius: 0,
-                    borderColor: "#cbd5e1",
+                    borderColor: subtleBorder,
+                    backgroundColor: isDark ? "#1a202c" : "#ffffff",
+                    color: textTitle,
                   }}
                 />
                 <i
-                  className="ri-search-line position-absolute text-muted"
-                  style={{ left: "9px", top: "50%", transform: "translateY(-50%)", fontSize: "13px" }}
+                  className="ri-search-line position-absolute"
+                  style={{ left: "9px", top: "50%", transform: "translateY(-50%)", fontSize: "13px", color: textSub }}
                 ></i>
               </div>
 
@@ -1248,7 +1285,9 @@ const WinLossAnalysisReportView = ({
                   width: "130px",
                   borderRadius: 0,
                   fontSize: "12px",
-                  borderColor: "#cbd5e1",
+                  borderColor: subtleBorder,
+                  backgroundColor: isDark ? "#1a202c" : "#ffffff",
+                  color: textTitle,
                 }}
                 value={outcomeFilter}
                 onChange={(e) => {
@@ -1269,9 +1308,9 @@ const WinLossAnalysisReportView = ({
                 style={{
                   borderRadius: 0,
                   fontSize: "12px",
-                  color: "#475569",
-                  borderColor: "#cbd5e1",
-                  backgroundColor: "#ffffff",
+                  color: textTitle,
+                  borderColor: subtleBorder,
+                  backgroundColor: subtleBg,
                   padding: "5px 12px",
                 }}
                 onClick={onExport}
@@ -1286,7 +1325,7 @@ const WinLossAnalysisReportView = ({
           {/* Table Data */}
           <div className="table-responsive">
             <Table className="table align-middle table-hover mb-0" style={{ fontSize: "13px" }}>
-              <thead style={{ backgroundColor: "#f8fafc", color: "#64748b" }}>
+              <thead style={{ backgroundColor: subtleBg, color: textSub, borderBottom: `1px solid ${cardBorder}` }}>
                 <tr>
                   <th style={{ fontWeight: 600, fontSize: "11px", letterSpacing: "0.5px" }}>DEAL</th>
                   <th style={{ fontWeight: 600, fontSize: "11px", letterSpacing: "0.5px" }}>CUSTOMER</th>
@@ -1301,7 +1340,7 @@ const WinLossAnalysisReportView = ({
               <tbody>
                 {paginatedRows.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="text-center py-4 text-muted">
+                    <td colSpan={8} className="text-center py-4" style={{ color: textSub }}>
                       No closed deals found matching the selected filters.
                     </td>
                   </tr>
@@ -1315,20 +1354,20 @@ const WinLossAnalysisReportView = ({
                         <td>
                           <Link
                             to={`/crm/opportunities/${r.opportunity_id}`}
-                            className="fw-bold text-dark text-decoration-none hover-underline"
-                            style={{ color: "#0f172a" }}
+                            className="fw-bold text-decoration-none hover-underline"
+                            style={{ color: textTitle }}
                           >
                             {r.opportunity_name || "—"}
                           </Link>
                         </td>
 
                         {/* CUSTOMER */}
-                        <td className="text-muted">
+                        <td style={{ color: textSub }}>
                           {r.account_id ? (
                             <Link
                               to={`/crm/customers/${r.account_id}`}
-                              className="text-decoration-underline text-secondary"
-                              style={{ fontSize: "12.5px" }}
+                              className="text-decoration-underline fw-medium"
+                              style={{ fontSize: "12.5px", color: isDark ? "#60a5fa" : "#2563eb" }}
                             >
                               {r.customer_name || "—"}
                             </Link>
@@ -1349,8 +1388,8 @@ const WinLossAnalysisReportView = ({
                                 width: "22px",
                                 height: "22px",
                                 borderRadius: 0,
-                                backgroundColor: "#fee2e2",
-                                color: "#7f1d1d",
+                                backgroundColor: isDark ? "#334155" : "#fee2e2",
+                                color: isDark ? "#f87171" : "#7f1d1d",
                                 fontSize: "10.5px",
                                 fontWeight: 700,
                               }}
@@ -1362,19 +1401,19 @@ const WinLossAnalysisReportView = ({
                                 .slice(0, 2)
                                 .toUpperCase()}
                             </span>
-                            <span className="text-dark fw-medium">
+                            <span className="fw-medium" style={{ color: textTitle }}>
                               {r.sales_rep || "Unassigned"}
                             </span>
                           </div>
                         </td>
 
                         {/* AMOUNT */}
-                        <td className="fw-bold text-dark">
+                        <td className="fw-bold" style={{ color: textTitle }}>
                           {formatCurrency(r.amount || 0)}
                         </td>
 
                         {/* CLOSE DATE */}
-                        <td className="text-muted">
+                        <td style={{ color: textSub }}>
                           {r.close_date || "—"}
                         </td>
 
@@ -1389,9 +1428,9 @@ const WinLossAnalysisReportView = ({
                                 gap: "4px",
                                 padding: "3px 8px",
                                 borderRadius: 0,
-                                backgroundColor: "#dcfce7",
-                                color: "#15803d",
-                                border: "1px solid #bbf7d0",
+                                backgroundColor: isDark ? "rgba(22, 163, 74, 0.2)" : "#dcfce7",
+                                color: isDark ? "#4ade80" : "#15803d",
+                                border: isDark ? "1px solid rgba(74, 222, 128, 0.3)" : "1px solid #bbf7d0",
                                 fontSize: "11.5px",
                                 fontWeight: 600,
                               }}
@@ -1408,9 +1447,9 @@ const WinLossAnalysisReportView = ({
                                 gap: "4px",
                                 padding: "3px 8px",
                                 borderRadius: 0,
-                                backgroundColor: "#fee2e2",
-                                color: "#b91c1c",
-                                border: "1px solid #fecaca",
+                                backgroundColor: isDark ? "rgba(239, 68, 68, 0.2)" : "#fee2e2",
+                                color: isDark ? "#f87171" : "#b91c1c",
+                                border: isDark ? "1px solid rgba(248, 113, 113, 0.3)" : "1px solid #fecaca",
                                 fontSize: "11.5px",
                                 fontWeight: 600,
                               }}
@@ -1431,9 +1470,9 @@ const WinLossAnalysisReportView = ({
                               gap: "4px",
                               padding: "3px 8px",
                               borderRadius: 0,
-                              backgroundColor: cycleDays <= 1 ? "#fef3c7" : "#f1f5f9",
-                              color: cycleDays <= 1 ? "#b45309" : "#475569",
-                              border: cycleDays <= 1 ? "1px solid #fde68a" : "1px solid #e2e8f0",
+                              backgroundColor: cycleDays <= 1 ? (isDark ? "rgba(245, 158, 11, 0.2)" : "#fef3c7") : (isDark ? "#2d3748" : "#f1f5f9"),
+                              color: cycleDays <= 1 ? (isDark ? "#fbbf24" : "#b45309") : textTitle,
+                              border: cycleDays <= 1 ? (isDark ? "1px solid rgba(245, 158, 11, 0.35)" : "1px solid #fde68a") : (isDark ? "1px solid #334155" : "1px solid #e2e8f0"),
                               fontSize: "11.5px",
                               fontWeight: 600,
                             }}
@@ -1449,9 +1488,9 @@ const WinLossAnalysisReportView = ({
                             type="button"
                             className="btn btn-sm rounded-0"
                             style={{
-                              backgroundColor: "#ffffff",
-                              border: "1px solid #cbd5e1",
-                              color: "#334155",
+                              backgroundColor: subtleBg,
+                              border: `1px solid ${subtleBorder}`,
+                              color: textTitle,
                               fontSize: "12px",
                               fontWeight: 500,
                               borderRadius: 0,
@@ -1470,19 +1509,19 @@ const WinLossAnalysisReportView = ({
 
               {/* Summary Totals Row */}
               {filteredRows.length > 0 && (
-                <tfoot style={{ backgroundColor: "#f8fafc", borderTop: "2px solid #e2e8f0" }}>
-                  <tr style={{ fontWeight: 700, fontSize: "12px", color: "#0f172a" }}>
+                <tfoot style={{ backgroundColor: subtleBg, borderTop: `2px solid ${cardBorder}` }}>
+                  <tr style={{ fontWeight: 700, fontSize: "12px", color: textTitle }}>
                     <td colSpan={3}>
                       TOTAL ({filteredRows.length} {filteredRows.length === 1 ? "deal" : "deals"})
                     </td>
-                    <td className="text-dark">
+                    <td style={{ color: textTitle }}>
                       {formatCurrency(filteredRows.reduce((a, b) => a + Number(b.amount || 0), 0))}
                     </td>
                     <td></td>
-                    <td style={{ color: "#16a34a" }}>
+                    <td style={{ color: isDark ? "#4ade80" : "#16a34a" }}>
                       Won {filteredRows.filter(r => r.outcome === "Won").length} • Lost {filteredRows.filter(r => r.outcome === "Lost").length}
                     </td>
-                    <td style={{ color: "#475569" }}>
+                    <td style={{ color: textSub }}>
                       Avg {avgSalesCycle} d
                     </td>
                     <td></td>
@@ -1493,12 +1532,22 @@ const WinLossAnalysisReportView = ({
           </div>
 
           {/* Pagination Footer */}
-          <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3 pt-2 border-top">
-            <div className="d-flex align-items-center gap-2" style={{ fontSize: "12px", color: "#64748b" }}>
+          <div
+            className="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3 pt-2"
+            style={{ borderTop: `1px solid ${cardBorder}` }}
+          >
+            <div className="d-flex align-items-center gap-2" style={{ fontSize: "12px", color: textSub }}>
               <span>Rows per page:</span>
               <select
                 className="form-select form-select-sm rounded-0"
-                style={{ width: "70px", borderRadius: 0, fontSize: "12px" }}
+                style={{
+                  width: "70px",
+                  borderRadius: 0,
+                  fontSize: "12px",
+                  borderColor: subtleBorder,
+                  backgroundColor: isDark ? "#1a202c" : "#ffffff",
+                  color: textTitle,
+                }}
                 value={pageSize}
                 onChange={(e) => {
                   setPageSize(Number(e.target.value));
@@ -1515,17 +1564,25 @@ const WinLossAnalysisReportView = ({
             <div className="d-flex align-items-center gap-1">
               <button
                 type="button"
-                className="btn btn-sm btn-light border rounded-0"
-                style={{ borderRadius: 0, fontSize: "11px", padding: "4px 8px" }}
+                className="btn btn-sm rounded-0"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  padding: "4px 8px",
+                  backgroundColor: subtleBg,
+                  borderColor: subtleBorder,
+                  color: textTitle,
+                }}
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               >
                 &lt; Prev
               </button>
               <span
-                className="badge bg-danger rounded-0"
+                className="badge rounded-0"
                 style={{
-                  backgroundColor: "#7f1d1d !important",
+                  backgroundColor: "#7f1d1d",
+                  color: "#ffffff",
                   borderRadius: 0,
                   fontSize: "11px",
                   padding: "6px 10px",
@@ -1535,8 +1592,15 @@ const WinLossAnalysisReportView = ({
               </span>
               <button
                 type="button"
-                className="btn btn-sm btn-light border rounded-0"
-                style={{ borderRadius: 0, fontSize: "11px", padding: "4px 8px" }}
+                className="btn btn-sm rounded-0"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  padding: "4px 8px",
+                  backgroundColor: subtleBg,
+                  borderColor: subtleBorder,
+                  color: textTitle,
+                }}
                 disabled={currentPage >= totalPages}
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               >
@@ -1553,98 +1617,116 @@ const WinLossAnalysisReportView = ({
           isOpen={!!selectedDealForModal}
           toggle={() => setSelectedDealForModal(null)}
           centered
-          contentClassName="rounded-0"
+          contentClassName="rounded-0 shadow-lg"
+          style={{ maxWidth: "520px" }}
         >
-          <ModalHeader
-            toggle={() => setSelectedDealForModal(null)}
-            className="rounded-0"
-            style={{ borderBottom: "1px solid #e2e8f0" }}
-          >
-            <span className="fw-bold text-dark" style={{ fontSize: "15px" }}>
-              Deal Details
-            </span>
-          </ModalHeader>
-          <ModalBody className="p-3">
-            <div className="mb-3">
-              <label className="text-muted small mb-1">Deal Name</label>
-              <div className="fw-bold text-dark fs-6">
-                {selectedDealForModal.opportunity_name}
+          <div style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
+            <ModalHeader
+              toggle={() => setSelectedDealForModal(null)}
+              className="rounded-0 py-3"
+              style={{ backgroundColor: subtleBg, borderBottom: `1px solid ${cardBorder}` }}
+            >
+              <span className="fw-bold" style={{ fontSize: "15px", color: textTitle }}>
+                Deal Details
+              </span>
+            </ModalHeader>
+            <ModalBody className="p-3" style={{ backgroundColor: cardBg }}>
+              <div className="mb-3">
+                <label className="small mb-1" style={{ color: textSub }}>Deal Name</label>
+                <div className="fw-bold fs-6" style={{ color: textTitle }}>
+                  {selectedDealForModal.opportunity_name}
+                </div>
               </div>
-            </div>
-            <div className="row g-3">
-              <div className="col-6">
-                <label className="text-muted small mb-1">Customer</label>
-                <div>
-                  {selectedDealForModal.account_id ? (
-                    <Link
-                      to={`/crm/customers/${selectedDealForModal.account_id}`}
-                      className="fw-semibold text-primary text-decoration-underline"
+              <div className="row g-3">
+                <div className="col-6">
+                  <label className="small mb-1" style={{ color: textSub }}>Customer</label>
+                  <div>
+                    {selectedDealForModal.account_id ? (
+                      <Link
+                        to={`/crm/customers/${selectedDealForModal.account_id}`}
+                        className="fw-semibold text-decoration-underline"
+                        style={{ color: isDark ? "#60a5fa" : "#2563eb" }}
+                      >
+                        {selectedDealForModal.customer_name}
+                      </Link>
+                    ) : (
+                      <span className="fw-semibold" style={{ color: textTitle }}>
+                        {selectedDealForModal.customer_name}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="col-6">
+                  <label className="small mb-1" style={{ color: textSub }}>Sales Rep</label>
+                  <div className="fw-semibold" style={{ color: textTitle }}>
+                    {selectedDealForModal.sales_rep}
+                  </div>
+                </div>
+                <div className="col-6">
+                  <label className="small mb-1" style={{ color: textSub }}>Amount</label>
+                  <div className="fw-bold" style={{ color: textTitle }}>
+                    {formatCurrency(selectedDealForModal.amount || 0)}
+                  </div>
+                </div>
+                <div className="col-6">
+                  <label className="small mb-1" style={{ color: textSub }}>Outcome</label>
+                  <div>
+                    <span
+                      className="rounded-0"
+                      style={{
+                        display: "inline-block",
+                        padding: "2px 8px",
+                        borderRadius: 0,
+                        backgroundColor: selectedDealForModal.outcome === "Won"
+                          ? (isDark ? "rgba(22, 163, 74, 0.2)" : "#dcfce7")
+                          : (isDark ? "rgba(239, 68, 68, 0.2)" : "#fee2e2"),
+                        color: selectedDealForModal.outcome === "Won"
+                          ? (isDark ? "#4ade80" : "#15803d")
+                          : (isDark ? "#f87171" : "#b91c1c"),
+                        border: selectedDealForModal.outcome === "Won"
+                          ? (isDark ? "1px solid rgba(74, 222, 128, 0.3)" : "1px solid #bbf7d0")
+                          : (isDark ? "1px solid rgba(248, 113, 113, 0.3)" : "1px solid #fecaca"),
+                        fontSize: "11.5px",
+                        fontWeight: 600,
+                      }}
                     >
-                      {selectedDealForModal.customer_name}
-                    </Link>
-                  ) : (
-                    <span className="fw-semibold text-dark">
-                      {selectedDealForModal.customer_name}
+                      {selectedDealForModal.outcome}
                     </span>
-                  )}
+                  </div>
+                </div>
+                <div className="col-6">
+                  <label className="small mb-1" style={{ color: textSub }}>Close Date</label>
+                  <div style={{ color: textTitle }}>
+                    {selectedDealForModal.close_date}
+                  </div>
+                </div>
+                <div className="col-6">
+                  <label className="small mb-1" style={{ color: textSub }}>Sales Cycle</label>
+                  <div style={{ color: textTitle }}>
+                    {selectedDealForModal.cycle_days || 0} days
+                  </div>
                 </div>
               </div>
-              <div className="col-6">
-                <label className="text-muted small mb-1">Sales Rep</label>
-                <div className="fw-semibold text-dark">
-                  {selectedDealForModal.sales_rep}
-                </div>
-              </div>
-              <div className="col-6">
-                <label className="text-muted small mb-1">Amount</label>
-                <div className="fw-bold text-dark">
-                  {formatCurrency(selectedDealForModal.amount || 0)}
-                </div>
-              </div>
-              <div className="col-6">
-                <label className="text-muted small mb-1">Outcome</label>
-                <div>
-                  <Badge
-                    color={selectedDealForModal.outcome === "Won" ? "success" : "danger"}
-                    className="rounded-0"
-                    style={{ borderRadius: 0 }}
-                  >
-                    {selectedDealForModal.outcome}
-                  </Badge>
-                </div>
-              </div>
-              <div className="col-6">
-                <label className="text-muted small mb-1">Close Date</label>
-                <div className="text-dark">
-                  {selectedDealForModal.close_date}
-                </div>
-              </div>
-              <div className="col-6">
-                <label className="text-muted small mb-1">Sales Cycle</label>
-                <div className="text-dark">
-                  {selectedDealForModal.cycle_days || 0} days
-                </div>
-              </div>
-            </div>
-          </ModalBody>
-          <ModalFooter className="rounded-0" style={{ borderTop: "1px solid #e2e8f0" }}>
-            <Link
-              to={`/crm/opportunities/${selectedDealForModal.opportunity_id}`}
-              className="btn btn-sm btn-primary rounded-0"
-              style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d", borderRadius: 0 }}
-            >
-              Open Full Opportunity
-            </Link>
-            <Button
-              color="light"
-              size="sm"
-              className="rounded-0"
-              style={{ borderRadius: 0 }}
-              onClick={() => setSelectedDealForModal(null)}
-            >
-              Close
-            </Button>
-          </ModalFooter>
+            </ModalBody>
+            <ModalFooter className="rounded-0 py-2" style={{ backgroundColor: subtleBg, borderTop: `1px solid ${cardBorder}` }}>
+              <Link
+                to={`/crm/opportunities/${selectedDealForModal.opportunity_id}`}
+                className="btn btn-sm rounded-0 text-white"
+                style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d", borderRadius: 0 }}
+              >
+                Open Full Opportunity
+              </Link>
+              <Button
+                color="light"
+                size="sm"
+                className="rounded-0"
+                style={{ backgroundColor: subtleBg, borderColor: subtleBorder, color: textTitle, borderRadius: 0 }}
+                onClick={() => setSelectedDealForModal(null)}
+              >
+                Close
+              </Button>
+            </ModalFooter>
+          </div>
         </Modal>
       )}
 
@@ -1653,68 +1735,90 @@ const WinLossAnalysisReportView = ({
         isOpen={checkDatesModalOpen}
         toggle={() => setCheckDatesModalOpen(false)}
         centered
-        contentClassName="rounded-0"
+        contentClassName="rounded-0 shadow-lg"
+        style={{ maxWidth: "520px" }}
       >
-        <ModalHeader
-          toggle={() => setCheckDatesModalOpen(false)}
-          className="rounded-0"
-          style={{ borderBottom: "1px solid #e2e8f0" }}
-        >
-          <span className="fw-bold text-dark" style={{ fontSize: "15px" }}>
-            Sales Cycle Audit & Close Dates
-          </span>
-        </ModalHeader>
-        <ModalBody className="p-3">
-          <p className="text-muted small mb-3">
-            Sales cycle duration is calculated as the difference between the deal&apos;s <strong>Created Date</strong> and its <strong>Actual Close Date</strong>.
-          </p>
-          <div
-            className="p-3 mb-3 rounded-0"
-            style={{
-              backgroundColor: "#fef3c7",
-              border: "1px solid #fde68a",
-              borderRadius: 0,
-              fontSize: "12.5px",
-              color: "#92400e",
-            }}
+        <div style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
+          <ModalHeader
+            toggle={() => setCheckDatesModalOpen(false)}
+            className="rounded-0 py-3"
+            style={{ backgroundColor: subtleBg, borderBottom: `1px solid ${cardBorder}` }}
           >
-            <strong>Note on 0-day cycle:</strong> Deals closed on the day of creation indicate either an existing offline transaction entered at closing or an immediate conversion. For high-value enterprise sales, ensure created dates reflect when discussions first started.
-          </div>
-          <div className="d-flex flex-column gap-2">
-            {rawRows.map((r, i) => (
-              <div
-                key={i}
-                className="d-flex align-items-center justify-content-between p-2 border rounded-0"
-                style={{ fontSize: "12px", borderRadius: 0 }}
-              >
-                <div>
-                  <strong>{r.opportunity_name}</strong>
-                  <div className="text-muted" style={{ fontSize: "11px" }}>
-                    Close Date: {r.close_date}
-                  </div>
-                </div>
-                <Badge
-                  color={Number(r.cycle_days) === 0 ? "warning" : "info"}
-                  className="rounded-0"
-                  style={{ borderRadius: 0 }}
+            <span className="fw-bold" style={{ fontSize: "15px", color: textTitle }}>
+              Sales Cycle Audit &amp; Close Dates
+            </span>
+          </ModalHeader>
+          <ModalBody className="p-3" style={{ backgroundColor: cardBg }}>
+            <p className="small mb-3" style={{ color: textSub }}>
+              Sales cycle duration is calculated as the difference between the deal&apos;s <strong>Created Date</strong> and its <strong>Actual Close Date</strong>.
+            </p>
+            <div
+              className="p-3 mb-3 rounded-0"
+              style={{
+                backgroundColor: isDark ? "rgba(245, 158, 11, 0.15)" : "#fef3c7",
+                border: isDark ? "1px solid rgba(245, 158, 11, 0.35)" : "1px solid #fde68a",
+                borderRadius: 0,
+                fontSize: "12.5px",
+                color: isDark ? "#fbbf24" : "#92400e",
+              }}
+            >
+              <strong>Note on 0-day cycle:</strong> Deals closed on the day of creation indicate either an existing offline transaction entered at closing or an immediate conversion. For high-value enterprise sales, ensure created dates reflect when discussions first started.
+            </div>
+            <div className="d-flex flex-column gap-2">
+              {rawRows.map((r, i) => (
+                <div
+                  key={i}
+                  className="d-flex align-items-center justify-content-between p-2 rounded-0"
+                  style={{
+                    fontSize: "12px",
+                    borderRadius: 0,
+                    backgroundColor: subtleBg,
+                    border: `1px solid ${cardBorder}`,
+                  }}
                 >
-                  {r.cycle_days} days
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </ModalBody>
-        <ModalFooter className="rounded-0" style={{ borderTop: "1px solid #e2e8f0" }}>
-          <Button
-            color="light"
-            size="sm"
-            className="rounded-0"
-            style={{ borderRadius: 0 }}
-            onClick={() => setCheckDatesModalOpen(false)}
-          >
-            Done
-          </Button>
-        </ModalFooter>
+                  <div>
+                    <strong style={{ color: textTitle }}>{r.opportunity_name}</strong>
+                    <div style={{ fontSize: "11px", color: textSub }}>
+                      Close Date: {r.close_date}
+                    </div>
+                  </div>
+                  <span
+                    className="rounded-0"
+                    style={{
+                      display: "inline-block",
+                      padding: "2px 8px",
+                      borderRadius: 0,
+                      backgroundColor: Number(r.cycle_days) === 0
+                        ? (isDark ? "rgba(245, 158, 11, 0.2)" : "#fef3c7")
+                        : (isDark ? "rgba(14, 116, 144, 0.2)" : "#ecfeff"),
+                      color: Number(r.cycle_days) === 0
+                        ? (isDark ? "#fbbf24" : "#b45309")
+                        : (isDark ? "#22d3ee" : "#0e7490"),
+                      border: Number(r.cycle_days) === 0
+                        ? (isDark ? "1px solid rgba(245, 158, 11, 0.35)" : "1px solid #fde68a")
+                        : (isDark ? "1px solid rgba(34, 211, 238, 0.3)" : "1px solid #a5f3fc"),
+                      fontSize: "11.5px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {r.cycle_days} days
+                  </span>
+                </div>
+              ))}
+            </div>
+          </ModalBody>
+          <ModalFooter className="rounded-0 py-2" style={{ backgroundColor: subtleBg, borderTop: `1px solid ${cardBorder}` }}>
+            <Button
+              color="light"
+              size="sm"
+              className="rounded-0"
+              style={{ backgroundColor: subtleBg, borderColor: subtleBorder, color: textTitle, borderRadius: 0 }}
+              onClick={() => setCheckDatesModalOpen(false)}
+            >
+              Done
+            </Button>
+          </ModalFooter>
+        </div>
       </Modal>
     </div>
   );

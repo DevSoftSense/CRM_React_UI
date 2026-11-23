@@ -1,9 +1,13 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { Card, CardBody, CardHeader, Table } from "reactstrap";
 import { Link } from "react-router-dom";
 import { formatFullCurrency } from "./dashboardUtils";
 
 const HotOpportunitiesCard = ({ opportunities = [] }) => {
+  const layoutMode = useSelector((state) => state.Layout?.layoutModeType);
+  const isDark = layoutMode === "dark";
+
   const getStageBadge = (stageName = "", stageCode = "") => {
     const code = String(stageCode || stageName).toUpperCase();
     if (code.includes("QUALIFIED") || code.includes("PROPOSAL")) {
@@ -11,9 +15,9 @@ const HotOpportunitiesCard = ({ opportunities = [] }) => {
         <span
           className="rounded-0 px-2 py-1 fw-semibold d-inline-block text-capitalize"
           style={{
-            backgroundColor: "#fef2f2",
-            color: "#7f1d1d",
-            border: "1px solid #fecaca",
+            backgroundColor: isDark ? "rgba(127, 29, 29, 0.2)" : "#fef2f2",
+            color: isDark ? "#f87171" : "#7f1d1d",
+            border: isDark ? "1px solid rgba(248, 113, 113, 0.3)" : "1px solid #fecaca",
             fontSize: "0.68rem",
             letterSpacing: "0.02em",
           }}
@@ -27,9 +31,9 @@ const HotOpportunitiesCard = ({ opportunities = [] }) => {
         <span
           className="rounded-0 px-2 py-1 fw-semibold d-inline-block text-capitalize"
           style={{
-            backgroundColor: "#fffbeb",
-            color: "#b45309",
-            border: "1px solid #fde68a",
+            backgroundColor: isDark ? "rgba(217, 119, 6, 0.2)" : "#fffbeb",
+            color: isDark ? "#fbbf24" : "#b45309",
+            border: isDark ? "1px solid rgba(251, 191, 36, 0.3)" : "1px solid #fde68a",
             fontSize: "0.68rem",
             letterSpacing: "0.02em",
           }}
@@ -43,9 +47,9 @@ const HotOpportunitiesCard = ({ opportunities = [] }) => {
         <span
           className="rounded-0 px-2 py-1 fw-semibold d-inline-block text-capitalize"
           style={{
-            backgroundColor: "#ecfdf5",
-            color: "#047857",
-            border: "1px solid #a7f3d0",
+            backgroundColor: isDark ? "rgba(22, 101, 52, 0.2)" : "#ecfdf5",
+            color: isDark ? "#4ade80" : "#047857",
+            border: isDark ? "1px solid rgba(74, 222, 128, 0.3)" : "1px solid #a7f3d0",
             fontSize: "0.68rem",
             letterSpacing: "0.02em",
           }}
@@ -58,9 +62,9 @@ const HotOpportunitiesCard = ({ opportunities = [] }) => {
       <span
         className="rounded-0 px-2 py-1 fw-semibold d-inline-block text-capitalize"
         style={{
-          backgroundColor: "#f8fafc",
-          color: "#475569",
-          border: "1px solid #e2e8f0",
+          backgroundColor: isDark ? "#262a2f" : "#f8fafc",
+          color: isDark ? "#cbd5e1" : "#475569",
+          border: isDark ? "1px solid #363d45" : "1px solid #e2e8f0",
           fontSize: "0.68rem",
           letterSpacing: "0.02em",
         }}

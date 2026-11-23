@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useSelector } from "react-redux";
 import ReactApexChart from "react-apexcharts";
 import { Link } from "react-router-dom";
 import {
@@ -22,6 +23,18 @@ const DormantAccountsReportView = ({
   onOwnerChange,
   onExport,
 }) => {
+  const layoutMode = useSelector((state) => state.Layout?.layoutModeType);
+  const isDark = layoutMode === "dark";
+
+  // Dynamic Theme Colors
+  const cardBg = isDark ? "#161b22" : "#ffffff";
+  const cardBorder = isDark ? "#21262d" : "#e2e8f0";
+  const subtleBg = isDark ? "#0d1117" : "#f8fafc";
+  const subtleBorder = isDark ? "#30363d" : "#e2e8f0";
+  const textTitle = isDark ? "#f0f6fc" : "#0f172a";
+  const textSub = isDark ? "#8b949e" : "#64748b";
+  const primaryColor = "#7f1d1d";
+
   const [searchTerm, setSearchTerm] = useState("");
   const [riskFilter, setRiskFilter] = useState("ALL");
   const [pageSize, setPageSize] = useState(10);
@@ -101,8 +114,7 @@ const DormantAccountsReportView = ({
           bar: {
             horizontal: false,
             columnWidth: "40%",
-            borderRadius: 4,
-            borderRadiusApplication: "end",
+            borderRadius: 0,
             distributed: true, // Distinct color per bracket
             dataLabels: {
               position: "top",
@@ -116,13 +128,13 @@ const DormantAccountsReportView = ({
             fontSize: "11px",
             fontFamily: "Inter, sans-serif",
             fontWeight: 600,
-            colors: ["#1e293b"],
+            colors: [isDark ? "#f3f4f6" : "#1e293b"],
           },
           offsetY: -14,
           formatter: (val) => `${val} acc`,
         },
         grid: {
-          borderColor: "#f1f5f9",
+          borderColor: isDark ? "#323842" : "#f1f5f9",
           strokeDashArray: 3,
           xaxis: { lines: { show: false } },
           yaxis: { lines: { show: true } },
@@ -132,14 +144,14 @@ const DormantAccountsReportView = ({
           categories,
           labels: {
             style: {
-              colors: "#475569",
+              colors: isDark ? "#94a3b8" : "#475569",
               fontSize: "11.5px",
               fontFamily: "Inter, sans-serif",
               fontWeight: 500,
             },
             offsetY: 2,
           },
-          axisBorder: { color: "#e2e8f0" },
+          axisBorder: { color: isDark ? "#323842" : "#e2e8f0" },
           axisTicks: { show: false },
         },
         yaxis: {
@@ -147,7 +159,7 @@ const DormantAccountsReportView = ({
           tickAmount: 4,
           labels: {
             style: {
-              colors: "#64748b",
+              colors: isDark ? "#94a3b8" : "#64748b",
               fontSize: "11px",
               fontFamily: "Inter, sans-serif",
             },
@@ -163,7 +175,7 @@ const DormantAccountsReportView = ({
         },
       },
     };
-  }, [bracketCounts]);
+  }, [bracketCounts, isDark]);
 
   // 2. Risk Distribution Donut Chart
   const riskDonutConfig = useMemo(() => {
@@ -177,7 +189,7 @@ const DormantAccountsReportView = ({
         },
         labels: ["Critical (>90d)", "High Risk (60-90d)", "Warning (30-60d)"],
         colors: ["#7f1d1d", "#f87171", "#d97706"], // Maroon, Rose, Amber
-        stroke: { width: 2, colors: ["#ffffff"] },
+        stroke: { width: 2, colors: [cardBg] },
         plotOptions: {
           pie: {
             donut: {
@@ -193,7 +205,7 @@ const DormantAccountsReportView = ({
         },
       },
     };
-  }, [bracketCounts]);
+  }, [bracketCounts, cardBg]);
 
   return (
     <div className="dormant-accounts-report-view">
@@ -202,11 +214,12 @@ const DormantAccountsReportView = ({
         {/* Card 1: At-Risk Dormant Accounts */}
         <Col lg={4} md={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              borderRadius: 0,
+              border: "1px solid " + cardBorder,
+              backgroundColor: cardBg,
+              boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
               transition: "all 0.15s ease",
             }}
           >
@@ -216,9 +229,9 @@ const DormantAccountsReportView = ({
                   style={{
                     width: "48px",
                     height: "48px",
-                    borderRadius: "4px",
-                    backgroundColor: "#fef2f2",
-                    color: "#dc2626",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(220, 38, 38, 0.2)" : "#fef2f2",
+                    color: isDark ? "#f87171" : "#dc2626",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -230,26 +243,27 @@ const DormantAccountsReportView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "11px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "11px", letterSpacing: "0.4px", color: textSub }}
                   >
                     At-Risk Dormant Accounts
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "26px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {dormantCount}
                   </div>
                   <div className="d-flex align-items-center gap-1 mt-1">
-                    <span style={{ color: "#dc2626", fontSize: "11px", fontWeight: 600 }}>
+                    <span style={{ color: isDark ? "#f87171" : "#dc2626", fontSize: "11px", fontWeight: 600 }}>
                       <i className="ri-error-warning-line"></i> Critical
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       Zero activity in &gt; 60 days
                     </span>
                   </div>
@@ -260,13 +274,13 @@ const DormantAccountsReportView = ({
                 style={{
                   width: "28px",
                   height: "28px",
-                  borderRadius: "50%",
-                  backgroundColor: "#f8fafc",
-                  border: "1px solid #e2e8f0",
+                  borderRadius: 0,
+                  backgroundColor: subtleBg,
+                  border: "1px solid " + subtleBorder,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "#64748b",
+                  color: textSub,
                   fontSize: "14px",
                 }}
               >
@@ -279,11 +293,12 @@ const DormantAccountsReportView = ({
         {/* Card 2: Total Customer Accounts */}
         <Col lg={4} md={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              borderRadius: 0,
+              border: "1px solid " + cardBorder,
+              backgroundColor: cardBg,
+              boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
               transition: "all 0.15s ease",
             }}
           >
@@ -293,9 +308,9 @@ const DormantAccountsReportView = ({
                   style={{
                     width: "48px",
                     height: "48px",
-                    borderRadius: "4px",
-                    backgroundColor: "rgba(127, 29, 29, 0.08)",
-                    color: "#7f1d1d",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(127, 29, 29, 0.2)" : "rgba(127, 29, 29, 0.08)",
+                    color: isDark ? "#f87171" : "#7f1d1d",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -307,26 +322,27 @@ const DormantAccountsReportView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "11px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "11px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Total Customer Accounts
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "26px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {totalAccounts}
                   </div>
                   <div className="d-flex align-items-center gap-1 mt-1">
-                    <span style={{ color: "#16a34a", fontSize: "11px", fontWeight: 600 }}>
+                    <span style={{ color: isDark ? "#4ade80" : "#16a34a", fontSize: "11px", fontWeight: 600 }}>
                       <i className="ri-checkbox-circle-line"></i> Active Base
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       Managed customer portfolio
                     </span>
                   </div>
@@ -337,13 +353,13 @@ const DormantAccountsReportView = ({
                 style={{
                   width: "28px",
                   height: "28px",
-                  borderRadius: "50%",
-                  backgroundColor: "#f8fafc",
-                  border: "1px solid #e2e8f0",
+                  borderRadius: 0,
+                  backgroundColor: subtleBg,
+                  border: "1px solid " + subtleBorder,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "#64748b",
+                  color: textSub,
                   fontSize: "14px",
                 }}
               >
@@ -356,11 +372,12 @@ const DormantAccountsReportView = ({
         {/* Card 3: Account Retention Health */}
         <Col lg={4} md={12}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              borderRadius: 0,
+              border: "1px solid " + cardBorder,
+              backgroundColor: cardBg,
+              boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <CardBody className="p-3 d-flex align-items-center justify-content-between">
@@ -381,13 +398,13 @@ const DormantAccountsReportView = ({
                     <path
                       d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                       fill="none"
-                      stroke="#f1f5f9"
+                      stroke={isDark ? "#323842" : "#f1f5f9"}
                       strokeWidth="4"
                     />
                     <path
                       d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                       fill="none"
-                      stroke="#16a34a"
+                      stroke={isDark ? "#4ade80" : "#16a34a"}
                       strokeWidth="4"
                       strokeDasharray={`${retentionRate}, 100`}
                       strokeLinecap="round"
@@ -398,7 +415,7 @@ const DormantAccountsReportView = ({
                       position: "absolute",
                       fontSize: "12px",
                       fontWeight: 700,
-                      color: "#0f172a",
+                      color: textTitle,
                       fontFamily: "Inter, sans-serif",
                     }}
                   >
@@ -407,17 +424,17 @@ const DormantAccountsReportView = ({
                 </div>
 
                 <div>
-                  <h6 className="fw-bold text-dark mb-0" style={{ fontSize: "14px" }}>
+                  <h6 className="fw-bold mb-0" style={{ fontSize: "14px", color: textTitle }}>
                     Account Retention Health
                   </h6>
-                  <span className="text-muted d-block mt-0.5" style={{ fontSize: "11px" }}>
+                  <span className="d-block mt-0.5" style={{ fontSize: "11px", color: textSub }}>
                     Active in past 60 days
                   </span>
                   <div className="d-flex align-items-center gap-1 mt-1">
-                    <span style={{ color: "#16a34a", fontSize: "11px", fontWeight: 600 }}>
+                    <span style={{ color: isDark ? "#4ade80" : "#16a34a", fontSize: "11px", fontWeight: 600 }}>
                       <i className="ri-arrow-up-line"></i> 75%
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       Healthy account base
                     </span>
                   </div>
@@ -429,13 +446,13 @@ const DormantAccountsReportView = ({
                 style={{
                   width: "48px",
                   height: "48px",
-                  borderRadius: "50%",
-                  backgroundColor: "#f0fdf4",
-                  border: "1px solid #bbf7d0",
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "rgba(22, 163, 74, 0.2)" : "#f0fdf4",
+                  border: "1px solid " + (isDark ? "rgba(22, 163, 74, 0.4)" : "#bbf7d0"),
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "#16a34a",
+                  color: isDark ? "#4ade80" : "#16a34a",
                   fontSize: "24px",
                   flexShrink: 0,
                 }}
@@ -452,29 +469,30 @@ const DormantAccountsReportView = ({
         {/* Col 1: Inactivity Duration Breakdown (Col lg=5) */}
         <Col lg={5} md={12}>
           <Card
-            className="h-100 bg-white d-flex flex-column"
+            className="h-100 d-flex flex-column"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              borderRadius: 0,
+              border: "1px solid " + cardBorder,
+              backgroundColor: cardBg,
+              boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
-              style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+              className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
+              style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}
             >
               <div className="d-flex align-items-center gap-2">
                 <i
                   className="ri-bar-chart-2-line"
-                  style={{ color: "#7f1d1d", fontSize: "16px" }}
+                  style={{ color: isDark ? "#f87171" : "#7f1d1d", fontSize: "16px" }}
                 ></i>
-                <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+                <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                   Inactivity Duration Breakdown
                 </span>
               </div>
               <div
                 className="d-flex align-items-center gap-3"
-                style={{ fontSize: "11.5px", color: "#475569" }}
+                style={{ fontSize: "11.5px", color: textSub }}
               >
                 <span className="d-flex align-items-center gap-1.5">
                   <span
@@ -482,7 +500,7 @@ const DormantAccountsReportView = ({
                       width: "8px",
                       height: "8px",
                       backgroundColor: "#d97706",
-                      borderRadius: "2px",
+                      borderRadius: 0,
                       display: "inline-block",
                     }}
                   ></span>
@@ -494,7 +512,7 @@ const DormantAccountsReportView = ({
                       width: "8px",
                       height: "8px",
                       backgroundColor: "#f87171",
-                      borderRadius: "2px",
+                      borderRadius: 0,
                       display: "inline-block",
                     }}
                   ></span>
@@ -506,7 +524,7 @@ const DormantAccountsReportView = ({
                       width: "8px",
                       height: "8px",
                       backgroundColor: "#7f1d1d",
-                      borderRadius: "2px",
+                      borderRadius: 0,
                       display: "inline-block",
                     }}
                   ></span>
@@ -529,22 +547,23 @@ const DormantAccountsReportView = ({
         {/* Col 2: Risk Distribution Donut (Col lg=4) */}
         <Col lg={4} md={6}>
           <Card
-            className="h-100 bg-white d-flex flex-column"
+            className="h-100 d-flex flex-column"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              borderRadius: 0,
+              border: "1px solid " + cardBorder,
+              backgroundColor: cardBg,
+              boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex align-items-center gap-2"
-              style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+              className="p-3 border-bottom d-flex align-items-center gap-2"
+              style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}
             >
               <i
                 className="ri-pie-chart-2-line"
-                style={{ color: "#7f1d1d", fontSize: "16px" }}
+                style={{ color: isDark ? "#f87171" : "#7f1d1d", fontSize: "16px" }}
               ></i>
-              <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+              <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                 Account Risk Distribution
               </span>
             </div>
@@ -576,7 +595,7 @@ const DormantAccountsReportView = ({
                     style={{
                       fontSize: "20px",
                       fontWeight: 700,
-                      color: "#0f172a",
+                      color: textTitle,
                       fontFamily: "Inter, sans-serif",
                       lineHeight: "1.1",
                     }}
@@ -586,7 +605,7 @@ const DormantAccountsReportView = ({
                   <div
                     style={{
                       fontSize: "11px",
-                      color: "#dc2626",
+                      color: isDark ? "#f87171" : "#dc2626",
                       fontWeight: 600,
                       fontFamily: "Inter, sans-serif",
                       marginTop: "2px",
@@ -604,26 +623,26 @@ const DormantAccountsReportView = ({
               >
                 <div className="d-flex align-items-center justify-content-between">
                   <span className="d-flex align-items-center gap-2">
-                    <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#7f1d1d" }}></span>
-                    <span style={{ color: "#334155", fontWeight: 500 }}>&gt; 90 Days</span>
+                    <span style={{ width: "8px", height: "8px", borderRadius: 0, backgroundColor: "#7f1d1d" }}></span>
+                    <span style={{ color: textSub, fontWeight: 500 }}>&gt; 90 Days</span>
                   </span>
-                  <span className="fw-bold text-dark font-monospace">{bracketCounts[">90"]}</span>
+                  <span className="fw-bold font-monospace" style={{ color: textTitle }}>{bracketCounts[">90"]}</span>
                 </div>
 
                 <div className="d-flex align-items-center justify-content-between">
                   <span className="d-flex align-items-center gap-2">
-                    <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#f87171" }}></span>
-                    <span style={{ color: "#334155", fontWeight: 500 }}>60 - 90 Days</span>
+                    <span style={{ width: "8px", height: "8px", borderRadius: 0, backgroundColor: "#f87171" }}></span>
+                    <span style={{ color: textSub, fontWeight: 500 }}>60 - 90 Days</span>
                   </span>
-                  <span className="fw-bold text-dark font-monospace">{bracketCounts["60-90"]}</span>
+                  <span className="fw-bold font-monospace" style={{ color: textTitle }}>{bracketCounts["60-90"]}</span>
                 </div>
 
                 <div className="d-flex align-items-center justify-content-between">
                   <span className="d-flex align-items-center gap-2">
-                    <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#d97706" }}></span>
-                    <span style={{ color: "#334155", fontWeight: 500 }}>30 - 60 Days</span>
+                    <span style={{ width: "8px", height: "8px", borderRadius: 0, backgroundColor: "#d97706" }}></span>
+                    <span style={{ color: textSub, fontWeight: 500 }}>30 - 60 Days</span>
                   </span>
-                  <span className="fw-bold text-dark font-monospace">{bracketCounts["30-60"]}</span>
+                  <span className="fw-bold font-monospace" style={{ color: textTitle }}>{bracketCounts["30-60"]}</span>
                 </div>
               </div>
             </CardBody>
@@ -633,22 +652,23 @@ const DormantAccountsReportView = ({
         {/* Col 3: Retention Action Items (Col lg=3) */}
         <Col lg={3} md={6}>
           <Card
-            className="h-100 bg-white d-flex flex-column"
+            className="h-100 d-flex flex-column"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              borderRadius: 0,
+              border: "1px solid " + cardBorder,
+              backgroundColor: cardBg,
+              boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex align-items-center gap-2"
-              style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+              className="p-3 border-bottom d-flex align-items-center gap-2"
+              style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}
             >
               <i
                 className="ri-lightbulb-line"
-                style={{ color: "#7f1d1d", fontSize: "16px" }}
+                style={{ color: isDark ? "#f87171" : "#7f1d1d", fontSize: "16px" }}
               ></i>
-              <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+              <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                 Retention Action Items
               </span>
             </div>
@@ -660,13 +680,13 @@ const DormantAccountsReportView = ({
                     style={{
                       width: "6px",
                       height: "6px",
-                      borderRadius: "50%",
-                      backgroundColor: "#dc2626",
+                      borderRadius: 0,
+                      backgroundColor: isDark ? "#f87171" : "#dc2626",
                       marginTop: "6px",
                       flexShrink: 0,
                     }}
                   ></span>
-                  <p className="mb-0 text-dark" style={{ fontSize: "12px", lineHeight: "1.5" }}>
+                  <p className="mb-0" style={{ fontSize: "12px", lineHeight: "1.5", color: textTitle }}>
                     <span className="fw-semibold">1 key account</span> has exceeded 65 days with zero touchpoint.
                   </p>
                 </div>
@@ -676,13 +696,13 @@ const DormantAccountsReportView = ({
                     style={{
                       width: "6px",
                       height: "6px",
-                      borderRadius: "50%",
+                      borderRadius: 0,
                       backgroundColor: "#d97706",
                       marginTop: "6px",
                       flexShrink: 0,
                     }}
                   ></span>
-                  <p className="mb-0 text-dark" style={{ fontSize: "12px", lineHeight: "1.5" }}>
+                  <p className="mb-0" style={{ fontSize: "12px", lineHeight: "1.5", color: textTitle }}>
                     Schedule an executive check-in or QBR to prevent churn.
                   </p>
                 </div>
@@ -692,13 +712,13 @@ const DormantAccountsReportView = ({
                     style={{
                       width: "6px",
                       height: "6px",
-                      borderRadius: "50%",
-                      backgroundColor: "#7f1d1d",
+                      borderRadius: 0,
+                      backgroundColor: isDark ? "#f87171" : "#7f1d1d",
                       marginTop: "6px",
                       flexShrink: 0,
                     }}
                   ></span>
-                  <p className="mb-0 text-dark" style={{ fontSize: "12px", lineHeight: "1.5" }}>
+                  <p className="mb-0" style={{ fontSize: "12px", lineHeight: "1.5", color: textTitle }}>
                     Early re-engagement boosts account retention by 3.2x.
                   </p>
                 </div>
@@ -709,10 +729,10 @@ const DormantAccountsReportView = ({
                   to="/crm/customers"
                   className="btn btn-sm d-inline-flex align-items-center gap-1"
                   style={{
-                    backgroundColor: "#7f1d1d",
-                    borderColor: "#7f1d1d",
+                    backgroundColor: primaryColor,
+                    borderColor: primaryColor,
                     color: "#ffffff",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     fontSize: "12px",
                     fontWeight: 500,
                     padding: "5px 14px",
@@ -728,32 +748,34 @@ const DormantAccountsReportView = ({
 
       {/* ─── ROW 3: DETAILED DATA LEDGER (TABLE) ─────────────────────────────── */}
       <Card
-        className="bg-white mb-4"
+        className="mb-4"
         style={{
-          borderRadius: "4px",
-          border: "1px solid #e2e8f0",
-          boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+          borderRadius: 0,
+          border: "1px solid " + cardBorder,
+          backgroundColor: cardBg,
+          boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
       >
         <div
-          className="p-3 bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
+          className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
           style={{
-            borderRadius: "4px 4px 0 0",
-            borderColor: "#e2e8f0",
+            borderRadius: 0,
+            borderColor: cardBorder,
+            backgroundColor: cardBg,
           }}
         >
           <div>
             <h6
-              className="mb-0 fw-bold text-dark d-flex align-items-center gap-2"
-              style={{ fontSize: "14px" }}
+              className="mb-0 fw-bold d-flex align-items-center gap-2"
+              style={{ fontSize: "14px", color: textTitle }}
             >
               <i
                 className="ri-table-line"
-                style={{ color: "#7f1d1d", fontSize: "16px" }}
+                style={{ color: isDark ? "#f87171" : "#7f1d1d", fontSize: "16px" }}
               ></i>
               Detailed Data Ledger
             </h6>
-            <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+            <span style={{ fontSize: "11.5px", color: textSub }}>
               Showing 1 to {filteredRows.length} of {rawRows.length} dormant records
             </span>
           </div>
@@ -766,17 +788,18 @@ const DormantAccountsReportView = ({
                 placeholder="Search customer or company..."
                 className="form-control-sm ps-4"
                 style={{
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
-                  borderColor: "#cbd5e1",
-                  backgroundColor: "#ffffff",
+                  borderColor: subtleBorder,
+                  backgroundColor: subtleBg,
+                  color: textTitle,
                 }}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <i
-                className="ri-search-line position-absolute top-50 start-0 translate-middle-y ms-2 text-muted"
-                style={{ fontSize: "12px" }}
+                className="ri-search-line position-absolute top-50 start-0 translate-middle-y ms-2"
+                style={{ fontSize: "12px", color: textSub }}
               ></i>
             </div>
 
@@ -785,9 +808,11 @@ const DormantAccountsReportView = ({
               className="form-select form-select-sm"
               style={{
                 width: "135px",
-                borderRadius: "4px",
+                borderRadius: 0,
                 fontSize: "12px",
-                borderColor: "#cbd5e1",
+                borderColor: subtleBorder,
+                backgroundColor: subtleBg,
+                color: textTitle,
               }}
               value={riskFilter}
               onChange={(e) => setRiskFilter(e.target.value)}
@@ -803,10 +828,10 @@ const DormantAccountsReportView = ({
               type="button"
               className="btn btn-sm d-flex align-items-center gap-1"
               style={{
-                backgroundColor: "#ffffff",
-                color: "#7f1d1d",
-                border: "1px solid #e2e8f0",
-                borderRadius: "4px",
+                backgroundColor: isDark ? "rgba(127, 29, 29, 0.15)" : "#ffffff",
+                color: isDark ? "#f87171" : "#7f1d1d",
+                border: "1px solid " + (isDark ? "rgba(127, 29, 29, 0.3)" : "#e2e8f0"),
+                borderRadius: 0,
                 fontSize: "12px",
                 fontWeight: 500,
                 padding: "5px 12px",
@@ -821,8 +846,8 @@ const DormantAccountsReportView = ({
         <CardBody className="p-0">
           <div className="table-responsive">
             <Table className="align-middle table-nowrap mb-0" hover>
-              <thead style={{ backgroundColor: "#f8fafc" }}>
-                <tr style={{ fontSize: "11.5px", color: "#64748b" }}>
+              <thead style={{ backgroundColor: subtleBg }}>
+                <tr style={{ fontSize: "11.5px", color: textSub, borderBottom: "1px solid " + cardBorder }}>
                   <th style={{ width: "40px" }} className="text-center">#</th>
                   <th>CUSTOMER NAME</th>
                   <th>COMPANY NAME</th>
@@ -836,7 +861,7 @@ const DormantAccountsReportView = ({
               <tbody style={{ fontSize: "12.5px" }}>
                 {filteredRows.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="text-center py-4 text-muted">
+                    <td colSpan="8" className="text-center py-4" style={{ color: textSub }}>
                       No dormant accounts match the search criteria.
                     </td>
                   </tr>
@@ -846,8 +871,8 @@ const DormantAccountsReportView = ({
                     const risk = String(r.risk_level || "High").toUpperCase();
 
                     return (
-                      <tr key={r.account_id || idx}>
-                        <td className="text-center text-muted" style={{ fontSize: "11px" }}>
+                      <tr key={r.account_id || idx} style={{ borderBottom: "1px solid " + cardBorder }}>
+                        <td className="text-center" style={{ fontSize: "11px", color: textSub }}>
                           {idx + 1}
                         </td>
                         <td>
@@ -856,9 +881,9 @@ const DormantAccountsReportView = ({
                               style={{
                                 width: "26px",
                                 height: "26px",
-                                borderRadius: "4px",
-                                backgroundColor: "rgba(127, 29, 29, 0.08)",
-                                color: "#7f1d1d",
+                                borderRadius: 0,
+                                backgroundColor: isDark ? "rgba(127, 29, 29, 0.2)" : "rgba(127, 29, 29, 0.08)",
+                                color: isDark ? "#f87171" : "#7f1d1d",
                                 display: "inline-flex",
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -867,55 +892,63 @@ const DormantAccountsReportView = ({
                             >
                               <i className="ri-building-line"></i>
                             </span>
-                            <span className="fw-semibold text-dark">
+                            <span className="fw-semibold" style={{ color: textTitle }}>
                               {r.customer_name}
                             </span>
                           </div>
                         </td>
-                        <td className="text-muted">
+                        <td style={{ color: textSub }}>
                           {r.company_name}
                         </td>
                         <td>
                           <span
                             style={{
-                              backgroundColor: "#f8fafc",
-                              border: "1px solid #e2e8f0",
-                              color: "#475569",
+                              backgroundColor: isDark ? "rgba(255, 255, 255, 0.05)" : "#f8fafc",
+                              border: "1px solid " + (isDark ? "#323842" : "#e2e8f0"),
+                              color: isDark ? "#cbd5e1" : "#475569",
                               fontSize: "11.5px",
                               fontWeight: 500,
                               padding: "3px 8px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               display: "inline-flex",
                               alignItems: "center",
                               gap: "4px",
                             }}
                           >
-                            <i className="ri-time-line text-muted" style={{ fontSize: "12px" }}></i>
+                            <i className="ri-time-line" style={{ fontSize: "12px", color: textSub }}></i>
                             {days} days
                           </span>
                         </td>
                         <td>
-                          <span className="text-dark d-inline-flex align-items-center gap-1.5" style={{ fontSize: "12px" }}>
-                            <i className="ri-mail-line text-muted"></i>
+                          <span className="d-inline-flex align-items-center gap-1" style={{ fontSize: "12px", color: textTitle }}>
+                            <i className="ri-mail-line" style={{ color: textSub }}></i>
                             {r.email || "—"}
                           </span>
                         </td>
                         <td>
-                          <span className="text-dark d-inline-flex align-items-center gap-1.5 font-monospace" style={{ fontSize: "12px" }}>
-                            <i className="ri-phone-line text-muted"></i>
+                          <span className="d-inline-flex align-items-center gap-1 font-monospace" style={{ fontSize: "12px", color: textTitle }}>
+                            <i className="ri-phone-line" style={{ color: textSub }}></i>
                             {r.phone || "—"}
                           </span>
                         </td>
                         <td>
                           <span
                             style={{
-                              backgroundColor: risk.includes("HIGH") ? "#fef2f2" : "#fffbeb",
-                              color: risk.includes("HIGH") ? "#991b1b" : "#92400e",
-                              border: `1px solid ${risk.includes("HIGH") ? "#fecaca" : "#fde68a"}`,
+                              backgroundColor: risk.includes("HIGH")
+                                ? (isDark ? "rgba(220, 38, 38, 0.2)" : "#fef2f2")
+                                : (isDark ? "rgba(217, 119, 6, 0.2)" : "#fffbeb"),
+                              color: risk.includes("HIGH")
+                                ? (isDark ? "#f87171" : "#991b1b")
+                                : (isDark ? "#fbbf24" : "#92400e"),
+                              border: `1px solid ${
+                                risk.includes("HIGH")
+                                  ? (isDark ? "rgba(220, 38, 38, 0.4)" : "#fecaca")
+                                  : (isDark ? "rgba(217, 119, 6, 0.4)" : "#fde68a")
+                              }`,
                               fontSize: "11px",
                               fontWeight: 600,
                               padding: "2.5px 8px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               display: "inline-flex",
                               alignItems: "center",
                               gap: "4px",
@@ -925,8 +958,10 @@ const DormantAccountsReportView = ({
                               style={{
                                 width: "6px",
                                 height: "6px",
-                                borderRadius: "50%",
-                                backgroundColor: risk.includes("HIGH") ? "#dc2626" : "#d97706",
+                                borderRadius: 0,
+                                backgroundColor: risk.includes("HIGH")
+                                  ? (isDark ? "#f87171" : "#dc2626")
+                                  : (isDark ? "#fbbf24" : "#d97706"),
                                 display: "inline-block",
                               }}
                             ></span>
@@ -937,16 +972,36 @@ const DormantAccountsReportView = ({
                           <div className="d-flex align-items-center justify-content-center gap-1">
                             <Link
                               to={`/crm/customers/${r.account_id}`}
-                              className="btn btn-sm btn-light border p-1"
-                              style={{ borderRadius: "4px", color: "#475569", width: "26px", height: "26px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                              className="btn btn-sm p-1"
+                              style={{
+                                borderRadius: 0,
+                                backgroundColor: subtleBg,
+                                border: "1px solid " + subtleBorder,
+                                color: textSub,
+                                width: "26px",
+                                height: "26px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
                               title="View Customer Profile"
                             >
                               <i className="ri-eye-line" style={{ fontSize: "13px" }}></i>
                             </Link>
                             <Link
                               to={`/crm/activities`}
-                              className="btn btn-sm btn-light border p-1"
-                              style={{ borderRadius: "4px", color: "#7f1d1d", width: "26px", height: "26px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                              className="btn btn-sm p-1"
+                              style={{
+                                borderRadius: 0,
+                                backgroundColor: subtleBg,
+                                border: "1px solid " + subtleBorder,
+                                color: isDark ? "#f87171" : "#7f1d1d",
+                                width: "26px",
+                                height: "26px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
                               title="Log Re-engagement Activity"
                             >
                               <i className="ri-phone-fill" style={{ fontSize: "13px" }}></i>
@@ -962,14 +1017,24 @@ const DormantAccountsReportView = ({
           </div>
 
           {/* Table Footer Pagination */}
-          <div className="p-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div
+            className="p-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2"
+            style={{ borderColor: cardBorder }}
+          >
             <div className="d-flex align-items-center gap-2">
-              <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+              <span style={{ fontSize: "11.5px", color: textSub }}>
                 Show
               </span>
               <select
                 className="form-select form-select-sm"
-                style={{ width: "65px", fontSize: "11.5px", borderRadius: "4px" }}
+                style={{
+                  width: "65px",
+                  fontSize: "11.5px",
+                  borderRadius: 0,
+                  borderColor: subtleBorder,
+                  backgroundColor: subtleBg,
+                  color: textTitle,
+                }}
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
               >
@@ -977,7 +1042,7 @@ const DormantAccountsReportView = ({
                 <option value={25}>25</option>
                 <option value={50}>50</option>
               </select>
-              <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+              <span style={{ fontSize: "11.5px", color: textSub }}>
                 Showing 1 to {filteredRows.length} of {rawRows.length} entries
               </span>
             </div>
@@ -985,8 +1050,14 @@ const DormantAccountsReportView = ({
             <div className="btn-group btn-group-sm">
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "4px 0 0 4px", fontSize: "11px" }}
+                className="btn btn-sm"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  backgroundColor: subtleBg,
+                  borderColor: subtleBorder,
+                  color: textTitle,
+                }}
                 disabled
               >
                 &lt; Prev
@@ -995,19 +1066,26 @@ const DormantAccountsReportView = ({
                 type="button"
                 className="btn btn-sm"
                 style={{
-                  backgroundColor: "#7f1d1d",
+                  backgroundColor: primaryColor,
                   color: "#ffffff",
                   fontSize: "11px",
                   fontWeight: 600,
-                  border: "1px solid #7f1d1d",
+                  border: "1px solid " + primaryColor,
+                  borderRadius: 0,
                 }}
               >
                 1
               </button>
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "0 4px 4px 0", fontSize: "11px" }}
+                className="btn btn-sm"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  backgroundColor: subtleBg,
+                  borderColor: subtleBorder,
+                  color: textTitle,
+                }}
                 disabled
               >
                 Next &gt;
@@ -1019,12 +1097,13 @@ const DormantAccountsReportView = ({
 
       {/* ─── ROW 4: RETENTION INSIGHTS EXECUTIVE STRIP ───────────────────────── */}
       <Card
-        className="bg-white mb-4"
+        className="mb-4"
         style={{
-          borderRadius: "4px",
-          border: "1px solid #e2e8f0",
-          borderLeft: "4px solid #7f1d1d",
-          boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+          borderRadius: 0,
+          border: "1px solid " + cardBorder,
+          borderLeft: "4px solid " + primaryColor,
+          backgroundColor: cardBg,
+          boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
       >
         <CardBody className="p-3">
@@ -1035,10 +1114,10 @@ const DormantAccountsReportView = ({
                 style={{
                   width: "36px",
                   height: "36px",
-                  borderRadius: "4px",
-                  backgroundColor: "#fffbeb",
-                  border: "1px solid #fde68a",
-                  color: "#d97706",
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "rgba(217, 119, 6, 0.2)" : "#fffbeb",
+                  border: "1px solid " + (isDark ? "rgba(217, 119, 6, 0.4)" : "#fde68a"),
+                  color: isDark ? "#fbbf24" : "#d97706",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1048,28 +1127,28 @@ const DormantAccountsReportView = ({
               >
                 <i className="ri-lightbulb-line"></i>
               </div>
-              <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+              <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                 Retention Insights
               </span>
             </div>
 
             {/* Middle: 3 Key Insights */}
             <div
-              className="d-flex flex-wrap align-items-center gap-3 text-muted"
-              style={{ fontSize: "12px" }}
+              className="d-flex flex-wrap align-items-center gap-3"
+              style={{ fontSize: "12px", color: textSub }}
             >
               <div className="d-flex align-items-center gap-1.5">
-                <i className="ri-error-warning-fill" style={{ color: "#dc2626" }}></i>
+                <i className="ri-error-warning-fill" style={{ color: isDark ? "#f87171" : "#dc2626" }}></i>
                 <span>Accounts inactive over 60 days represent highest churn probability.</span>
               </div>
-              <span className="d-none d-md-inline text-muted">|</span>
+              <span className="d-none d-md-inline" style={{ color: cardBorder }}>|</span>
               <div className="d-flex align-items-center gap-1.5">
-                <i className="ri-time-line" style={{ color: "#7f1d1d" }}></i>
+                <i className="ri-time-line" style={{ color: isDark ? "#f87171" : "#7f1d1d" }}></i>
                 <span>Average touchpoint interval across active portfolio is 42 days.</span>
               </div>
-              <span className="d-none d-md-inline text-muted">|</span>
+              <span className="d-none d-md-inline" style={{ color: cardBorder }}>|</span>
               <div className="d-flex align-items-center gap-1.5">
-                <i className="ri-shield-check-line" style={{ color: "#16a34a" }}></i>
+                <i className="ri-shield-check-line" style={{ color: isDark ? "#4ade80" : "#16a34a" }}></i>
                 <span>Re-engaging dormant accounts within 90 days increases renewal rate by 3.2x.</span>
               </div>
             </div>
@@ -1077,10 +1156,10 @@ const DormantAccountsReportView = ({
             {/* Right: SoftOnCloud Retention Slogan */}
             <div className="d-none d-lg-flex align-items-center gap-2 text-end">
               <div>
-                <span className="fw-bold text-dark d-block" style={{ fontSize: "11.5px" }}>
+                <span className="fw-bold d-block" style={{ fontSize: "11.5px", color: textTitle }}>
                   Retain. Engage. Grow.
                 </span>
-                <span className="text-muted" style={{ fontSize: "10.5px" }}>
+                <span style={{ fontSize: "10.5px", color: textSub }}>
                   Prevent customer churn.
                 </span>
               </div>
@@ -1088,9 +1167,9 @@ const DormantAccountsReportView = ({
                 style={{
                   width: "32px",
                   height: "32px",
-                  borderRadius: "4px",
-                  backgroundColor: "rgba(127, 29, 29, 0.08)",
-                  color: "#7f1d1d",
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "rgba(127, 29, 29, 0.2)" : "rgba(127, 29, 29, 0.08)",
+                  color: isDark ? "#f87171" : "#7f1d1d",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",

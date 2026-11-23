@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useSelector } from "react-redux";
 import ReactApexChart from "react-apexcharts";
 import { Link } from "react-router-dom";
 import {
@@ -22,6 +23,18 @@ const RepProductivityScorecardView = ({
   onOwnerChange,
   onExport,
 }) => {
+  const layoutMode = useSelector((state) => state.Layout?.layoutModeType);
+  const isDark = layoutMode === "dark";
+
+  // Dynamic Theme Colors
+  const cardBg = isDark ? "#161b22" : "#ffffff";
+  const cardBorder = isDark ? "#21262d" : "#e2e8f0";
+  const subtleBg = isDark ? "#0d1117" : "#f8fafc";
+  const subtleBorder = isDark ? "#30363d" : "#e2e8f0";
+  const textTitle = isDark ? "#f0f6fc" : "#0f172a";
+  const textSub = isDark ? "#8b949e" : "#64748b";
+  const primaryColor = "#7f1d1d";
+
   const [searchTerm, setSearchTerm] = useState("");
   const [performanceFilter, setPerformanceFilter] = useState("ALL");
   const [pageSize, setPageSize] = useState(10);
@@ -192,13 +205,13 @@ const RepProductivityScorecardView = ({
           bar: {
             horizontal: false,
             columnWidth: "50%",
-            borderRadius: 4,
+            borderRadius: 0,
             dataLabels: {
               position: "top",
             },
           },
         },
-        colors: ["#7f1d1d", "#f87171", "#16a34a"], // SoftOnCloud Maroon, Rose/Coral, Emerald Green
+        colors: [isDark ? "#dc2626" : "#7f1d1d", isDark ? "#38bdf8" : "#2563eb", isDark ? "#4ade80" : "#16a34a"], // SoftOnCloud Maroon/Red, Sky Blue, Emerald Green
         dataLabels: {
           enabled: true,
           offsetY: -16,
@@ -206,7 +219,7 @@ const RepProductivityScorecardView = ({
             fontSize: "11px",
             fontFamily: "Inter, sans-serif",
             fontWeight: 600,
-            colors: ["#1e293b"],
+            colors: [textTitle],
           },
           formatter: (val) => (val > 0 ? val : ""),
         },
@@ -216,7 +229,7 @@ const RepProductivityScorecardView = ({
           colors: ["transparent"],
         },
         grid: {
-          borderColor: "#f1f5f9",
+          borderColor: cardBorder,
           strokeDashArray: 3,
           xaxis: { lines: { show: false } },
           yaxis: { lines: { show: true } },
@@ -226,13 +239,13 @@ const RepProductivityScorecardView = ({
           categories,
           labels: {
             style: {
-              colors: "#334155",
+              colors: textSub,
               fontSize: "12px",
               fontFamily: "Inter, sans-serif",
               fontWeight: 600,
             },
           },
-          axisBorder: { color: "#e2e8f0" },
+          axisBorder: { color: cardBorder },
           axisTicks: { show: false },
         },
         yaxis: {
@@ -242,13 +255,13 @@ const RepProductivityScorecardView = ({
           tickAmount: 4,
           labels: {
             style: {
-              colors: "#64748b",
+              colors: textSub,
               fontSize: "11px",
               fontFamily: "Inter, sans-serif",
             },
             formatter: (val) => Math.max(0, Math.round(val)),
           },
-          axisBorder: { show: true, color: "#e2e8f0" },
+          axisBorder: { show: true, color: cardBorder },
           axisTicks: { show: false },
         },
         legend: {
@@ -258,8 +271,11 @@ const RepProductivityScorecardView = ({
           fontFamily: "Inter, sans-serif",
           fontWeight: 500,
           offsetY: -5,
+          labels: {
+            colors: textSub,
+          },
           markers: {
-            radius: 2,
+            radius: 0,
             width: 10,
             height: 10,
           },
@@ -272,7 +288,7 @@ const RepProductivityScorecardView = ({
         },
       },
     };
-  }, [chartData, rawRows]);
+  }, [chartData, rawRows, isDark, textTitle, textSub, cardBorder]);
 
   // 2. Won Revenue Share Donut Chart
   const revenueDonutConfig = useMemo(() => {
@@ -291,8 +307,8 @@ const RepProductivityScorecardView = ({
           sparkline: { enabled: true },
         },
         labels,
-        colors: ["#7f1d1d", "#2563eb", "#94a3b8"], // Maroon, Royal Blue, Slate
-        stroke: { width: 2, colors: ["#ffffff"] },
+        colors: [isDark ? "#dc2626" : "#7f1d1d", isDark ? "#38bdf8" : "#2563eb", isDark ? "#64748b" : "#94a3b8"],
+        stroke: { width: 2, colors: [cardBg] },
         legend: { show: false },
         dataLabels: { enabled: false },
         plotOptions: {
@@ -310,7 +326,7 @@ const RepProductivityScorecardView = ({
         },
       },
     };
-  }, [rawRows]);
+  }, [rawRows, cardBg, isDark]);
 
   // Helper for Rep Initials
   const getRepInitials = (name) => {
@@ -328,10 +344,11 @@ const RepProductivityScorecardView = ({
         {/* Card 1: Won Revenue Output */}
         <Col lg={3} sm={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               transition: "all 0.15s ease",
             }}
@@ -342,9 +359,9 @@ const RepProductivityScorecardView = ({
                   style={{
                     width: "44px",
                     height: "44px",
-                    borderRadius: "4px",
-                    backgroundColor: "rgba(127, 29, 29, 0.08)",
-                    color: "#7f1d1d",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(127, 29, 29, 0.25)" : "rgba(127, 29, 29, 0.08)",
+                    color: isDark ? "#f87171" : "#7f1d1d",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -356,17 +373,18 @@ const RepProductivityScorecardView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "10.5px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "10.5px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Won Revenue Output
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "22px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {formatCurrency(totalWonRevenue)}
@@ -375,7 +393,7 @@ const RepProductivityScorecardView = ({
                     <span style={{ color: "#16a34a", fontSize: "11px", fontWeight: 600 }}>
                       <i className="ri-checkbox-circle-fill"></i> 100%
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       Closed Won target
                     </span>
                   </div>
@@ -388,10 +406,11 @@ const RepProductivityScorecardView = ({
         {/* Card 2: Total Sales Activities */}
         <Col lg={3} sm={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               transition: "all 0.15s ease",
             }}
@@ -402,9 +421,9 @@ const RepProductivityScorecardView = ({
                   style={{
                     width: "44px",
                     height: "44px",
-                    borderRadius: "4px",
-                    backgroundColor: "#eff6ff",
-                    color: "#2563eb",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(37, 99, 235, 0.2)" : "#eff6ff",
+                    color: isDark ? "#60a5fa" : "#2563eb",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -416,26 +435,27 @@ const RepProductivityScorecardView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "10.5px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "10.5px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Total Activities Logged
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "22px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {totalActivitiesCount}
                   </div>
                   <div className="d-flex align-items-center gap-1 mt-1">
-                    <span style={{ color: "#2563eb", fontSize: "11px", fontWeight: 600 }}>
+                    <span style={{ color: isDark ? "#60a5fa" : "#2563eb", fontSize: "11px", fontWeight: 600 }}>
                       <i className="ri-fire-fill"></i> High Velocity
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       Calls & meetings
                     </span>
                   </div>
@@ -448,10 +468,11 @@ const RepProductivityScorecardView = ({
         {/* Card 3: Tasks Completed */}
         <Col lg={3} sm={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               transition: "all 0.15s ease",
             }}
@@ -462,9 +483,9 @@ const RepProductivityScorecardView = ({
                   style={{
                     width: "44px",
                     height: "44px",
-                    borderRadius: "4px",
-                    backgroundColor: "#f0fdf4",
-                    color: "#16a34a",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(22, 163, 74, 0.2)" : "#f0fdf4",
+                    color: isDark ? "#4ade80" : "#16a34a",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -476,17 +497,18 @@ const RepProductivityScorecardView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "10.5px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "10.5px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Follow-ups Completed
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "22px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {totalTasksCount}
@@ -495,7 +517,7 @@ const RepProductivityScorecardView = ({
                     <span style={{ color: "#16a34a", fontSize: "11px", fontWeight: 600 }}>
                       <i className="ri-check-line"></i> Completed
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       On-time execution
                     </span>
                   </div>
@@ -508,10 +530,11 @@ const RepProductivityScorecardView = ({
         {/* Card 4: Active Sales Reps */}
         <Col lg={3} sm={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               transition: "all 0.15s ease",
             }}
@@ -522,9 +545,9 @@ const RepProductivityScorecardView = ({
                   style={{
                     width: "44px",
                     height: "44px",
-                    borderRadius: "4px",
-                    backgroundColor: "#fffbeb",
-                    color: "#d97706",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(217, 119, 6, 0.2)" : "#fffbeb",
+                    color: isDark ? "#fbbf24" : "#d97706",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -536,26 +559,27 @@ const RepProductivityScorecardView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "10.5px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "10.5px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Active Sales Team
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "22px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {activeRepsCount} Reps
                   </div>
                   <div className="d-flex align-items-center gap-1 mt-1">
-                    <span style={{ color: "#d97706", fontSize: "11px", fontWeight: 600 }}>
+                    <span style={{ color: isDark ? "#fbbf24" : "#d97706", fontSize: "11px", fontWeight: 600 }}>
                       {totalDealsWon} Won
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       • 2 In Pipeline
                     </span>
                   </div>
@@ -571,27 +595,37 @@ const RepProductivityScorecardView = ({
         {/* Col 1: Rep Effort vs Output Comparative Chart (Col lg=7) */}
         <Col lg={7} md={12}>
           <Card
-            className="h-100 bg-white d-flex flex-column"
+            className="h-100 d-flex flex-column"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
-              style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+              className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
+              style={{ backgroundColor: cardBg, borderColor: cardBorder }}
             >
               <div className="d-flex align-items-center gap-2">
                 <i
                   className="ri-bar-chart-grouped-fill"
                   style={{ color: "#7f1d1d", fontSize: "16px" }}
                 ></i>
-                <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+                <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                   Sales Effort vs Deals Won Comparison
                 </span>
               </div>
-              <span className="badge bg-light text-muted border" style={{ fontSize: "11px" }}>
+              <span
+                className="badge border"
+                style={{
+                  backgroundColor: subtleBg,
+                  color: textSub,
+                  borderColor: subtleBorder,
+                  borderRadius: 0,
+                  fontSize: "11px",
+                }}
+              >
                 Activities • Tasks • Deals Won
               </span>
             </div>
@@ -610,34 +644,35 @@ const RepProductivityScorecardView = ({
         {/* Col 2: Won Revenue Contribution & Performer Spotlight (Col lg=5) */}
         <Col lg={5} md={12}>
           <Card
-            className="h-100 bg-white d-flex flex-column"
+            className="h-100 d-flex flex-column"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              backgroundColor: cardBg,
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex align-items-center justify-content-between gap-2"
-              style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+              className="p-3 border-bottom d-flex align-items-center justify-content-between gap-2"
+              style={{ backgroundColor: cardBg, borderColor: cardBorder }}
             >
               <div className="d-flex align-items-center gap-2">
                 <i
                   className="ri-pie-chart-2-line"
                   style={{ color: "#7f1d1d", fontSize: "16px" }}
                 ></i>
-                <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+                <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                   Won Revenue Contribution
                 </span>
               </div>
               <span
                 style={{
-                  backgroundColor: "rgba(127, 29, 29, 0.08)",
-                  color: "#7f1d1d",
+                  backgroundColor: isDark ? "rgba(127, 29, 29, 0.25)" : "rgba(127, 29, 29, 0.08)",
+                  color: isDark ? "#f87171" : "#7f1d1d",
                   fontSize: "11px",
                   fontWeight: 600,
                   padding: "2px 8px",
-                  borderRadius: "4px",
+                  borderRadius: 0,
                 }}
               >
                 Top Leader: {topLeader ? topLeader.sales_rep : "None"}
@@ -673,7 +708,7 @@ const RepProductivityScorecardView = ({
                       style={{
                         fontSize: "20px",
                         fontWeight: 700,
-                        color: "#0f172a",
+                        color: textTitle,
                         fontFamily: "Inter, sans-serif",
                         lineHeight: "1.1",
                       }}
@@ -685,7 +720,7 @@ const RepProductivityScorecardView = ({
                     <div
                       style={{
                         fontSize: "10.5px",
-                        color: "#7f1d1d",
+                        color: isDark ? "#f87171" : "#7f1d1d",
                         fontWeight: 600,
                         fontFamily: "Inter, sans-serif",
                         marginTop: "2px",
@@ -699,7 +734,7 @@ const RepProductivityScorecardView = ({
                 {/* Rep Contribution Breakdown Clean Row Cards */}
                 <div className="flex-grow-1 d-flex flex-column gap-1.5">
                   {rawRows.map((r, i) => {
-                    const colors = ["#7f1d1d", "#2563eb", "#94a3b8"];
+                    const colors = [isDark ? "#dc2626" : "#7f1d1d", isDark ? "#38bdf8" : "#2563eb", isDark ? "#64748b" : "#94a3b8"];
                     const rev = Number(r.won_revenue || 0);
                     const pct = totalWonRevenue > 0 ? Math.round((rev / totalWonRevenue) * 100) : (i === 0 ? 100 : 0);
                     const isTop = i === 0;
@@ -709,10 +744,14 @@ const RepProductivityScorecardView = ({
                         key={r.employee_id || i}
                         className="d-flex align-items-center justify-content-between px-2.5 py-1.5"
                         style={{
-                          backgroundColor: isTop ? "rgba(127, 29, 29, 0.04)" : "#ffffff",
+                          backgroundColor: isTop
+                            ? (isDark ? "rgba(127, 29, 29, 0.2)" : "rgba(127, 29, 29, 0.04)")
+                            : (isDark ? subtleBg : "#ffffff"),
                           border: "1px solid",
-                          borderColor: isTop ? "rgba(127, 29, 29, 0.15)" : "#e2e8f0",
-                          borderRadius: "4px",
+                          borderColor: isTop
+                            ? (isDark ? "rgba(127, 29, 29, 0.4)" : "rgba(127, 29, 29, 0.15)")
+                            : cardBorder,
+                          borderRadius: 0,
                         }}
                       >
                         <div className="d-flex align-items-center gap-2">
@@ -726,10 +765,10 @@ const RepProductivityScorecardView = ({
                             }}
                           ></span>
                           <span
-                            className="text-dark"
                             style={{
                               fontSize: "12px",
                               fontWeight: isTop ? 600 : 500,
+                              color: textTitle,
                             }}
                           >
                             {r.sales_rep}
@@ -740,19 +779,29 @@ const RepProductivityScorecardView = ({
                           <span
                             className="badge font-monospace"
                             style={{
-                              backgroundColor: isTop ? "#fef2f2" : "#f8fafc",
-                              color: isTop ? "#7f1d1d" : "#64748b",
+                              backgroundColor: isTop
+                                ? (isDark ? "rgba(127, 29, 29, 0.25)" : "#fef2f2")
+                                : (isDark ? "#21262d" : "#f8fafc"),
+                              color: isTop ? (isDark ? "#f87171" : "#7f1d1d") : textSub,
                               border: "1px solid",
-                              borderColor: isTop ? "#fecaca" : "#e2e8f0",
+                              borderColor: isTop
+                                ? (isDark ? "rgba(127, 29, 29, 0.4)" : "#fecaca")
+                                : cardBorder,
                               fontSize: "10.5px",
                               padding: "2px 6px",
+                              borderRadius: 0,
                             }}
                           >
                             {pct}%
                           </span>
                           <span
-                            className="font-monospace fw-bold text-dark"
-                            style={{ fontSize: "12px", minWidth: "75px", textAlign: "right" }}
+                            className="font-monospace fw-bold"
+                            style={{
+                              fontSize: "12px",
+                              minWidth: "75px",
+                              textAlign: "right",
+                              color: rev > 0 ? (isDark ? "#f87171" : "#7f1d1d") : textSub,
+                            }}
                           >
                             {formatCurrency(rev)}
                           </span>
@@ -767,9 +816,9 @@ const RepProductivityScorecardView = ({
               <div
                 className="p-2.5 border d-flex align-items-center justify-content-between"
                 style={{
-                  backgroundColor: "#f8fafc",
-                  borderColor: "#e2e8f0",
-                  borderRadius: "4px",
+                  backgroundColor: isDark ? subtleBg : "#f8fafc",
+                  borderColor: cardBorder,
+                  borderRadius: 0,
                 }}
               >
                 {topLeader ? (
@@ -778,7 +827,7 @@ const RepProductivityScorecardView = ({
                       style={{
                         width: "36px",
                         height: "36px",
-                        borderRadius: "4px",
+                        borderRadius: 0,
                         backgroundColor: "#7f1d1d",
                         color: "#ffffff",
                         display: "flex",
@@ -793,30 +842,30 @@ const RepProductivityScorecardView = ({
                     </div>
                     <div>
                       <div className="d-flex align-items-center gap-1.5">
-                        <span className="fw-bold text-dark" style={{ fontSize: "12.5px" }}>
+                        <span className="fw-bold" style={{ fontSize: "12.5px", color: textTitle }}>
                           {topLeader.sales_rep}
                         </span>
                         <span
                           style={{
-                            backgroundColor: "#fef3c7",
-                            color: "#92400e",
-                            border: "1px solid #fde68a",
+                            backgroundColor: isDark ? "rgba(217, 119, 6, 0.2)" : "#fef3c7",
+                            color: isDark ? "#fbbf24" : "#92400e",
+                            border: `1px solid ${isDark ? "rgba(217, 119, 6, 0.4)" : "#fde68a"}`,
                             fontSize: "10px",
                             fontWeight: 600,
                             padding: "1px 6px",
-                            borderRadius: "3px",
+                            borderRadius: 0,
                           }}
                         >
                           <i className="ri-vip-crown-fill" style={{ color: "#d97706" }}></i> Quota Leader
                         </span>
                       </div>
-                      <span className="text-muted d-block" style={{ fontSize: "11px" }}>
+                      <span className="d-block" style={{ fontSize: "11px", color: textSub }}>
                         {formatCurrency(topLeader.won_revenue || 0)} Won • {topLeader.activities_logged || 0} activities logged • {topLeader.deals_won || 0} deal{topLeader.deals_won === 1 ? "" : "s"} won
                       </span>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-muted py-2" style={{ fontSize: "12px" }}>
+                  <div className="py-2" style={{ fontSize: "12px", color: textSub }}>
                     No sales rep activity recorded.
                   </div>
                 )}
@@ -825,10 +874,10 @@ const RepProductivityScorecardView = ({
                   to="/crm/opportunities"
                   className="btn btn-sm d-inline-flex align-items-center gap-1"
                   style={{
-                    backgroundColor: "#7f1d1d",
-                    borderColor: "#7f1d1d",
+                    backgroundColor: primaryColor,
+                    borderColor: primaryColor,
                     color: "#ffffff",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     fontSize: "11.5px",
                     fontWeight: 500,
                     padding: "5px 12px",
@@ -844,24 +893,25 @@ const RepProductivityScorecardView = ({
 
       {/* ─── ROW 3: DETAILED REP SCORECARD LEDGER (TABLE) ────────────────────── */}
       <Card
-        className="bg-white mb-4"
+        className="mb-4"
         style={{
-          borderRadius: "4px",
-          border: "1px solid #e2e8f0",
+          backgroundColor: cardBg,
+          borderRadius: 0,
+          border: `1px solid ${cardBorder}`,
           boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
       >
         <div
-          className="p-3 bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
+          className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
           style={{
-            borderRadius: "4px 4px 0 0",
-            borderColor: "#e2e8f0",
+            backgroundColor: cardBg,
+            borderColor: cardBorder,
           }}
         >
           <div>
             <h6
-              className="mb-0 fw-bold text-dark d-flex align-items-center gap-2"
-              style={{ fontSize: "14px" }}
+              className="mb-0 fw-bold d-flex align-items-center gap-2"
+              style={{ fontSize: "14px", color: textTitle }}
             >
               <i
                 className="ri-table-line"
@@ -869,7 +919,7 @@ const RepProductivityScorecardView = ({
               ></i>
               Detailed Rep Scorecard Ledger
             </h6>
-            <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+            <span style={{ fontSize: "11.5px", color: textSub }}>
               Showing {filteredRows.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{" "}
               {Math.min(currentPage * pageSize, filteredRows.length)} of {rawRows.length} sales reps
             </span>
@@ -883,10 +933,11 @@ const RepProductivityScorecardView = ({
                 placeholder="Search rep name or email..."
                 className="form-control-sm ps-4"
                 style={{
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
-                  borderColor: "#cbd5e1",
-                  backgroundColor: "#ffffff",
+                  borderColor: subtleBorder,
+                  backgroundColor: subtleBg,
+                  color: textTitle,
                 }}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -902,9 +953,11 @@ const RepProductivityScorecardView = ({
               className="form-select form-select-sm"
               style={{
                 width: "145px",
-                borderRadius: "4px",
+                borderRadius: 0,
                 fontSize: "12px",
-                borderColor: "#cbd5e1",
+                borderColor: subtleBorder,
+                backgroundColor: subtleBg,
+                color: textTitle,
               }}
               value={performanceFilter}
               onChange={(e) => setPerformanceFilter(e.target.value)}
@@ -919,10 +972,10 @@ const RepProductivityScorecardView = ({
               type="button"
               className="btn btn-sm d-flex align-items-center gap-1"
               style={{
-                backgroundColor: "#ffffff",
-                color: "#7f1d1d",
-                border: "1px solid #e2e8f0",
-                borderRadius: "4px",
+                backgroundColor: isDark ? "rgba(127, 29, 29, 0.15)" : "#ffffff",
+                color: isDark ? "#f87171" : "#7f1d1d",
+                border: `1px solid ${isDark ? "rgba(127, 29, 29, 0.3)" : "#e2e8f0"}`,
+                borderRadius: 0,
                 fontSize: "12px",
                 fontWeight: 500,
                 padding: "5px 12px",
@@ -937,8 +990,8 @@ const RepProductivityScorecardView = ({
         <CardBody className="p-0">
           <div className="table-responsive">
             <Table className="align-middle table-nowrap mb-0" hover>
-              <thead style={{ backgroundColor: "#f8fafc" }}>
-                <tr style={{ fontSize: "11.5px", color: "#64748b" }}>
+              <thead style={{ backgroundColor: subtleBg, borderBottom: `1px solid ${cardBorder}` }}>
+                <tr style={{ fontSize: "11.5px", color: textSub }}>
                   <th style={{ width: "40px" }} className="text-center">#</th>
                   <th style={{ minWidth: "160px" }}>SALES REP</th>
                   <th style={{ minWidth: "200px" }}>EMAIL & CONTACT</th>
@@ -953,7 +1006,7 @@ const RepProductivityScorecardView = ({
               <tbody style={{ fontSize: "12.5px" }}>
                 {paginatedRows.length === 0 ? (
                   <tr>
-                    <td colSpan="9" className="text-center py-4 text-muted">
+                    <td colSpan="9" className="text-center py-4" style={{ color: textSub }}>
                       No sales reps match the search and filter criteria.
                     </td>
                   </tr>
@@ -968,28 +1021,28 @@ const RepProductivityScorecardView = ({
 
                     // Efficiency calculation
                     let efficiencyScore = 30;
-                    let badgeColor = "#64748b";
-                    let badgeBg = "#f1f5f9";
+                    let badgeColor = isDark ? "#8b949e" : "#64748b";
+                    let badgeBg = isDark ? "#21262d" : "#f1f5f9";
                     let label = "Pipeline Nurturing";
-                    let barColor = "#cbd5e1";
+                    let barColor = isDark ? "#30363d" : "#cbd5e1";
 
                     if (wonAmount > 0) {
                       efficiencyScore = 95;
-                      badgeColor = "#166534";
-                      badgeBg = "#f0fdf4";
+                      badgeColor = isDark ? "#4ade80" : "#166534";
+                      badgeBg = isDark ? "rgba(22, 163, 74, 0.2)" : "#f0fdf4";
                       label = "Top Performer";
                       barColor = "#16a34a";
                     } else if (actsCount > 0 || tasksCount > 0) {
                       efficiencyScore = 55;
-                      badgeColor = "#c2410c";
-                      badgeBg = "#fff7ed";
+                      badgeColor = isDark ? "#fb923c" : "#c2410c";
+                      badgeBg = isDark ? "rgba(249, 115, 22, 0.2)" : "#fff7ed";
                       label = "Active Outreach";
                       barColor = "#f97316";
                     }
 
                     return (
-                      <tr key={r.employee_id || idx}>
-                        <td className="text-center text-muted" style={{ fontSize: "11px" }}>
+                      <tr key={r.employee_id || idx} style={{ borderBottom: `1px solid ${cardBorder}` }}>
+                        <td className="text-center" style={{ fontSize: "11px", color: textSub }}>
                           {rowNumber}
                         </td>
                         <td>
@@ -998,10 +1051,12 @@ const RepProductivityScorecardView = ({
                               style={{
                                 width: "32px",
                                 height: "32px",
-                                borderRadius: "4px",
+                                borderRadius: 0,
                                 backgroundColor:
-                                  wonAmount > 0 ? "rgba(127, 29, 29, 0.08)" : "#f1f5f9",
-                                color: wonAmount > 0 ? "#7f1d1d" : "#475569",
+                                  wonAmount > 0
+                                    ? (isDark ? "rgba(127, 29, 29, 0.25)" : "rgba(127, 29, 29, 0.08)")
+                                    : (isDark ? "#21262d" : "#f1f5f9"),
+                                color: wonAmount > 0 ? (isDark ? "#f87171" : "#7f1d1d") : (isDark ? "#c9d1d9" : "#475569"),
                                 display: "inline-flex",
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -1013,10 +1068,10 @@ const RepProductivityScorecardView = ({
                               {initials}
                             </span>
                             <div>
-                              <span className="fw-semibold text-dark d-block">
+                              <span className="fw-semibold d-block" style={{ color: textTitle }}>
                                 {r.sales_rep}
                               </span>
-                              <span className="text-muted" style={{ fontSize: "11px" }}>
+                              <span style={{ fontSize: "11px", color: textSub }}>
                                 Rep #{r.employee_id}
                               </span>
                             </div>
@@ -1025,10 +1080,10 @@ const RepProductivityScorecardView = ({
                         <td>
                           <div>
                             <div className="d-flex align-items-center gap-2" style={{ fontSize: "12px" }}>
-                              <i className="ri-mail-line text-muted" style={{ fontSize: "13px" }}></i>
-                              <span className="text-dark">{r.email || "—"}</span>
+                              <i className="ri-mail-line" style={{ fontSize: "13px", color: textSub }}></i>
+                              <span style={{ color: textTitle }}>{r.email || "—"}</span>
                             </div>
-                            <div className="d-flex align-items-center gap-2 font-monospace text-muted mt-1" style={{ fontSize: "11px" }}>
+                            <div className="d-flex align-items-center gap-2 font-monospace mt-1" style={{ fontSize: "11px", color: textSub }}>
                               <i className="ri-phone-line" style={{ fontSize: "12px" }}></i>
                               <span>{r.phone || "—"}</span>
                             </div>
@@ -1037,14 +1092,18 @@ const RepProductivityScorecardView = ({
                         <td className="text-center">
                           <span
                             style={{
-                              backgroundColor: actsCount >= 5 ? "rgba(127, 29, 29, 0.08)" : "#f8fafc",
-                              color: actsCount >= 5 ? "#7f1d1d" : "#475569",
+                              backgroundColor: actsCount >= 5
+                                ? (isDark ? "rgba(127, 29, 29, 0.25)" : "rgba(127, 29, 29, 0.08)")
+                                : (isDark ? "#21262d" : "#f8fafc"),
+                              color: actsCount >= 5 ? (isDark ? "#f87171" : "#7f1d1d") : textSub,
                               border: "1px solid",
-                              borderColor: actsCount >= 5 ? "rgba(127, 29, 29, 0.2)" : "#e2e8f0",
+                              borderColor: actsCount >= 5
+                                ? (isDark ? "rgba(127, 29, 29, 0.4)" : "rgba(127, 29, 29, 0.2)")
+                                : cardBorder,
                               fontSize: "11.5px",
                               fontWeight: 600,
                               padding: "3px 10px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               display: "inline-flex",
                               alignItems: "center",
                               gap: "5px",
@@ -1061,14 +1120,18 @@ const RepProductivityScorecardView = ({
                         <td className="text-center">
                           <span
                             style={{
-                              backgroundColor: tasksCount > 0 ? "#f0fdf4" : "#f8fafc",
-                              color: tasksCount > 0 ? "#166534" : "#64748b",
+                              backgroundColor: tasksCount > 0
+                                ? (isDark ? "rgba(22, 163, 74, 0.2)" : "#f0fdf4")
+                                : (isDark ? "#21262d" : "#f8fafc"),
+                              color: tasksCount > 0 ? (isDark ? "#4ade80" : "#166534") : textSub,
                               border: "1px solid",
-                              borderColor: tasksCount > 0 ? "#bbf7d0" : "#e2e8f0",
+                              borderColor: tasksCount > 0
+                                ? (isDark ? "rgba(22, 163, 74, 0.4)" : "#bbf7d0")
+                                : cardBorder,
                               fontSize: "11.5px",
                               fontWeight: 600,
                               padding: "3px 10px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               display: "inline-flex",
                               alignItems: "center",
                               gap: "5px",
@@ -1081,14 +1144,18 @@ const RepProductivityScorecardView = ({
                         <td className="text-center">
                           <span
                             style={{
-                              backgroundColor: dealsCount > 0 ? "#f0fdf4" : "#f8fafc",
-                              color: dealsCount > 0 ? "#166534" : "#94a3b8",
+                              backgroundColor: dealsCount > 0
+                                ? (isDark ? "rgba(22, 163, 74, 0.2)" : "#f0fdf4")
+                                : (isDark ? "#21262d" : "#f8fafc"),
+                              color: dealsCount > 0 ? (isDark ? "#4ade80" : "#166534") : textSub,
                               border: "1px solid",
-                              borderColor: dealsCount > 0 ? "#bbf7d0" : "#e2e8f0",
+                              borderColor: dealsCount > 0
+                                ? (isDark ? "rgba(22, 163, 74, 0.4)" : "#bbf7d0")
+                                : cardBorder,
                               fontSize: "11.5px",
                               fontWeight: 600,
                               padding: "3px 10px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               display: "inline-flex",
                               alignItems: "center",
                               gap: "5px",
@@ -1101,7 +1168,7 @@ const RepProductivityScorecardView = ({
                             {dealsCount} {dealsCount === 1 ? "deal won" : "deals won"}
                           </span>
                         </td>
-                        <td className="text-center fw-bold text-dark font-monospace" style={{ fontSize: "13px" }}>
+                        <td className="text-center fw-bold font-monospace" style={{ fontSize: "13px", color: wonAmount > 0 ? (isDark ? "#f87171" : "#7f1d1d") : textSub }}>
                           {formatCurrency(wonAmount)}
                         </td>
                         <td className="text-center">
@@ -1113,7 +1180,7 @@ const RepProductivityScorecardView = ({
                                 fontSize: "11px",
                                 fontWeight: 600,
                                 padding: "2px 8px",
-                                borderRadius: "4px",
+                                borderRadius: 0,
                                 display: "inline-block",
                                 width: "fit-content",
                                 marginBottom: "5px",
@@ -1126,8 +1193,8 @@ const RepProductivityScorecardView = ({
                               style={{
                                 height: "5px",
                                 width: "100%",
-                                backgroundColor: "#e2e8f0",
-                                borderRadius: "2px",
+                                backgroundColor: isDark ? "#21262d" : "#e2e8f0",
+                                borderRadius: 0,
                                 overflow: "hidden",
                               }}
                             >
@@ -1137,6 +1204,7 @@ const RepProductivityScorecardView = ({
                                 style={{
                                   width: `${efficiencyScore}%`,
                                   backgroundColor: barColor,
+                                  borderRadius: 0,
                                 }}
                               ></div>
                             </div>
@@ -1146,10 +1214,12 @@ const RepProductivityScorecardView = ({
                           <div className="d-flex align-items-center justify-content-center gap-1">
                             <Link
                               to={`/crm/owners`}
-                              className="btn btn-sm btn-light border p-1"
+                              className="btn btn-sm border p-1"
                               style={{
-                                borderRadius: "4px",
-                                color: "#475569",
+                                borderRadius: 0,
+                                backgroundColor: subtleBg,
+                                borderColor: subtleBorder,
+                                color: textSub,
                                 width: "28px",
                                 height: "28px",
                                 display: "inline-flex",
@@ -1162,10 +1232,12 @@ const RepProductivityScorecardView = ({
                             </Link>
                             <Link
                               to={`/crm/opportunities`}
-                              className="btn btn-sm btn-light border p-1"
+                              className="btn btn-sm border p-1"
                               style={{
-                                borderRadius: "4px",
-                                color: "#7f1d1d",
+                                borderRadius: 0,
+                                backgroundColor: subtleBg,
+                                borderColor: subtleBorder,
+                                color: isDark ? "#f87171" : "#7f1d1d",
                                 width: "28px",
                                 height: "28px",
                                 display: "inline-flex",
@@ -1187,14 +1259,24 @@ const RepProductivityScorecardView = ({
           </div>
 
           {/* Table Footer Pagination */}
-          <div className="p-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div
+            className="p-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2"
+            style={{ borderColor: cardBorder }}
+          >
             <div className="d-flex align-items-center gap-2">
-              <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+              <span style={{ fontSize: "11.5px", color: textSub }}>
                 Show
               </span>
               <select
                 className="form-select form-select-sm"
-                style={{ width: "65px", fontSize: "11.5px", borderRadius: "4px" }}
+                style={{
+                  width: "65px",
+                  fontSize: "11.5px",
+                  borderRadius: 0,
+                  backgroundColor: subtleBg,
+                  color: textTitle,
+                  borderColor: subtleBorder,
+                }}
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
               >
@@ -1202,7 +1284,7 @@ const RepProductivityScorecardView = ({
                 <option value={25}>25</option>
                 <option value={50}>50</option>
               </select>
-              <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+              <span style={{ fontSize: "11.5px", color: textSub }}>
                 Showing {filteredRows.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{" "}
                 {Math.min(currentPage * pageSize, filteredRows.length)} of {filteredRows.length} sales reps
               </span>
@@ -1211,8 +1293,14 @@ const RepProductivityScorecardView = ({
             <div className="btn-group btn-group-sm">
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "4px 0 0 4px", fontSize: "11px" }}
+                className="btn btn-sm border"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  backgroundColor: subtleBg,
+                  color: textSub,
+                  borderColor: subtleBorder,
+                }}
                 disabled={currentPage <= 1}
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               >
@@ -1227,14 +1315,21 @@ const RepProductivityScorecardView = ({
                   fontSize: "11px",
                   fontWeight: 600,
                   border: "1px solid #7f1d1d",
+                  borderRadius: 0,
                 }}
               >
                 {currentPage}
               </button>
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "0 4px 4px 0", fontSize: "11px" }}
+                className="btn btn-sm border"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  backgroundColor: subtleBg,
+                  color: textSub,
+                  borderColor: subtleBorder,
+                }}
                 disabled={currentPage >= totalPages}
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               >
@@ -1247,10 +1342,11 @@ const RepProductivityScorecardView = ({
 
       {/* ─── ROW 4: EXECUTIVE COACHING & PRODUCTIVITY INSIGHTS STRIP ─────────── */}
       <Card
-        className="bg-white mb-4"
+        className="mb-4"
         style={{
-          borderRadius: "4px",
-          border: "1px solid #e2e8f0",
+          backgroundColor: cardBg,
+          borderRadius: 0,
+          border: `1px solid ${cardBorder}`,
           borderLeft: "4px solid #7f1d1d",
           boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
@@ -1263,10 +1359,10 @@ const RepProductivityScorecardView = ({
                 style={{
                   width: "36px",
                   height: "36px",
-                  borderRadius: "4px",
-                  backgroundColor: "#fffbeb",
-                  border: "1px solid #fde68a",
-                  color: "#d97706",
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "rgba(217, 119, 6, 0.2)" : "#fffbeb",
+                  border: `1px solid ${isDark ? "rgba(217, 119, 6, 0.4)" : "#fde68a"}`,
+                  color: isDark ? "#fbbf24" : "#d97706",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1276,21 +1372,21 @@ const RepProductivityScorecardView = ({
               >
                 <i className="ri-trophy-line"></i>
               </div>
-              <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+              <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                 Productivity & Scorecard Insights
               </span>
             </div>
 
             {/* Middle: 3 Key Insights */}
             <div
-              className="d-flex flex-wrap align-items-center gap-3 text-muted"
-              style={{ fontSize: "12px" }}
+              className="d-flex flex-wrap align-items-center gap-3"
+              style={{ fontSize: "12px", color: textSub }}
             >
               <div className="d-flex align-items-center gap-1.5">
                 <i className="ri-flashlight-fill" style={{ color: "#7f1d1d" }}></i>
                 <span>High activity volume strongly correlates with closed deals.</span>
               </div>
-              <span className="d-none d-md-inline text-muted">|</span>
+              <span className="d-none d-md-inline" style={{ color: cardBorder }}>|</span>
               <div className="d-flex align-items-center gap-1.5">
                 <i className="ri-vip-crown-fill" style={{ color: "#d97706" }}></i>
                 <span>
@@ -1299,7 +1395,7 @@ const RepProductivityScorecardView = ({
                     : "No logged sales activities recorded for this period."}
                 </span>
               </div>
-              <span className="d-none d-md-inline text-muted">|</span>
+              <span className="d-none d-md-inline" style={{ color: cardBorder }}>|</span>
               <div className="d-flex align-items-center gap-1.5">
                 <i className="ri-line-chart-line" style={{ color: "#16a34a" }}></i>
                 <span>
@@ -1313,10 +1409,10 @@ const RepProductivityScorecardView = ({
             {/* Right: SoftOnCloud Slogan */}
             <div className="d-none d-lg-flex align-items-center gap-2 text-end">
               <div>
-                <span className="fw-bold text-dark d-block" style={{ fontSize: "11.5px" }}>
+                <span className="fw-bold d-block" style={{ fontSize: "11.5px", color: textTitle }}>
                   Effort. Velocity. Conversion.
                 </span>
-                <span className="text-muted" style={{ fontSize: "10.5px" }}>
+                <span style={{ fontSize: "10.5px", color: textSub }}>
                   Drive repeatable sales performance.
                 </span>
               </div>
@@ -1324,9 +1420,9 @@ const RepProductivityScorecardView = ({
                 style={{
                   width: "32px",
                   height: "32px",
-                  borderRadius: "4px",
-                  backgroundColor: "rgba(127, 29, 29, 0.08)",
-                  color: "#7f1d1d",
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "rgba(127, 29, 29, 0.25)" : "rgba(127, 29, 29, 0.08)",
+                  color: isDark ? "#f87171" : "#7f1d1d",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",

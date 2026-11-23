@@ -19,6 +19,7 @@ import {
   Spinner,
 } from "reactstrap";
 import SimpleBar from "simplebar-react";
+import { useSelector } from "react-redux";
 
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -95,6 +96,49 @@ const CATEGORIES = [
   },
 ];
 
+const getCategoryConfig = (catId, isDark = false) => {
+  const cat = CATEGORIES.find((c) => c.id === catId) || CATEGORIES[0];
+  if (!isDark) return cat;
+  const darkTints = {
+    CALL: {
+      bgColor: "rgba(22, 163, 74, 0.18)",
+      borderColor: "rgba(22, 163, 74, 0.35)",
+      color: "#4ade80",
+    },
+    MEETING: {
+      bgColor: "rgba(139, 92, 246, 0.18)",
+      borderColor: "rgba(139, 92, 246, 0.35)",
+      color: "#c084fc",
+    },
+    TASK: {
+      bgColor: "rgba(217, 119, 6, 0.18)",
+      borderColor: "rgba(217, 119, 6, 0.35)",
+      color: "#fbbf24",
+    },
+    EMAIL: {
+      bgColor: "rgba(2, 132, 199, 0.18)",
+      borderColor: "rgba(2, 132, 199, 0.35)",
+      color: "#38bdf8",
+    },
+    DEMO: {
+      bgColor: "rgba(236, 72, 153, 0.18)",
+      borderColor: "rgba(236, 72, 153, 0.35)",
+      color: "#f472b6",
+    },
+    VISIT: {
+      bgColor: "rgba(236, 72, 153, 0.18)",
+      borderColor: "rgba(236, 72, 153, 0.35)",
+      color: "#f472b6",
+    },
+  };
+  return {
+    ...cat,
+    bgColor: darkTints[catId]?.bgColor || cat.bgColor,
+    borderColor: darkTints[catId]?.borderColor || cat.borderColor,
+    color: darkTints[catId]?.color || cat.color,
+  };
+};
+
 const SUBTYPES_BY_TYPE = {
   CALL: ["Outbound", "Inbound", "Follow-up", "Discovery", "Closing"],
   MEETING: ["In Person", "Online / Video", "Product Demo", "Commercial Discussion", "Discovery"],
@@ -159,6 +203,24 @@ const parseCallNotes = (rawNotes) => {
 
 const Calendar = () => {
   document.title = "Calendar | SoftOnCloud CRM";
+
+  // Redux Dark Mode detection
+  const { layoutModeType } = useSelector((state) => ({
+    layoutModeType: state.Layout.layoutModeType,
+  }));
+  const isDark =
+    layoutModeType === "dark" ||
+    (typeof document !== "undefined" &&
+      (document.documentElement.getAttribute("data-bs-theme") === "dark" ||
+        document.documentElement.getAttribute("data-layout-mode") === "dark"));
+
+  const primaryColor = isDark ? "#fca5a5" : THEME.primary;
+  const cardBg = isDark ? "#121212" : "#ffffff";
+  const cardBorder = isDark ? "#262626" : THEME.grayBorder;
+  const subtleBg = isDark ? "#161b22" : "#f8fafc";
+  const subtleBorder = isDark ? "#2d3748" : THEME.grayBorder;
+  const textTitle = isDark ? "#f1f5f9" : THEME.textHeading;
+  const textSub = isDark ? "#94a3b8" : THEME.textMuted;
 
   const calendarRef = useRef(null);
   const rangeRef = useRef("");
@@ -292,7 +354,7 @@ const Calendar = () => {
   const allEvents = useMemo(() => {
     return (items || []).map((a) => {
       const typeKey = (a.actType || "CALL").toUpperCase();
-      const cat = CATEGORIES.find((c) => c.id === typeKey) || CATEGORIES[0];
+      const cat = getCategoryConfig(typeKey, isDark);
       const parsed = parseCallNotes(a.callNotes);
       const isCompleted = (a.activityStatus || "").toUpperCase() === "COMPLETED";
 
@@ -319,7 +381,7 @@ const Calendar = () => {
         },
       };
     });
-  }, [items]);
+  }, [items, isDark]);
 
   // Dynamic KPI Calculations (Callout 2)
   const kpiStats = useMemo(() => {
@@ -787,7 +849,7 @@ const Calendar = () => {
   // Custom Event Content (Callout 6: Soft-tint cards with colored left bar, time, and status)
   const renderEventContent = (eventInfo) => {
     const p = eventInfo.event.extendedProps || {};
-    const cat = p.category || CATEGORIES[0];
+    const cat = p.category || getCategoryConfig(p.actType || "CALL", isDark);
     const isCompleted = p.isCompleted;
     const formattedTime = formatTimeStr(eventInfo.event.start);
 
@@ -810,8 +872,9 @@ const Calendar = () => {
           <div>
             <div className="d-flex align-items-center justify-content-between gap-1 mb-1">
               <span
-                className="d-inline-flex align-items-center gap-1 px-1.5 py-0 fw-semibold bg-white rounded-0"
+                className="d-inline-flex align-items-center gap-1 px-1.5 py-0 fw-semibold rounded-0"
                 style={{
+                  backgroundColor: isDark ? "rgba(0, 0, 0, 0.4)" : "#ffffff",
                   color: cat.color,
                   border: `1px solid ${cat.borderColor}`,
                   fontSize: "9.5px",
@@ -829,7 +892,7 @@ const Calendar = () => {
             <div
               className="fw-bold text-truncate"
               style={{
-                color: THEME.textHeading,
+                color: textTitle,
                 fontSize: "11.5px",
                 lineHeight: 1.25,
               }}
@@ -837,7 +900,7 @@ const Calendar = () => {
               {p.subject || eventInfo.event.title}
             </div>
           </div>
-          <div className="text-muted text-truncate" style={{ fontSize: "10px" }}>
+          <div className="text-truncate" style={{ fontSize: "10px", color: textSub }}>
             {p.withName ? `${p.withName} | ` : ""}
             {p.relatedTo || "Direct Client"}
           </div>
@@ -857,14 +920,14 @@ const Calendar = () => {
           borderBottom: `1px solid ${cat.borderColor}`,
           cursor: "pointer",
           margin: "1px 0",
-          boxShadow: "0 1px 2px rgba(0, 0, 0, 0.04)",
+          boxShadow: isDark ? "0 1px 3px rgba(0, 0, 0, 0.4)" : "0 1px 2px rgba(0, 0, 0, 0.04)",
         }}
         title={`${p.subject || eventInfo.event.title} - ${p.relatedTo || ""}`}
       >
         <div
           className="fw-semibold text-truncate"
           style={{
-            color: THEME.textHeading,
+            color: textTitle,
             fontSize: "11.5px",
             lineHeight: "1.3",
           }}
@@ -878,7 +941,7 @@ const Calendar = () => {
               <span>Completed</span>
             </span>
           ) : (
-            <span className="text-muted fw-medium">
+            <span className="fw-medium" style={{ color: textSub }}>
               {formattedTime}
             </span>
           )}
@@ -901,19 +964,19 @@ const Calendar = () => {
           <div className="d-flex flex-wrap justify-content-between align-items-center mb-3">
             <div>
               <nav aria-label="breadcrumb">
-                <ol className="breadcrumb mb-1 text-muted small">
+                <ol className="breadcrumb mb-1 small" style={{ color: textSub }}>
                   <li className="breadcrumb-item">
-                    <Link to="/crm/dashboard" style={{ color: THEME.textMuted }}>CRM</Link>
+                    <Link to="/crm/dashboard" style={{ color: textSub }}>CRM</Link>
                   </li>
-                  <li className="breadcrumb-item active text-dark fw-semibold" aria-current="page">
+                  <li className="breadcrumb-item active fw-semibold" style={{ color: textTitle }} aria-current="page">
                     Calendar
                   </li>
                 </ol>
               </nav>
-              <h4 className="fw-bold mb-0" style={{ color: THEME.textHeading }}>
+              <h4 className="fw-bold mb-0" style={{ color: textTitle }}>
                 Calendar
               </h4>
-              <p className="text-muted small mb-0" style={{ fontSize: 12 }}>
+              <p className="small mb-0" style={{ fontSize: 12, color: textSub }}>
                 Manage schedule, meetings, calls, and follow-ups across CRM
               </p>
             </div>
@@ -925,7 +988,12 @@ const Calendar = () => {
                   type="text"
                   placeholder="Search activities, leads, accounts..."
                   className="form-control form-control-sm rounded-0 ps-4"
-                  style={{ fontSize: "12px", borderColor: THEME.grayBorder }}
+                  style={{
+                    fontSize: "12px",
+                    borderColor: cardBorder,
+                    backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                    color: textTitle,
+                  }}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -947,8 +1015,12 @@ const Calendar = () => {
 
               <Link
                 to="/crm/activities"
-                className="btn btn-sm btn-light border rounded-0 d-flex align-items-center gap-1.5 px-3 py-1.5 fw-medium"
-                style={{ borderColor: THEME.grayBorder, color: THEME.textHeading }}
+                className="btn btn-sm border rounded-0 d-flex align-items-center gap-1.5 px-3 py-1.5 fw-medium"
+                style={{
+                  borderColor: cardBorder,
+                  backgroundColor: subtleBg,
+                  color: textTitle,
+                }}
               >
                 <i className="ri-list-check-2 text-muted" />
                 Activities List
@@ -957,8 +1029,8 @@ const Calendar = () => {
                 type="button"
                 className="btn btn-sm rounded-0 px-3 py-1.5 fw-medium shadow-sm"
                 style={{
-                  backgroundColor: "#ffffff",
-                  color: THEME.primary,
+                  backgroundColor: isDark ? "rgba(127, 29, 29, 0.15)" : "#ffffff",
+                  color: primaryColor,
                   border: `1.5px solid ${THEME.primary}`,
                 }}
                 onClick={() => openCreateModal("log")}
@@ -987,19 +1059,20 @@ const Calendar = () => {
               <Card
                 className="rounded-0 border shadow-none mb-0 h-100"
                 style={{
-                  borderColor: THEME.grayBorder,
+                  backgroundColor: cardBg,
+                  borderColor: cardBorder,
                   borderLeft: `4px solid #7f1d1d !important`,
                 }}
               >
                 <CardBody className="p-3">
-                  <div className="text-muted text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>
+                  <div className="text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px", color: textSub }}>
                     Today
                   </div>
                   <div className="d-flex align-items-baseline gap-2 mt-1">
-                    <span className="fw-bold" style={{ fontSize: "26px", color: THEME.textHeading, lineHeight: 1 }}>
+                    <span className="fw-bold" style={{ fontSize: "26px", color: textTitle, lineHeight: 1 }}>
                       {kpiStats.todayCount}
                     </span>
-                    <span className="text-muted small" style={{ fontSize: "12px" }}>
+                    <span className="small" style={{ fontSize: "12px", color: textSub }}>
                       activities scheduled
                     </span>
                   </div>
@@ -1012,12 +1085,13 @@ const Calendar = () => {
               <Card
                 className="rounded-0 border shadow-none mb-0 h-100"
                 style={{
-                  borderColor: THEME.grayBorder,
+                  backgroundColor: cardBg,
+                  borderColor: cardBorder,
                   borderLeft: `4px solid ${kpiStats.overdueCount > 0 ? "#dc2626" : "#16a34a"} !important`,
                 }}
               >
                 <CardBody className="p-3">
-                  <div className="text-muted text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>
+                  <div className="text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px", color: textSub }}>
                     Overdue
                   </div>
                   <div className="d-flex align-items-baseline gap-2 mt-1">
@@ -1025,13 +1099,13 @@ const Calendar = () => {
                       className="fw-bold"
                       style={{
                         fontSize: "26px",
-                        color: kpiStats.overdueCount > 0 ? "#dc2626" : THEME.textHeading,
+                        color: kpiStats.overdueCount > 0 ? "#ef4444" : textTitle,
                         lineHeight: 1,
                       }}
                     >
                       {kpiStats.overdueCount}
                     </span>
-                    <span className="text-muted small" style={{ fontSize: "12px" }}>
+                    <span className="small" style={{ fontSize: "12px", color: textSub }}>
                       {kpiStats.overdueCount === 0 ? "all caught up" : "require attention"}
                     </span>
                   </div>
@@ -1044,19 +1118,20 @@ const Calendar = () => {
               <Card
                 className="rounded-0 border shadow-none mb-0 h-100"
                 style={{
-                  borderColor: THEME.grayBorder,
+                  backgroundColor: cardBg,
+                  borderColor: cardBorder,
                   borderLeft: `4px solid #8b5cf6 !important`,
                 }}
               >
                 <CardBody className="p-3">
-                  <div className="text-muted text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>
+                  <div className="text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px", color: textSub }}>
                     This week
                   </div>
                   <div className="d-flex align-items-baseline gap-2 mt-1">
-                    <span className="fw-bold" style={{ fontSize: "26px", color: THEME.textHeading, lineHeight: 1 }}>
+                    <span className="fw-bold" style={{ fontSize: "26px", color: textTitle, lineHeight: 1 }}>
                       {kpiStats.thisWeekCount}
                     </span>
-                    <span className="text-muted small" style={{ fontSize: "12px" }}>
+                    <span className="small" style={{ fontSize: "12px", color: textSub }}>
                       {kpiStats.weekSubtext}
                     </span>
                   </div>
@@ -1069,19 +1144,20 @@ const Calendar = () => {
               <Card
                 className="rounded-0 border shadow-none mb-0 h-100"
                 style={{
-                  borderColor: THEME.grayBorder,
+                  backgroundColor: cardBg,
+                  borderColor: cardBorder,
                   borderLeft: `4px solid #0284c7 !important`,
                 }}
               >
                 <CardBody className="p-3">
-                  <div className="text-muted text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>
+                  <div className="text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px", color: textSub }}>
                     Completed
                   </div>
                   <div className="d-flex align-items-baseline gap-2 mt-1">
-                    <span className="fw-bold" style={{ fontSize: "26px", color: THEME.textHeading, lineHeight: 1 }}>
+                    <span className="fw-bold" style={{ fontSize: "26px", color: textTitle, lineHeight: 1 }}>
                       {kpiStats.completedMonthCount}
                     </span>
-                    <span className="text-muted small" style={{ fontSize: "12px" }}>
+                    <span className="small" style={{ fontSize: "12px", color: textSub }}>
                       this month
                     </span>
                   </div>
@@ -1093,18 +1169,23 @@ const Calendar = () => {
           <Row>
             {/* Left Sidebar: Mini Calendar, Type Filters, Agenda, Team (Col xl=3 lg=4) */}
             <Col xl={3} lg={4}>
-              <Card className="card-h-100 rounded-0 border shadow-none mb-3" style={{ borderColor: THEME.grayBorder }}>
+              <Card className="card-h-100 rounded-0 border shadow-none mb-3" style={{ backgroundColor: cardBg, borderColor: cardBorder }}>
                 <CardBody className="p-3">
                   {/* 1. Mini Month Calendar (Callout 3) */}
                   <div className="mb-4">
                     <div className="d-flex align-items-center justify-content-between mb-2">
-                      <h6 className="mb-0 fw-bold" style={{ color: THEME.textHeading, fontSize: "13px" }}>
+                      <h6 className="mb-0 fw-bold" style={{ color: textTitle, fontSize: "13px" }}>
                         {monthNames[miniMonth]} {miniYear}
                       </h6>
                       <div className="btn-group btn-group-sm">
                         <button
                           type="button"
-                          className="btn btn-sm btn-light border py-0 px-1.5 rounded-0"
+                          className="btn btn-sm border py-0 px-1.5 rounded-0"
+                          style={{
+                            backgroundColor: subtleBg,
+                            borderColor: subtleBorder,
+                            color: textTitle,
+                          }}
                           onClick={handleMiniPrev}
                           title="Previous Month"
                         >
@@ -1112,7 +1193,12 @@ const Calendar = () => {
                         </button>
                         <button
                           type="button"
-                          className="btn btn-sm btn-light border py-0 px-1.5 rounded-0"
+                          className="btn btn-sm border py-0 px-1.5 rounded-0"
+                          style={{
+                            backgroundColor: subtleBg,
+                            borderColor: subtleBorder,
+                            color: textTitle,
+                          }}
                           onClick={handleMiniNext}
                           title="Next Month"
                         >
@@ -1122,7 +1208,7 @@ const Calendar = () => {
                     </div>
 
                     {/* Weekday Single-Letter Headers */}
-                    <div className="d-flex text-center mb-1 text-uppercase fw-bold" style={{ color: "#94a3b8", fontSize: "10.5px" }}>
+                    <div className="d-flex text-center mb-1 text-uppercase fw-bold" style={{ color: textSub, fontSize: "10.5px" }}>
                       {["S", "M", "T", "W", "T", "F", "S"].map((day, idx) => (
                         <div key={idx} style={{ flex: 1 }}>
                           {day}
@@ -1165,8 +1251,8 @@ const Calendar = () => {
                                 color: isSelected || isToday
                                   ? "#ffffff"
                                   : cell.isOtherMonth
-                                  ? "#cbd5e1"
-                                  : THEME.textHeading,
+                                  ? isDark ? "#484f58" : "#cbd5e1"
+                                  : textTitle,
                                 fontWeight: isSelected || isToday ? 700 : 500,
                                 fontSize: "11px",
                               }}
@@ -1194,13 +1280,13 @@ const Calendar = () => {
                   {/* 2. Filter by Type (Callout 3: Compact pills with color dot + count) */}
                   <div className="mb-4">
                     <div className="d-flex align-items-center justify-content-between mb-2">
-                      <p className="text-muted small text-uppercase fw-bold mb-0" style={{ fontSize: "10.5px", letterSpacing: "0.5px" }}>
+                      <p className="small text-uppercase fw-bold mb-0" style={{ fontSize: "10.5px", letterSpacing: "0.5px", color: textSub }}>
                         Filter by Type
                       </p>
                       <button
                         type="button"
                         className="btn btn-link p-0 small text-decoration-none fw-semibold"
-                        style={{ color: THEME.primary, fontSize: "11px" }}
+                        style={{ color: primaryColor, fontSize: "11px" }}
                         onClick={handleResetCategories}
                       >
                         Reset
@@ -1210,14 +1296,19 @@ const Calendar = () => {
                     <div className="d-flex flex-column gap-1.5">
                       {CATEGORIES.map((category) => {
                         const isSelected = activeCategories.includes(category.id);
+                        const catStyle = getCategoryConfig(category.id, isDark);
                         return (
                           <div
                             key={category.id}
                             className="d-flex align-items-center justify-content-between py-1.5 px-2.5 rounded-0 border"
                             onClick={() => handleToggleCategory(category.id)}
                             style={{
-                              backgroundColor: isSelected ? category.bgColor : "#ffffff",
-                              borderColor: isSelected ? category.borderColor : THEME.grayBorder,
+                              backgroundColor: isSelected
+                                ? catStyle.bgColor
+                                : isDark ? "#161b22" : "#ffffff",
+                              borderColor: isSelected
+                                ? catStyle.borderColor
+                                : cardBorder,
                               opacity: isSelected ? 1 : 0.45,
                               cursor: "pointer",
                               transition: "all 0.15s ease",
@@ -1231,22 +1322,27 @@ const Calendar = () => {
                                   width: 8,
                                   height: 8,
                                   borderRadius: "50%",
-                                  backgroundColor: category.color,
+                                  backgroundColor: catStyle.color,
                                 }}
                               />
                               <span
                                 className="fw-semibold"
                                 style={{
                                   fontSize: "12px",
-                                  color: isSelected ? THEME.textHeading : THEME.textMuted,
+                                  color: isSelected ? textTitle : textSub,
                                 }}
                               >
                                 {category.title}
                               </span>
                             </div>
                             <span
-                              className="badge rounded-0 bg-white text-dark small border px-2 py-0.5"
-                              style={{ borderColor: category.borderColor, fontSize: "10.5px" }}
+                              className="badge rounded-0 small border px-2 py-0.5"
+                              style={{
+                                backgroundColor: isDark ? "rgba(0, 0, 0, 0.4)" : "#ffffff",
+                                color: isDark ? textTitle : "#0f172a",
+                                borderColor: isSelected ? catStyle.borderColor : cardBorder,
+                                fontSize: "10.5px",
+                              }}
                             >
                               {categoryCounts[category.id] || 0}
                             </span>
@@ -1259,23 +1355,30 @@ const Calendar = () => {
                   {/* 3. Today's Agenda (Callout 4: Actually shows today's items) */}
                   <div className="mb-3">
                     <div className="d-flex align-items-center justify-content-between mb-2">
-                      <h5 className="mb-0 fw-bold text-uppercase" style={{ color: THEME.textHeading, fontSize: "11px", letterSpacing: "0.5px" }}>
+                      <h5 className="mb-0 fw-bold text-uppercase" style={{ color: textTitle, fontSize: "11px", letterSpacing: "0.5px" }}>
                         Today's Agenda
                       </h5>
-                      <Link to="/crm/activities" className="small text-decoration-none fw-semibold" style={{ color: THEME.primary, fontSize: "11px" }}>
+                      <Link to="/crm/activities" className="small text-decoration-none fw-semibold" style={{ color: primaryColor, fontSize: "11px" }}>
                         View all
                       </Link>
                     </div>
 
                     <div className="d-flex flex-column gap-2">
                       {todayAgendaItems.length === 0 ? (
-                        <div className="text-center py-3 text-muted small bg-light border p-2 rounded-0">
+                        <div
+                          className="text-center py-3 small border p-2 rounded-0"
+                          style={{
+                            backgroundColor: subtleBg,
+                            borderColor: subtleBorder,
+                            color: textSub,
+                          }}
+                        >
                           No activities scheduled for today.
                         </div>
                       ) : (
                         todayAgendaItems.map((act, index) => {
                           const p = act.extendedProps || {};
-                          const cat = p.category || CATEGORIES[0];
+                          const cat = getCategoryConfig(p.actType || "CALL", isDark);
                           const isFirst = index === 0;
 
                           return (
@@ -1283,18 +1386,22 @@ const Calendar = () => {
                               key={act.id}
                               className="p-2 border rounded-0"
                               style={{
-                                backgroundColor: isFirst ? cat.bgColor : "#ffffff",
-                                borderColor: isFirst ? cat.borderColor : THEME.grayBorder,
+                                backgroundColor: isFirst
+                                  ? cat.bgColor
+                                  : subtleBg,
+                                borderColor: isFirst
+                                  ? cat.borderColor
+                                  : subtleBorder,
                                 borderLeft: `3.5px solid ${cat.color}`,
                                 cursor: "pointer",
                                 transition: "all 0.15s ease",
                               }}
                               onClick={() => handleEventClick({ event: act })}
                             >
-                              <div className="fw-semibold text-truncate small" style={{ color: THEME.textHeading, fontSize: "12px" }}>
+                              <div className="fw-semibold text-truncate small" style={{ color: textTitle, fontSize: "12px" }}>
                                 {act.title}
                               </div>
-                              <div className="text-muted text-truncate mt-0.5" style={{ fontSize: "10.5px" }}>
+                              <div className="text-truncate mt-0.5" style={{ fontSize: "10.5px", color: textSub }}>
                                 {formatDateStr(act.start)} · {cat.title}
                               </div>
                             </div>
@@ -1311,7 +1418,12 @@ const Calendar = () => {
                       className="form-select form-select-sm rounded-0"
                       value={selectedOwnerId}
                       onChange={(e) => setSelectedOwnerId(e.target.value)}
-                      style={{ fontSize: "12px", borderColor: THEME.grayBorder }}
+                      style={{
+                        fontSize: "12px",
+                        borderColor: cardBorder,
+                        backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                        color: textTitle,
+                      }}
                     >
                       <option value="ALL">Team: All members</option>
                       {ownerOptions.map((o) => (
@@ -1327,20 +1439,23 @@ const Calendar = () => {
 
             {/* Right Main Calendar Grid: Month / Week / Day / Agenda (Col xl=9 lg=8) */}
             <Col xl={9} lg={8}>
-              <Card className="card-h-100 rounded-0 border shadow-none mb-3" style={{ borderColor: THEME.grayBorder }}>
+              <Card className="card-h-100 rounded-0 border shadow-none mb-3" style={{ backgroundColor: cardBg, borderColor: cardBorder }}>
                 {/* Calendar Toolbar Header (Callout 5: Owner filter + Segmented Month/Week/Day/List + Clearer Title) */}
                 <div
                   className="d-flex flex-wrap align-items-center justify-content-between p-3 border-bottom gap-2"
-                  style={{ borderColor: THEME.grayBorder }}
+                  style={{ borderColor: cardBorder }}
                 >
                   {/* Left: Prev / Next / Today */}
                   <div className="d-flex align-items-center gap-2">
                     <div className="btn-group btn-group-sm">
                       <Button
                         type="button"
-                        color="light"
-                        className="rounded-0 border px-2.5 py-1 text-dark"
-                        style={{ borderColor: THEME.grayBorder }}
+                        className="rounded-0 border px-2.5 py-1"
+                        style={{
+                          backgroundColor: subtleBg,
+                          borderColor: subtleBorder,
+                          color: textTitle,
+                        }}
                         onClick={handlePrev}
                         title="Previous"
                       >
@@ -1348,9 +1463,12 @@ const Calendar = () => {
                       </Button>
                       <Button
                         type="button"
-                        color="light"
-                        className="rounded-0 border px-2.5 py-1 text-dark"
-                        style={{ borderColor: THEME.grayBorder }}
+                        className="rounded-0 border px-2.5 py-1"
+                        style={{
+                          backgroundColor: subtleBg,
+                          borderColor: subtleBorder,
+                          color: textTitle,
+                        }}
                         onClick={handleNext}
                         title="Next"
                       >
@@ -1359,12 +1477,11 @@ const Calendar = () => {
                     </div>
                     <Button
                       type="button"
-                      color="light"
                       className="rounded-0 border px-3 py-1 fw-semibold small"
                       style={{
                         borderColor: THEME.primary,
-                        color: THEME.primary,
-                        backgroundColor: "#ffffff",
+                        color: primaryColor,
+                        backgroundColor: isDark ? "rgba(127, 29, 29, 0.15)" : "#ffffff",
                       }}
                       onClick={handleToday}
                     >
@@ -1373,7 +1490,7 @@ const Calendar = () => {
                   </div>
 
                   {/* Center: Larger, Clearer Month Title (Callout 5) */}
-                  <h5 className="mb-0 fw-bold" style={{ color: THEME.textHeading, fontSize: "17px", letterSpacing: "0.3px" }}>
+                  <h5 className="mb-0 fw-bold" style={{ color: textTitle, fontSize: "17px", letterSpacing: "0.3px" }}>
                     {currentTitle || `${monthNames[miniMonth]} ${miniYear}`}
                   </h5>
 
@@ -1382,7 +1499,13 @@ const Calendar = () => {
                     <Input
                       type="select"
                       className="form-select form-select-sm rounded-0"
-                      style={{ width: "135px", fontSize: "12px", borderColor: THEME.grayBorder }}
+                      style={{
+                        width: "135px",
+                        fontSize: "12px",
+                        borderColor: cardBorder,
+                        backgroundColor: isDark ? "#1a1d21" : "#ffffff",
+                        color: textTitle,
+                      }}
                       value={selectedOwnerId}
                       onChange={(e) => setSelectedOwnerId(e.target.value)}
                     >
@@ -1406,9 +1529,9 @@ const Calendar = () => {
                           type="button"
                           className="rounded-0 fw-semibold"
                           style={{
-                            backgroundColor: activeView === v.id ? THEME.primary : "#ffffff",
-                            borderColor: activeView === v.id ? THEME.primary : THEME.grayBorder,
-                            color: activeView === v.id ? "#ffffff" : THEME.textHeading,
+                            backgroundColor: activeView === v.id ? THEME.primary : subtleBg,
+                            borderColor: activeView === v.id ? THEME.primary : subtleBorder,
+                            color: activeView === v.id ? "#ffffff" : textTitle,
                             fontSize: "12px",
                             padding: "4px 12px",
                           }}
@@ -1424,11 +1547,11 @@ const Calendar = () => {
                 <CardBody className="p-3 position-relative">
                   {loading && (
                     <div
-                      className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-white bg-opacity-75"
-                      style={{ zIndex: 10 }}
+                      className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-opacity-75"
+                      style={{ zIndex: 10, backgroundColor: isDark ? "rgba(18, 18, 18, 0.75)" : "rgba(255, 255, 255, 0.75)" }}
                     >
-                      <Spinner size="sm" style={{ color: THEME.primary }} />
-                      <span className="ms-2 small text-muted">Loading activities...</span>
+                      <Spinner size="sm" style={{ color: primaryColor }} />
+                      <span className="ms-2 small" style={{ color: textSub }}>Loading activities...</span>
                     </div>
                   )}
 
@@ -1460,8 +1583,8 @@ const Calendar = () => {
 
                   {/* Calendar Bottom Legend (Callout 6) */}
                   <div
-                    className="d-flex align-items-center justify-content-end gap-3 pt-3 border-top mt-2 text-muted small"
-                    style={{ borderColor: THEME.grayBorder, fontSize: "11px" }}
+                    className="d-flex align-items-center justify-content-end gap-3 pt-3 border-top mt-2 small"
+                    style={{ borderColor: cardBorder, fontSize: "11px", color: textSub }}
                   >
                     <span className="d-flex align-items-center gap-1.5">
                       <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: THEME.primary }} />
@@ -1472,7 +1595,7 @@ const Calendar = () => {
                       <span>Completed</span>
                     </span>
                     <span className="d-flex align-items-center gap-1.5">
-                      <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#94a3b8" }} />
+                      <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: textSub }} />
                       <span>Hover an empty day to quick-add</span>
                     </span>
                   </div>
@@ -1493,15 +1616,15 @@ const Calendar = () => {
                 <ModalHeader
                   toggle={() => setDetailModalOpen(false)}
                   className="border-bottom p-3"
-                  style={{ backgroundColor: "#f8fafc" }}
+                  style={{ backgroundColor: subtleBg, borderColor: cardBorder }}
                 >
                   <div className="d-flex align-items-center gap-2">
                     <span
                       className="badge rounded-0 p-1.5 border"
                       style={{
-                        backgroundColor: (selectedEvent.extendedProps?.category || CATEGORIES[0]).bgColor,
-                        borderColor: (selectedEvent.extendedProps?.category || CATEGORIES[0]).borderColor,
-                        color: (selectedEvent.extendedProps?.category || CATEGORIES[0]).color,
+                        backgroundColor: (selectedEvent.extendedProps?.category || getCategoryConfig(selectedEvent.extendedProps?.actType, isDark)).bgColor,
+                        borderColor: (selectedEvent.extendedProps?.category || getCategoryConfig(selectedEvent.extendedProps?.actType, isDark)).borderColor,
+                        color: (selectedEvent.extendedProps?.category || getCategoryConfig(selectedEvent.extendedProps?.actType, isDark)).color,
                       }}
                     >
                       <i
@@ -1511,15 +1634,15 @@ const Calendar = () => {
                         }
                       />
                     </span>
-                    <span className="fw-bold" style={{ color: THEME.textHeading }}>
+                    <span className="fw-bold" style={{ color: textTitle }}>
                       Activity Details
                     </span>
                   </div>
                 </ModalHeader>
 
-                <ModalBody className="p-3">
+                <ModalBody className="p-3" style={{ backgroundColor: cardBg }}>
                   <div className="mb-3">
-                    <h5 className="fw-bold mb-1" style={{ color: THEME.textHeading }}>
+                    <h5 className="fw-bold mb-1" style={{ color: textTitle }}>
                       {selectedEvent.title}
                     </h5>
                     <div className="d-flex align-items-center gap-2">
@@ -1533,29 +1656,32 @@ const Calendar = () => {
                       >
                         {selectedEvent.extendedProps?.isCompleted ? "Completed" : "Scheduled"}
                       </span>
-                      <span className="text-muted small">
+                      <span className="small" style={{ color: textSub }}>
                         {selectedEvent.extendedProps?.actSubtype || "General"}
                       </span>
                     </div>
                   </div>
 
-                  <div className="d-flex flex-column gap-2 small border p-2.5 bg-light mb-3 rounded-0">
+                  <div
+                    className="d-flex flex-column gap-2 small border p-2.5 mb-3 rounded-0"
+                    style={{ backgroundColor: subtleBg, borderColor: subtleBorder }}
+                  >
                     <div className="d-flex justify-content-between">
-                      <span className="text-muted">Start Date & Time:</span>
-                      <span className="fw-semibold">
+                      <span style={{ color: textSub }}>Start Date & Time:</span>
+                      <span className="fw-semibold" style={{ color: textTitle }}>
                         {formatDateStr(selectedEvent.start)} at {formatTimeStr(selectedEvent.start)}
                       </span>
                     </div>
                     {selectedEvent.end && (
                       <div className="d-flex justify-content-between">
-                        <span className="text-muted">End Date & Time:</span>
-                        <span className="fw-semibold">
+                        <span style={{ color: textSub }}>End Date & Time:</span>
+                        <span className="fw-semibold" style={{ color: textTitle }}>
                           {formatDateStr(selectedEvent.end)} at {formatTimeStr(selectedEvent.end)}
                         </span>
                       </div>
                     )}
                     <div className="d-flex justify-content-between">
-                      <span className="text-muted">Related Customer:</span>
+                      <span style={{ color: textSub }}>Related Customer:</span>
                       {(() => {
                         const rel = selectedEvent.extendedProps?.relatedTo;
                         const matchedAcc = accountOptions.find(
@@ -1572,49 +1698,58 @@ const Calendar = () => {
                           <Link
                             to={`/crm/customers/${matchedAcc.accountId}`}
                             className="fw-semibold text-decoration-none"
-                            style={{ color: THEME.primary }}
+                            style={{ color: primaryColor }}
                             title="View Customer Details"
                           >
                             {rel}
                           </Link>
                         ) : (
-                          <span className="fw-semibold" style={{ color: THEME.primary }}>
+                          <span className="fw-semibold" style={{ color: primaryColor }}>
                             {rel || "Direct Client"}
                           </span>
                         );
                       })()}
                     </div>
                     <div className="d-flex justify-content-between">
-                      <span className="text-muted">Contact Person:</span>
-                      <span className="fw-semibold">
+                      <span style={{ color: textSub }}>Contact Person:</span>
+                      <span className="fw-semibold" style={{ color: textTitle }}>
                         {selectedEvent.extendedProps?.withName || "Key Contact"}
                       </span>
                     </div>
                     <div className="d-flex justify-content-between">
-                      <span className="text-muted">Owner / Rep:</span>
-                      <span className="fw-semibold">
+                      <span style={{ color: textSub }}>Owner / Rep:</span>
+                      <span className="fw-semibold" style={{ color: textTitle }}>
                         {selectedEvent.extendedProps?.ownerName || selectedEvent.extendedProps?.username || "Sales Rep"}
                       </span>
                     </div>
                     {selectedEvent.extendedProps?.callNumber && (
                       <div className="d-flex justify-content-between">
-                        <span className="text-muted">Phone Number:</span>
-                        <span className="fw-semibold">{selectedEvent.extendedProps?.callNumber}</span>
+                        <span style={{ color: textSub }}>Phone Number:</span>
+                        <span className="fw-semibold" style={{ color: textTitle }}>{selectedEvent.extendedProps?.callNumber}</span>
                       </div>
                     )}
                   </div>
 
                   {selectedEvent.extendedProps?.cleanNotes && (
                     <div className="mb-2">
-                      <div className="small fw-semibold text-muted mb-1">Notes / Description:</div>
-                      <div className="p-2 border bg-white small rounded-0" style={{ minHeight: 40, whiteSpace: "pre-wrap" }}>
+                      <div className="small fw-semibold mb-1" style={{ color: textSub }}>Notes / Description:</div>
+                      <div
+                        className="p-2 border small rounded-0"
+                        style={{
+                          minHeight: 40,
+                          whiteSpace: "pre-wrap",
+                          backgroundColor: subtleBg,
+                          borderColor: subtleBorder,
+                          color: textTitle,
+                        }}
+                      >
                         {selectedEvent.extendedProps.cleanNotes}
                       </div>
                     </div>
                   )}
                 </ModalBody>
 
-                <ModalFooter className="border-top p-2 d-flex justify-content-between">
+                <ModalFooter className="border-top p-2 d-flex justify-content-between" style={{ backgroundColor: subtleBg, borderColor: cardBorder }}>
                   <div>
                     <Button
                       type="button"
@@ -1670,7 +1805,7 @@ const Calendar = () => {
             <ModalHeader
               toggle={() => setFormModalOpen(false)}
               className="border-bottom p-3"
-              style={{ backgroundColor: "#f8fafc" }}
+              style={{ backgroundColor: subtleBg, borderColor: cardBorder }}
             >
               <div className="d-flex align-items-center gap-2">
                 <i
@@ -1681,9 +1816,9 @@ const Calendar = () => {
                       ? "ri-edit-line"
                       : "ri-calendar-line"
                   }
-                  style={{ color: THEME.primary }}
+                  style={{ color: primaryColor }}
                 />
-                <span className="fw-bold" style={{ color: THEME.textHeading }}>
+                <span className="fw-bold" style={{ color: textTitle }}>
                   {formModalMode === "log"
                     ? "Log Activity"
                     : formModalMode === "edit"
@@ -1694,24 +1829,27 @@ const Calendar = () => {
             </ModalHeader>
 
             <Form onSubmit={handleModalSubmit}>
-              <ModalBody className="p-3">
+              <ModalBody className="p-3" style={{ backgroundColor: cardBg }}>
                 {/* Activity Type Selection Tabs */}
                 <div className="mb-3">
-                  <Label className="form-label small fw-semibold mb-1">
+                  <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>
                     Activity Type <span className="text-danger">*</span>
                   </Label>
                   <div className="d-flex flex-wrap gap-2">
                     {CATEGORIES.map((cat) => {
                       const isSelected = formData.actType === cat.id;
+                      const catStyle = getCategoryConfig(cat.id, isDark);
                       return (
                         <button
                           key={cat.id}
                           type="button"
                           className="btn btn-sm rounded-0 d-flex align-items-center gap-1.5 px-3 py-1.5 fw-medium"
                           style={{
-                            backgroundColor: isSelected ? cat.color : cat.bgColor,
-                            color: isSelected ? "#ffffff" : cat.color,
-                            border: `1px solid ${cat.borderColor}`,
+                            backgroundColor: isSelected
+                              ? catStyle.color
+                              : catStyle.bgColor,
+                            color: isSelected ? "#ffffff" : catStyle.color,
+                            border: `1px solid ${catStyle.borderColor}`,
                           }}
                           onClick={() => {
                             setFormData({
@@ -1732,7 +1870,7 @@ const Calendar = () => {
                 {/* Subtype & Subject Row */}
                 <Row className="g-2 mb-2">
                   <Col md={4}>
-                    <Label className="form-label small fw-semibold mb-1">Subtype</Label>
+                    <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>Subtype</Label>
                     <Input
                       type="select"
                       className="rounded-0 form-control-sm"
@@ -1747,7 +1885,7 @@ const Calendar = () => {
                     </Input>
                   </Col>
                   <Col md={8}>
-                    <Label className="form-label small fw-semibold mb-1">
+                    <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>
                       Subject / Title <span className="text-danger">*</span>
                     </Label>
                     <Input
@@ -1764,7 +1902,7 @@ const Calendar = () => {
                 {/* Related Customer & Contact Person */}
                 <Row className="g-2 mb-2">
                   <Col md={6}>
-                    <Label className="form-label small fw-semibold mb-1">Related Customer / Account</Label>
+                    <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>Related Customer / Account</Label>
                     <Input
                       type="select"
                       className="rounded-0 form-control-sm"
@@ -1780,7 +1918,7 @@ const Calendar = () => {
                     </Input>
                   </Col>
                   <Col md={6}>
-                    <Label className="form-label small fw-semibold mb-1">Contact Person</Label>
+                    <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>Contact Person</Label>
                     <Input
                       type="select"
                       className="rounded-0 form-control-sm"
@@ -1808,7 +1946,7 @@ const Calendar = () => {
                 {/* Start Date & End Date */}
                 <Row className="g-2 mb-2">
                   <Col md={6}>
-                    <Label className="form-label small fw-semibold mb-1">
+                    <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>
                       Start Date & Time <span className="text-danger">*</span>
                     </Label>
                     <Input
@@ -1820,7 +1958,7 @@ const Calendar = () => {
                     />
                   </Col>
                   <Col md={6}>
-                    <Label className="form-label small fw-semibold mb-1">End Date & Time</Label>
+                    <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>End Date & Time</Label>
                     <Input
                       type="datetime-local"
                       className="rounded-0 form-control-sm"
@@ -1840,7 +1978,7 @@ const Calendar = () => {
                 {/* Owner & Phone Number */}
                 <Row className="g-2 mb-2">
                   <Col md={6}>
-                    <Label className="form-label small fw-semibold mb-1">Owner (Sales Rep)</Label>
+                    <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>Owner (Sales Rep)</Label>
                     <Input
                       type="select"
                       className="rounded-0 form-control-sm"
@@ -1856,7 +1994,7 @@ const Calendar = () => {
                     </Input>
                   </Col>
                   <Col md={6}>
-                    <Label className="form-label small fw-semibold mb-1">Phone Number (Optional)</Label>
+                    <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>Phone Number (Optional)</Label>
                     <Input
                       type="text"
                       className="rounded-0 form-control-sm"
@@ -1869,7 +2007,7 @@ const Calendar = () => {
 
                 {/* Notes / Description */}
                 <div className="mb-2">
-                  <Label className="form-label small fw-semibold mb-1">Notes / Description</Label>
+                  <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>Notes / Description</Label>
                   <Input
                     type="textarea"
                     rows="3"
@@ -1897,13 +2035,13 @@ const Calendar = () => {
                     }}
                     style={{ accentColor: THEME.primary }}
                   />
-                  <label className="form-check-label small" htmlFor="calendarMarkCompletedCheck">
+                  <label className="form-check-label small" htmlFor="calendarMarkCompletedCheck" style={{ color: textTitle }}>
                     Mark as Completed (Activity already taken place)
                   </label>
                 </div>
               </ModalBody>
 
-              <ModalFooter className="border-top p-2">
+              <ModalFooter className="border-top p-2" style={{ backgroundColor: subtleBg, borderColor: cardBorder }}>
                 <Button
                   type="button"
                   color="light"

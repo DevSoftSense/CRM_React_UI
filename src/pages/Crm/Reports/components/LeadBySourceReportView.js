@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useSelector } from "react-redux";
 import ReactApexChart from "react-apexcharts";
 import { Link } from "react-router-dom";
 import {
@@ -22,6 +23,18 @@ const LeadBySourceReportView = ({
   onOwnerChange,
   onExport,
 }) => {
+  const layoutMode = useSelector((state) => state.Layout?.layoutModeType);
+  const isDark = layoutMode === "dark";
+
+  // Dynamic Theme Colors
+  const cardBg = isDark ? "#161b22" : "#ffffff";
+  const cardBorder = isDark ? "#21262d" : "#e2e8f0";
+  const subtleBg = isDark ? "#0d1117" : "#f8fafc";
+  const subtleBorder = isDark ? "#30363d" : "#e2e8f0";
+  const textTitle = isDark ? "#f0f6fc" : "#0f172a";
+  const textSub = isDark ? "#8b949e" : "#64748b";
+  const primaryColor = "#7f1d1d";
+
   const [searchTerm, setSearchTerm] = useState("");
   const [sourceFilter, setSourceFilter] = useState("ALL");
   const [pageSize, setPageSize] = useState(10);
@@ -174,7 +187,7 @@ const LeadBySourceReportView = ({
         },
         labels,
         colors: ["#7f1d1d", "#2563eb", "#16a34a", "#d97706", "#7c3aed"],
-        stroke: { width: 2, colors: ["#ffffff"] },
+        stroke: { width: 2, colors: [isDark ? cardBg : "#ffffff"] },
         legend: { show: false },
         dataLabels: { enabled: false },
         plotOptions: {
@@ -185,14 +198,14 @@ const LeadBySourceReportView = ({
           },
         },
         tooltip: {
-          theme: "dark",
+          theme: isDark ? "dark" : "light",
           y: {
             formatter: (val) => `${val} leads`,
           },
         },
       },
     };
-  }, [chartData]);
+  }, [chartData, isDark, cardBg]);
 
   // Channel List for right card
   const channelBreakdownList = useMemo(() => {
@@ -231,58 +244,47 @@ const LeadBySourceReportView = ({
         {/* Card 1: Total Estimated Pipeline */}
         <Col lg={3} sm={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              backgroundColor: cardBg,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
-              transition: "all 0.15s ease",
             }}
           >
-            <CardBody className="p-3 d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center gap-2.5">
+            <CardBody className="p-3">
+              <div className="d-flex align-items-center justify-content-between mb-1">
+                <span
+                  className="text-uppercase fw-bold"
+                  style={{ fontSize: "11px", letterSpacing: "0.5px", color: textSub }}
+                >
+                  TOTAL ESTIMATED PIPELINE
+                </span>
                 <div
                   style={{
-                    width: "44px",
-                    height: "44px",
-                    borderRadius: "4px",
-                    backgroundColor: "rgba(127, 29, 29, 0.08)",
-                    color: "#7f1d1d",
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(127, 29, 29, 0.25)" : "#fee2e2",
+                    color: isDark ? "#f87171" : "#7f1d1d",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: "20px",
-                    flexShrink: 0,
+                    fontSize: "14px",
                   }}
                 >
                   <i className="ri-funds-line"></i>
                 </div>
-                <div>
-                  <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "10.5px", letterSpacing: "0.4px" }}
-                  >
-                    Total Estimated Pipeline
-                  </span>
-                  <div
-                    className="fw-bold text-dark font-monospace"
-                    style={{
-                      fontSize: "22px",
-                      letterSpacing: "-0.5px",
-                      lineHeight: "1.1",
-                    }}
-                  >
-                    {formatCurrency(totalEstimatedPipeline)}
-                  </div>
-                  <div className="d-flex align-items-center gap-1 mt-1">
-                    <span style={{ color: "#16a34a", fontSize: "11px", fontWeight: 600 }}>
-                      <i className="ri-checkbox-circle-fill"></i> Active Pipeline
-                    </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
-                      • Acquisition value
-                    </span>
-                  </div>
-                </div>
+              </div>
+              <div
+                className="fw-bold font-monospace"
+                style={{ fontSize: "24px", lineHeight: "1.1", margin: "6px 0", color: textTitle }}
+              >
+                {formatCurrency(totalEstimatedPipeline)}
+              </div>
+              <div className="d-flex align-items-center gap-1.5 mt-2" style={{ fontSize: "11.5px" }}>
+                <span style={{ color: "#16a34a", fontWeight: 600 }}>● Active Pipeline</span>
+                <span style={{ color: textSub }}>• Acquisition value</span>
               </div>
             </CardBody>
           </Card>
@@ -291,177 +293,147 @@ const LeadBySourceReportView = ({
         {/* Card 2: Total Leads Generated */}
         <Col lg={3} sm={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              backgroundColor: cardBg,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
-              transition: "all 0.15s ease",
             }}
           >
-            <CardBody className="p-3 d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center gap-2.5">
+            <CardBody className="p-3">
+              <div className="d-flex align-items-center justify-content-between mb-1">
+                <span
+                  className="text-uppercase fw-bold"
+                  style={{ fontSize: "11px", letterSpacing: "0.5px", color: textSub }}
+                >
+                  TOTAL LEADS GENERATED
+                </span>
                 <div
                   style={{
-                    width: "44px",
-                    height: "44px",
-                    borderRadius: "4px",
-                    backgroundColor: "#eff6ff",
-                    color: "#2563eb",
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(59, 130, 246, 0.2)" : "#eff6ff",
+                    color: isDark ? "#60a5fa" : "#2563eb",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: "20px",
-                    flexShrink: 0,
+                    fontSize: "14px",
                   }}
                 >
                   <i className="ri-user-shared-line"></i>
                 </div>
-                <div>
-                  <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "10.5px", letterSpacing: "0.4px" }}
-                  >
-                    Total Leads Generated
-                  </span>
-                  <div
-                    className="fw-bold text-dark font-monospace"
-                    style={{
-                      fontSize: "22px",
-                      letterSpacing: "-0.5px",
-                      lineHeight: "1.1",
-                    }}
-                  >
-                    {totalLeads} Lead
-                  </div>
-                  <div className="d-flex align-items-center gap-1 mt-1">
-                    <span style={{ color: "#2563eb", fontSize: "11px", fontWeight: 600 }}>
-                      <i className="ri-donut-chart-fill"></i> 100% Attributed
-                    </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
-                      • Source tracked
-                    </span>
-                  </div>
-                </div>
+              </div>
+              <div
+                className="fw-bold font-monospace"
+                style={{ fontSize: "24px", lineHeight: "1.1", margin: "6px 0", color: textTitle }}
+              >
+                {totalLeads} Lead{totalLeads === 1 ? "" : "s"}
+              </div>
+              <div className="d-flex align-items-center gap-1.5 mt-2" style={{ fontSize: "11.5px" }}>
+                <span style={{ color: isDark ? "#60a5fa" : "#2563eb", fontWeight: 600 }}>
+                  100% Attributed
+                </span>
+                <span style={{ color: textSub }}>• Source tracked</span>
               </div>
             </CardBody>
           </Card>
         </Col>
 
-        {/* Card 3: Top Acquisition Channel */}
+        {/* Card 3: Primary Lead Channel */}
         <Col lg={3} sm={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              backgroundColor: cardBg,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
-              transition: "all 0.15s ease",
             }}
           >
-            <CardBody className="p-3 d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center gap-2.5">
+            <CardBody className="p-3">
+              <div className="d-flex align-items-center justify-content-between mb-1">
+                <span
+                  className="text-uppercase fw-bold"
+                  style={{ fontSize: "11px", letterSpacing: "0.5px", color: textSub }}
+                >
+                  PRIMARY LEAD CHANNEL
+                </span>
                 <div
                   style={{
-                    width: "44px",
-                    height: "44px",
-                    borderRadius: "4px",
-                    backgroundColor: "#f0fdf4",
-                    color: "#16a34a",
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(16, 185, 129, 0.2)" : "#f0fdf4",
+                    color: isDark ? "#34d399" : "#16a34a",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: "20px",
-                    flexShrink: 0,
+                    fontSize: "14px",
                   }}
                 >
                   <i className="ri-global-line"></i>
                 </div>
-                <div>
-                  <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "10.5px", letterSpacing: "0.4px" }}
-                  >
-                    Primary Lead Channel
-                  </span>
-                  <div
-                    className="fw-bold text-dark"
-                    style={{
-                      fontSize: "20px",
-                      letterSpacing: "-0.5px",
-                      lineHeight: "1.1",
-                    }}
-                  >
-                    Website (100%)
-                  </div>
-                  <div className="d-flex align-items-center gap-1 mt-1">
-                    <span style={{ color: "#16a34a", fontSize: "11px", fontWeight: 600 }}>
-                      <i className="ri-star-line"></i> Top Channel
-                    </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
-                      • Digital inbound
-                    </span>
-                  </div>
-                </div>
+              </div>
+              <div
+                className="fw-bold"
+                style={{ fontSize: "22px", lineHeight: "1.1", margin: "6px 0", color: textTitle }}
+              >
+                Website (100%)
+              </div>
+              <div className="d-flex align-items-center gap-1.5 mt-2" style={{ fontSize: "11.5px" }}>
+                <span style={{ color: "#16a34a", fontWeight: 600 }}>★ Top Channel</span>
+                <span style={{ color: textSub }}>• Digital inbound</span>
               </div>
             </CardBody>
           </Card>
         </Col>
 
-        {/* Card 4: Average Pipeline per Lead */}
+        {/* Card 4: Avg Value per Lead */}
         <Col lg={3} sm={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              backgroundColor: cardBg,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
-            <CardBody className="p-3 d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center gap-2.5">
+            <CardBody className="p-3">
+              <div className="d-flex align-items-center justify-content-between mb-1">
+                <span
+                  className="text-uppercase fw-bold"
+                  style={{ fontSize: "11px", letterSpacing: "0.5px", color: textSub }}
+                >
+                  AVG VALUE PER LEAD
+                </span>
                 <div
                   style={{
-                    width: "44px",
-                    height: "44px",
-                    borderRadius: "4px",
-                    backgroundColor: "#fffbeb",
-                    color: "#d97706",
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(245, 158, 11, 0.2)" : "#fffbeb",
+                    color: isDark ? "#fbbf24" : "#d97706",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: "20px",
-                    flexShrink: 0,
+                    fontSize: "14px",
                   }}
                 >
                   <i className="ri-calculator-line"></i>
                 </div>
-                <div>
-                  <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "10.5px", letterSpacing: "0.4px" }}
-                  >
-                    Avg Value per Lead
-                  </span>
-                  <div
-                    className="fw-bold text-dark font-monospace"
-                    style={{
-                      fontSize: "22px",
-                      letterSpacing: "-0.5px",
-                      lineHeight: "1.1",
-                    }}
-                  >
-                    {formatCurrency(avgDealValue)}
-                  </div>
-                  <div className="d-flex align-items-center gap-1 mt-1">
-                    <span style={{ color: "#d97706", fontSize: "11px", fontWeight: 600 }}>
-                      <i className="ri-shield-star-line"></i> High Quality
-                    </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
-                      • Per inbound lead
-                    </span>
-                  </div>
-                </div>
+              </div>
+              <div
+                className="fw-bold font-monospace"
+                style={{ fontSize: "24px", lineHeight: "1.1", margin: "6px 0", color: textTitle }}
+              >
+                {formatCurrency(avgDealValue)}
+              </div>
+              <div className="d-flex align-items-center gap-1.5 mt-2" style={{ fontSize: "11.5px" }}>
+                <span style={{ color: isDark ? "#fbbf24" : "#d97706", fontWeight: 600 }}>High Quality</span>
+                <span style={{ color: textSub }}>• Per inbound lead</span>
               </div>
             </CardBody>
           </Card>
@@ -473,34 +445,36 @@ const LeadBySourceReportView = ({
         {/* Col 1: Channel Volume Donut (Col lg=5) */}
         <Col lg={5} md={12}>
           <Card
-            className="h-100 bg-white d-flex flex-column"
+            className="h-100 d-flex flex-column"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              backgroundColor: cardBg,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex align-items-center justify-content-between gap-2"
-              style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+              className="p-3 border-bottom d-flex align-items-center justify-content-between gap-2"
+              style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}
             >
               <div className="d-flex align-items-center gap-2">
                 <i
                   className="ri-pie-chart-2-line"
-                  style={{ color: "#7f1d1d", fontSize: "16px" }}
+                  style={{ color: isDark ? "#f87171" : "#7f1d1d", fontSize: "16px" }}
                 ></i>
-                <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+                <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                   Channel Acquisition Share
                 </span>
               </div>
               <span
                 style={{
-                  backgroundColor: "rgba(127, 29, 29, 0.08)",
-                  color: "#7f1d1d",
+                  backgroundColor: isDark ? "rgba(127, 29, 29, 0.25)" : "rgba(127, 29, 29, 0.08)",
+                  color: isDark ? "#f87171" : "#7f1d1d",
+                  border: `1px solid ${isDark ? "rgba(127, 29, 29, 0.4)" : "rgba(127, 29, 29, 0.2)"}`,
                   fontSize: "11px",
                   fontWeight: 600,
                   padding: "2px 8px",
-                  borderRadius: "4px",
+                  borderRadius: 0,
                 }}
               >
                 Top: Website (100%)
@@ -535,7 +509,7 @@ const LeadBySourceReportView = ({
                       style={{
                         fontSize: "24px",
                         fontWeight: 700,
-                        color: "#0f172a",
+                        color: textTitle,
                         fontFamily: "Inter, sans-serif",
                         lineHeight: "1.1",
                       }}
@@ -545,7 +519,7 @@ const LeadBySourceReportView = ({
                     <div
                       style={{
                         fontSize: "12px",
-                        color: "#7f1d1d",
+                        color: isDark ? "#f87171" : "#7f1d1d",
                         fontWeight: 600,
                         fontFamily: "Inter, sans-serif",
                         marginTop: "2px",
@@ -561,19 +535,20 @@ const LeadBySourceReportView = ({
               <div
                 className="p-2.5 border d-flex align-items-center justify-content-between mt-auto"
                 style={{
-                  backgroundColor: "#f8fafc",
-                  borderColor: "#e2e8f0",
-                  borderRadius: "4px",
+                  backgroundColor: subtleBg,
+                  borderColor: cardBorder,
+                  borderRadius: 0,
                 }}
               >
                 <div className="d-flex align-items-center gap-2.5">
                   <div
                     style={{
-                      width: "38px",
-                      height: "38px",
-                      borderRadius: "4px",
-                      backgroundColor: "rgba(127, 29, 29, 0.08)",
-                      color: "#7f1d1d",
+                      width: "36px",
+                      height: "36px",
+                      borderRadius: 0,
+                      backgroundColor: isDark ? "rgba(127, 29, 29, 0.25)" : "rgba(127, 29, 29, 0.08)",
+                      color: isDark ? "#f87171" : "#7f1d1d",
+                      border: `1px solid ${isDark ? "rgba(127, 29, 29, 0.4)" : "rgba(127, 29, 29, 0.2)"}`,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -584,10 +559,10 @@ const LeadBySourceReportView = ({
                     <i className="ri-global-line"></i>
                   </div>
                   <div>
-                    <span className="fw-bold text-dark d-block" style={{ fontSize: "12.5px" }}>
+                    <span className="fw-bold d-block" style={{ fontSize: "12.5px", color: textTitle }}>
                       Website • Dominant Channel
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       100% volume • {formatCurrency(totalEstimatedPipeline)} estimated pipeline
                     </span>
                   </div>
@@ -600,9 +575,9 @@ const LeadBySourceReportView = ({
                     backgroundColor: "#7f1d1d",
                     borderColor: "#7f1d1d",
                     color: "#ffffff",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     fontSize: "11.5px",
-                    fontWeight: 500,
+                    fontWeight: 600,
                     padding: "4px 12px",
                   }}
                 >
@@ -616,27 +591,37 @@ const LeadBySourceReportView = ({
         {/* Col 2: Channel Volume & Pipeline Breakdown (Col lg=7) */}
         <Col lg={7} md={12}>
           <Card
-            className="h-100 bg-white d-flex flex-column"
+            className="h-100 d-flex flex-column"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              backgroundColor: cardBg,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
-              style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+              className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
+              style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}
             >
               <div className="d-flex align-items-center gap-2">
                 <i
                   className="ri-bar-chart-horizontal-line"
-                  style={{ color: "#7f1d1d", fontSize: "16px" }}
+                  style={{ color: isDark ? "#f87171" : "#7f1d1d", fontSize: "16px" }}
                 ></i>
-                <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+                <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                   Channel Volume & Pipeline Breakdown
                 </span>
               </div>
-              <span className="badge bg-light text-muted border" style={{ fontSize: "11px" }}>
+              <span
+                style={{
+                  backgroundColor: subtleBg,
+                  color: textSub,
+                  border: `1px solid ${cardBorder}`,
+                  fontSize: "11px",
+                  padding: "3px 8px",
+                  borderRadius: 0,
+                }}
+              >
                 Lead Count • Inbound Share • Pipeline Value
               </span>
             </div>
@@ -652,21 +637,29 @@ const LeadBySourceReportView = ({
                       key={ch.source_name || idx}
                       className="p-2.5 border d-flex align-items-center"
                       style={{
-                        backgroundColor: isTop ? "rgba(127, 29, 29, 0.02)" : "#ffffff",
-                        borderColor: isTop ? "rgba(127, 29, 29, 0.16)" : "#e2e8f0",
-                        borderRadius: "4px",
+                        backgroundColor: isTop
+                          ? (isDark ? "rgba(127, 29, 29, 0.15)" : "rgba(127, 29, 29, 0.04)")
+                          : (isDark ? "#12171f" : "#ffffff"),
+                        borderColor: isTop
+                          ? (isDark ? "rgba(239, 68, 68, 0.35)" : "rgba(127, 29, 29, 0.2)")
+                          : cardBorder,
+                        borderRadius: 0,
                       }}
                     >
-                      {/* Segment 1: Channel Identity (fixed width 200px) */}
+                      {/* Segment 1: Channel Identity */}
                       <div className="d-flex align-items-center gap-2.5" style={{ width: "200px", flexShrink: 0 }}>
                         <div
                           style={{
                             width: "34px",
                             height: "34px",
-                            borderRadius: "4px",
-                            backgroundColor: isTop ? "rgba(127, 29, 29, 0.08)" : "#f8fafc",
-                            color: isTop ? "#7f1d1d" : "#64748b",
-                            border: `1px solid ${isTop ? "rgba(127, 29, 29, 0.2)" : "#e2e8f0"}`,
+                            borderRadius: 0,
+                            backgroundColor: isTop
+                              ? (isDark ? "rgba(127, 29, 29, 0.25)" : "rgba(127, 29, 29, 0.08)")
+                              : subtleBg,
+                            color: isTop
+                              ? (isDark ? "#f87171" : "#7f1d1d")
+                              : textSub,
+                            border: `1px solid ${isTop ? (isDark ? "rgba(239, 68, 68, 0.4)" : "rgba(127, 29, 29, 0.2)") : cardBorder}`,
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -678,69 +671,69 @@ const LeadBySourceReportView = ({
                         </div>
                         <div style={{ minWidth: 0 }}>
                           <span
-                            className="text-dark d-block text-truncate"
+                            className="d-block text-truncate"
                             style={{
                               fontSize: "13px",
                               fontWeight: isTop ? 700 : 500,
+                              color: textTitle,
                             }}
                           >
                             {ch.source_name}
                           </span>
-                          <span className="text-muted d-block" style={{ fontSize: "11px" }}>
+                          <span className="d-block" style={{ fontSize: "11px", color: textSub }}>
                             {ch.lead_count} {ch.lead_count === 1 ? "lead acquired" : "leads acquired"}
                           </span>
                         </div>
                       </div>
 
-                      {/* Segment 2: Volume & Share Progress (flex-grow-1, smooth labeled bar) */}
+                      {/* Segment 2: Volume & Share Progress */}
                       <div className="flex-grow-1 mx-3 d-none d-sm-block">
                         <div className="d-flex align-items-center justify-content-between mb-1" style={{ fontSize: "11px" }}>
-                          <span className="text-muted text-uppercase fw-semibold" style={{ letterSpacing: "0.3px", fontSize: "10.5px" }}>
+                          <span className="text-uppercase fw-semibold" style={{ letterSpacing: "0.3px", fontSize: "10.5px", color: textSub }}>
                             Share of Inbound
                           </span>
                           <span
                             className="font-monospace fw-bold"
-                            style={{ color: isTop ? "#7f1d1d" : "#64748b" }}
+                            style={{ color: isTop ? (isDark ? "#f87171" : "#7f1d1d") : textSub }}
                           >
                             {ch.percentage}%
                           </span>
                         </div>
                         <div
-                          className="progress"
                           style={{
                             height: "6px",
-                            backgroundColor: "#f1f5f9",
-                            borderRadius: "3px",
+                            backgroundColor: isDark ? "#2d3748" : "#f1f5f9",
+                            borderRadius: 0,
                             overflow: "hidden",
                           }}
                         >
                           <div
-                            className="progress-bar"
-                            role="progressbar"
                             style={{
                               width: `${Math.max(ch.percentage, ch.lead_count > 0 ? 5 : 0)}%`,
-                              backgroundColor: isTop ? "#7f1d1d" : "#94a3b8",
+                              height: "100%",
+                              backgroundColor: isTop ? (isDark ? "#ef4444" : "#7f1d1d") : (isDark ? "#475569" : "#94a3b8"),
+                              borderRadius: 0,
                               transition: "width 0.4s ease",
                             }}
                           ></div>
                         </div>
                       </div>
 
-                      {/* Segment 3: Pipeline Value & Status (fixed width 150px, text-end) */}
+                      {/* Segment 3: Pipeline Value & Status */}
                       <div className="text-end" style={{ width: "150px", flexShrink: 0 }}>
                         <div
-                          className="font-monospace fw-bold text-dark"
-                          style={{ fontSize: "13.5px", letterSpacing: "-0.3px" }}
+                          className="font-monospace fw-bold"
+                          style={{ fontSize: "13.5px", letterSpacing: "-0.3px", color: textTitle }}
                         >
                           {formatCurrency(ch.total_estimated_value)}
                         </div>
                         <div style={{ fontSize: "11px" }}>
                           {isTop ? (
-                            <span className="text-success fw-semibold">
+                            <span style={{ color: "#16a34a", fontWeight: 600 }}>
                               <i className="ri-checkbox-circle-fill"></i> 100% of pipeline
                             </span>
                           ) : (
-                            <span className="text-muted">No active pipeline</span>
+                            <span style={{ color: textSub }}>No active pipeline</span>
                           )}
                         </div>
                       </div>
@@ -753,20 +746,20 @@ const LeadBySourceReportView = ({
               <div
                 className="p-2.5 mt-2 border d-flex align-items-center justify-content-between"
                 style={{
-                  backgroundColor: "#f8fafc",
-                  borderColor: "#e2e8f0",
-                  borderRadius: "4px",
+                  backgroundColor: subtleBg,
+                  borderColor: cardBorder,
+                  borderRadius: 0,
                 }}
               >
                 <div className="d-flex align-items-center gap-2">
-                  <i className="ri-pie-chart-line text-muted" style={{ fontSize: "15px" }}></i>
-                  <span className="text-muted" style={{ fontSize: "11.5px" }}>
-                    <strong className="text-dark">1 of 5 Channels</strong> actively acquiring sales pipeline
+                  <i className="ri-pie-chart-line" style={{ fontSize: "15px", color: textSub }}></i>
+                  <span style={{ fontSize: "11.5px", color: textSub }}>
+                    <strong style={{ color: textTitle }}>1 of 5 Channels</strong> actively acquiring sales pipeline
                   </span>
                 </div>
                 <div className="d-flex align-items-center gap-2">
-                  <span className="text-muted" style={{ fontSize: "11.5px" }}>
-                    Total Attributed: <strong className="text-dark font-monospace">{formatCurrency(totalEstimatedPipeline)}</strong>
+                  <span style={{ fontSize: "11.5px", color: textSub }}>
+                    Total Attributed: <strong className="font-monospace" style={{ color: textTitle }}>{formatCurrency(totalEstimatedPipeline)}</strong>
                   </span>
                 </div>
               </div>
@@ -777,32 +770,34 @@ const LeadBySourceReportView = ({
 
       {/* ─── ROW 3: DETAILED SOURCE ACQUISITION LEDGER (TABLE) ───────────────── */}
       <Card
-        className="bg-white mb-4"
+        className="mb-4"
         style={{
-          borderRadius: "4px",
-          border: "1px solid #e2e8f0",
+          borderRadius: 0,
+          backgroundColor: cardBg,
+          border: `1px solid ${cardBorder}`,
           boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
       >
         <div
-          className="p-3 bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
+          className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
           style={{
-            borderRadius: "4px 4px 0 0",
-            borderColor: "#e2e8f0",
+            borderRadius: 0,
+            borderColor: cardBorder,
+            backgroundColor: cardBg,
           }}
         >
           <div>
             <h6
-              className="mb-0 fw-bold text-dark d-flex align-items-center gap-2"
-              style={{ fontSize: "14px" }}
+              className="mb-0 fw-bold d-flex align-items-center gap-2"
+              style={{ fontSize: "14px", color: textTitle }}
             >
               <i
                 className="ri-table-line"
-                style={{ color: "#7f1d1d", fontSize: "16px" }}
+                style={{ color: isDark ? "#f87171" : "#7f1d1d", fontSize: "16px" }}
               ></i>
               Detailed Source Acquisition Ledger
             </h6>
-            <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+            <span className="small" style={{ fontSize: "11.5px", color: textSub }}>
               Showing {filteredRows.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{" "}
               {Math.min(currentPage * pageSize, filteredRows.length)} of {rawRows.length} acquired leads
             </span>
@@ -816,10 +811,11 @@ const LeadBySourceReportView = ({
                 placeholder="Search lead or company..."
                 className="form-control-sm ps-4"
                 style={{
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
-                  borderColor: "#cbd5e1",
-                  backgroundColor: "#ffffff",
+                  borderColor: cardBorder,
+                  backgroundColor: subtleBg,
+                  color: textTitle,
                 }}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -835,9 +831,11 @@ const LeadBySourceReportView = ({
               className="form-select form-select-sm"
               style={{
                 width: "145px",
-                borderRadius: "4px",
+                borderRadius: 0,
                 fontSize: "12px",
-                borderColor: "#cbd5e1",
+                borderColor: cardBorder,
+                backgroundColor: subtleBg,
+                color: textTitle,
               }}
               value={sourceFilter}
               onChange={(e) => setSourceFilter(e.target.value)}
@@ -853,12 +851,12 @@ const LeadBySourceReportView = ({
             {/* Export CSV Button */}
             <button
               type="button"
-              className="btn btn-sm d-flex align-items-center gap-1"
+              className="btn btn-sm d-flex align-items-center gap-1 border"
               style={{
-                backgroundColor: "#ffffff",
-                color: "#7f1d1d",
-                border: "1px solid #e2e8f0",
-                borderRadius: "4px",
+                backgroundColor: subtleBg,
+                color: isDark ? "#f87171" : "#7f1d1d",
+                borderColor: cardBorder,
+                borderRadius: 0,
                 fontSize: "12px",
                 fontWeight: 500,
                 padding: "5px 12px",
@@ -873,8 +871,8 @@ const LeadBySourceReportView = ({
         <CardBody className="p-0">
           <div className="table-responsive">
             <Table className="align-middle table-nowrap mb-0" hover>
-              <thead style={{ backgroundColor: "#f8fafc" }}>
-                <tr style={{ fontSize: "11.5px", color: "#64748b" }}>
+              <thead style={{ backgroundColor: subtleBg, borderBottom: `1px solid ${cardBorder}` }}>
+                <tr style={{ fontSize: "11.5px", color: textSub }}>
                   <th style={{ width: "40px" }} className="text-center">#</th>
                   <th style={{ width: "24%" }}>LEAD NAME & COMPANY</th>
                   <th style={{ width: "14%" }} className="text-center">SOURCE CHANNEL</th>
@@ -888,7 +886,7 @@ const LeadBySourceReportView = ({
               <tbody style={{ fontSize: "12.5px" }}>
                 {paginatedRows.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="text-center py-4 text-muted">
+                    <td colSpan="8" className="text-center py-4" style={{ color: textSub }}>
                       No leads match the selected source channel and search criteria.
                     </td>
                   </tr>
@@ -902,26 +900,26 @@ const LeadBySourceReportView = ({
 
                     // Rating styling
                     const rating = String(r.rating_name || "Warm").toUpperCase();
-                    let ratingBg = "#fffbeb";
-                    let ratingColor = "#b45309";
-                    let ratingBorder = "#fde68a";
+                    let ratingBg = isDark ? "rgba(180, 83, 9, 0.2)" : "#fffbeb";
+                    let ratingColor = isDark ? "#fbbf24" : "#b45309";
+                    let ratingBorder = isDark ? "rgba(180, 83, 9, 0.3)" : "#fde68a";
                     let ratingIcon = "ri-fire-line";
 
                     if (rating === "HOT") {
-                      ratingBg = "#fef2f2";
-                      ratingColor = "#991b1b";
-                      ratingBorder = "#fecaca";
+                      ratingBg = isDark ? "rgba(153, 27, 27, 0.2)" : "#fef2f2";
+                      ratingColor = isDark ? "#f87171" : "#991b1b";
+                      ratingBorder = isDark ? "rgba(153, 27, 27, 0.4)" : "#fecaca";
                       ratingIcon = "ri-fire-fill";
                     } else if (rating === "COLD") {
-                      ratingBg = "#f1f5f9";
-                      ratingColor = "#475569";
-                      ratingBorder = "#e2e8f0";
+                      ratingBg = isDark ? "#1e293b" : "#f1f5f9";
+                      ratingColor = isDark ? "#94a3b8" : "#475569";
+                      ratingBorder = isDark ? "#334155" : "#e2e8f0";
                       ratingIcon = "ri-snowflake-line";
                     }
 
                     return (
-                      <tr key={r.lead_id || idx}>
-                        <td className="text-center text-muted" style={{ fontSize: "11px" }}>
+                      <tr key={r.lead_id || idx} style={{ borderBottom: `1px solid ${cardBorder}` }}>
+                        <td className="text-center" style={{ fontSize: "11px", color: textSub }}>
                           {rowNumber}
                         </td>
                         <td>
@@ -930,10 +928,10 @@ const LeadBySourceReportView = ({
                               style={{
                                 width: "34px",
                                 height: "34px",
-                                borderRadius: "4px",
-                                backgroundColor: "rgba(127, 29, 29, 0.08)",
-                                color: "#7f1d1d",
-                                border: "1px solid rgba(127, 29, 29, 0.2)",
+                                borderRadius: 0,
+                                backgroundColor: isDark ? "rgba(127, 29, 29, 0.25)" : "rgba(127, 29, 29, 0.08)",
+                                color: isDark ? "#f87171" : "#7f1d1d",
+                                border: `1px solid ${isDark ? "rgba(127, 29, 29, 0.4)" : "rgba(127, 29, 29, 0.2)"}`,
                                 display: "inline-flex",
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -947,13 +945,13 @@ const LeadBySourceReportView = ({
                             <div>
                               <Link
                                 to={`/crm/leads/${r.lead_id}`}
-                                className="fw-bold text-dark text-decoration-none d-block"
-                                style={{ fontSize: "12.5px" }}
+                                className="fw-bold text-decoration-none d-block"
+                                style={{ fontSize: "12.5px", color: textTitle }}
                               >
                                 {r.lead_name}
                               </Link>
-                              <span className="text-muted d-flex align-items-center gap-1" style={{ fontSize: "11px" }}>
-                                <i className="ri-building-line text-muted"></i>
+                              <span className="d-flex align-items-center gap-1" style={{ fontSize: "11px", color: textSub }}>
+                                <i className="ri-building-line" style={{ color: textSub }}></i>
                                 {r.company_name || "—"}
                               </span>
                             </div>
@@ -962,19 +960,19 @@ const LeadBySourceReportView = ({
                         <td className="text-center">
                           <span
                             style={{
-                              backgroundColor: "#f8fafc",
-                              color: "#334155",
-                              border: "1px solid #e2e8f0",
+                              backgroundColor: subtleBg,
+                              color: textTitle,
+                              border: `1px solid ${cardBorder}`,
                               fontSize: "11.5px",
                               fontWeight: 600,
                               padding: "3px 10px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               display: "inline-flex",
                               alignItems: "center",
                               gap: "5px",
                             }}
                           >
-                            <i className={icon} style={{ color: "#7f1d1d", fontSize: "13px" }}></i>
+                            <i className={icon} style={{ color: isDark ? "#f87171" : "#7f1d1d", fontSize: "13px" }}></i>
                             {r.source_name || "Direct"}
                           </span>
                         </td>
@@ -987,7 +985,7 @@ const LeadBySourceReportView = ({
                               fontSize: "11px",
                               fontWeight: 600,
                               padding: "2.5px 8px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               display: "inline-flex",
                               alignItems: "center",
                               gap: "4px",
@@ -1003,9 +1001,9 @@ const LeadBySourceReportView = ({
                               style={{
                                 width: "26px",
                                 height: "26px",
-                                borderRadius: "4px",
-                                backgroundColor: "rgba(127, 29, 29, 0.08)",
-                                color: "#7f1d1d",
+                                borderRadius: 0,
+                                backgroundColor: isDark ? "rgba(127, 29, 29, 0.25)" : "rgba(127, 29, 29, 0.08)",
+                                color: isDark ? "#f87171" : "#7f1d1d",
                                 display: "inline-flex",
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -1016,26 +1014,28 @@ const LeadBySourceReportView = ({
                             >
                               {repInitials}
                             </span>
-                            <span className="text-dark fw-medium" style={{ fontSize: "12px" }}>
+                            <span className="fw-medium" style={{ fontSize: "12px", color: textTitle }}>
                               {r.sales_rep}
                             </span>
                           </div>
                         </td>
-                        <td className="text-center text-muted font-monospace" style={{ fontSize: "12px" }}>
-                          <i className="ri-calendar-line me-1 text-muted"></i>
+                        <td className="text-center font-monospace" style={{ fontSize: "12px", color: textSub }}>
+                          <i className="ri-calendar-line me-1" style={{ color: textSub }}></i>
                           {r.created_date || "—"}
                         </td>
-                        <td className="text-center fw-bold text-dark font-monospace" style={{ fontSize: "13px" }}>
+                        <td className="text-center fw-bold font-monospace" style={{ fontSize: "13px", color: textTitle }}>
                           {formatCurrency(val)}
                         </td>
                         <td className="text-center">
                           <div className="d-flex align-items-center justify-content-center gap-1">
                             <Link
                               to={`/crm/leads/${r.lead_id}`}
-                              className="btn btn-sm btn-light border p-1"
+                              className="btn btn-sm border p-1"
                               style={{
-                                borderRadius: "4px",
-                                color: "#7f1d1d",
+                                borderRadius: 0,
+                                backgroundColor: subtleBg,
+                                borderColor: cardBorder,
+                                color: isDark ? "#f87171" : "#7f1d1d",
                                 width: "28px",
                                 height: "28px",
                                 display: "inline-flex",
@@ -1048,10 +1048,12 @@ const LeadBySourceReportView = ({
                             </Link>
                             <Link
                               to="/crm/opportunities"
-                              className="btn btn-sm btn-light border p-1"
+                              className="btn btn-sm border p-1"
                               style={{
-                                borderRadius: "4px",
-                                color: "#475569",
+                                borderRadius: 0,
+                                backgroundColor: subtleBg,
+                                borderColor: cardBorder,
+                                color: textSub,
                                 width: "28px",
                                 height: "28px",
                                 display: "inline-flex",
@@ -1073,14 +1075,24 @@ const LeadBySourceReportView = ({
           </div>
 
           {/* Table Footer Pagination */}
-          <div className="p-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div
+            className="p-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2"
+            style={{ borderColor: cardBorder, backgroundColor: cardBg }}
+          >
             <div className="d-flex align-items-center gap-2">
-              <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+              <span className="small" style={{ fontSize: "11.5px", color: textSub }}>
                 Show
               </span>
               <select
                 className="form-select form-select-sm"
-                style={{ width: "65px", fontSize: "11.5px", borderRadius: "4px" }}
+                style={{
+                  width: "65px",
+                  fontSize: "11.5px",
+                  borderRadius: 0,
+                  backgroundColor: subtleBg,
+                  borderColor: cardBorder,
+                  color: textTitle,
+                }}
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
               >
@@ -1088,7 +1100,7 @@ const LeadBySourceReportView = ({
                 <option value={25}>25</option>
                 <option value={50}>50</option>
               </select>
-              <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+              <span className="small" style={{ fontSize: "11.5px", color: textSub }}>
                 Showing {filteredRows.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} to{" "}
                 {Math.min(currentPage * pageSize, filteredRows.length)} of {filteredRows.length} leads
               </span>
@@ -1097,8 +1109,14 @@ const LeadBySourceReportView = ({
             <div className="btn-group btn-group-sm">
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "4px 0 0 4px", fontSize: "11px" }}
+                className="btn btn-sm border"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  backgroundColor: subtleBg,
+                  borderColor: cardBorder,
+                  color: textTitle,
+                }}
                 disabled={currentPage <= 1}
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               >
@@ -1113,14 +1131,21 @@ const LeadBySourceReportView = ({
                   fontSize: "11px",
                   fontWeight: 600,
                   border: "1px solid #7f1d1d",
+                  borderRadius: 0,
                 }}
               >
                 {currentPage}
               </button>
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "0 4px 4px 0", fontSize: "11px" }}
+                className="btn btn-sm border"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  backgroundColor: subtleBg,
+                  borderColor: cardBorder,
+                  color: textTitle,
+                }}
                 disabled={currentPage >= totalPages}
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               >
@@ -1133,10 +1158,11 @@ const LeadBySourceReportView = ({
 
       {/* ─── ROW 4: CHANNEL ATTRIBUTION & ROI INTELLIGENCE STRIP ─────────────── */}
       <Card
-        className="bg-white mb-4"
+        className="mb-4"
         style={{
-          borderRadius: "4px",
-          border: "1px solid #e2e8f0",
+          borderRadius: 0,
+          backgroundColor: cardBg,
+          border: `1px solid ${cardBorder}`,
           borderLeft: "4px solid #7f1d1d",
           boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
@@ -1149,10 +1175,10 @@ const LeadBySourceReportView = ({
                 style={{
                   width: "36px",
                   height: "36px",
-                  borderRadius: "4px",
-                  backgroundColor: "#fffbeb",
-                  border: "1px solid #fde68a",
-                  color: "#d97706",
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "rgba(245, 158, 11, 0.15)" : "#fffbeb",
+                  border: `1px solid ${isDark ? "rgba(245, 158, 11, 0.3)" : "#fde68a"}`,
+                  color: isDark ? "#fbbf24" : "#d97706",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1163,10 +1189,10 @@ const LeadBySourceReportView = ({
                 <i className="ri-trophy-line"></i>
               </div>
               <div>
-                <span className="fw-bold text-dark d-block" style={{ fontSize: "13px" }}>
+                <span className="fw-bold d-block" style={{ fontSize: "13px", color: textTitle }}>
                   Channel Attribution & ROI
                 </span>
-                <span className="text-muted" style={{ fontSize: "11px" }}>
+                <span style={{ fontSize: "11px", color: textSub }}>
                   Executive Intelligence Insights
                 </span>
               </div>
@@ -1178,9 +1204,9 @@ const LeadBySourceReportView = ({
               <div
                 className="p-2 border d-flex align-items-center gap-2 flex-grow-1"
                 style={{
-                  backgroundColor: "#f8fafc",
-                  borderColor: "#e2e8f0",
-                  borderRadius: "4px",
+                  backgroundColor: subtleBg,
+                  borderColor: cardBorder,
+                  borderRadius: 0,
                   minWidth: "240px",
                 }}
               >
@@ -1188,9 +1214,9 @@ const LeadBySourceReportView = ({
                   style={{
                     width: "28px",
                     height: "28px",
-                    borderRadius: "4px",
-                    backgroundColor: "rgba(127, 29, 29, 0.08)",
-                    color: "#7f1d1d",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(127, 29, 29, 0.25)" : "rgba(127, 29, 29, 0.08)",
+                    color: isDark ? "#f87171" : "#7f1d1d",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -1201,8 +1227,8 @@ const LeadBySourceReportView = ({
                   <i className="ri-global-line"></i>
                 </div>
                 <div style={{ fontSize: "11px" }}>
-                  <span className="fw-bold text-dark d-block">Channel Dominance</span>
-                  <span className="text-muted">Website drives 100% of pipeline ({formatCurrency(totalEstimatedPipeline)}).</span>
+                  <span className="fw-bold d-block" style={{ color: textTitle }}>Channel Dominance</span>
+                  <span style={{ color: textSub }}>Website drives 100% of pipeline ({formatCurrency(totalEstimatedPipeline)}).</span>
                 </div>
               </div>
 
@@ -1210,9 +1236,9 @@ const LeadBySourceReportView = ({
               <div
                 className="p-2 border d-flex align-items-center gap-2 flex-grow-1"
                 style={{
-                  backgroundColor: "#f8fafc",
-                  borderColor: "#e2e8f0",
-                  borderRadius: "4px",
+                  backgroundColor: subtleBg,
+                  borderColor: cardBorder,
+                  borderRadius: 0,
                   minWidth: "240px",
                 }}
               >
@@ -1220,9 +1246,9 @@ const LeadBySourceReportView = ({
                   style={{
                     width: "28px",
                     height: "28px",
-                    borderRadius: "4px",
-                    backgroundColor: "#fef2f2",
-                    color: "#dc2626",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(220, 38, 38, 0.2)" : "#fef2f2",
+                    color: isDark ? "#f87171" : "#dc2626",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -1233,8 +1259,8 @@ const LeadBySourceReportView = ({
                   <i className="ri-fire-fill"></i>
                 </div>
                 <div style={{ fontSize: "11px" }}>
-                  <span className="fw-bold text-dark d-block">Conversion Intent</span>
-                  <span className="text-muted">Hot rating signals high conversion intent; prioritize sales discovery.</span>
+                  <span className="fw-bold d-block" style={{ color: textTitle }}>Conversion Intent</span>
+                  <span style={{ color: textSub }}>Hot rating signals high conversion intent; prioritize sales discovery.</span>
                 </div>
               </div>
 
@@ -1242,9 +1268,9 @@ const LeadBySourceReportView = ({
               <div
                 className="p-2 border d-flex align-items-center gap-2 flex-grow-1"
                 style={{
-                  backgroundColor: "#f8fafc",
-                  borderColor: "#e2e8f0",
-                  borderRadius: "4px",
+                  backgroundColor: subtleBg,
+                  borderColor: cardBorder,
+                  borderRadius: 0,
                   minWidth: "240px",
                 }}
               >
@@ -1252,9 +1278,9 @@ const LeadBySourceReportView = ({
                   style={{
                     width: "28px",
                     height: "28px",
-                    borderRadius: "4px",
-                    backgroundColor: "#f0fdf4",
-                    color: "#16a34a",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(16, 185, 129, 0.2)" : "#f0fdf4",
+                    color: isDark ? "#34d399" : "#16a34a",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -1265,19 +1291,19 @@ const LeadBySourceReportView = ({
                   <i className="ri-share-forward-line"></i>
                 </div>
                 <div style={{ fontSize: "11px" }}>
-                  <span className="fw-bold text-dark d-block">Channel Diversification</span>
-                  <span className="text-muted">Activate WhatsApp & LinkedIn for multi-touch attribution.</span>
+                  <span className="fw-bold d-block" style={{ color: textTitle }}>Channel Diversification</span>
+                  <span style={{ color: textSub }}>Activate WhatsApp & LinkedIn for multi-touch attribution.</span>
                 </div>
               </div>
             </div>
 
             {/* Right: SoftOnCloud Tagline */}
-            <div className="d-none d-xl-flex align-items-center gap-2 text-end ps-2 border-start" style={{ borderColor: "#e2e8f0" }}>
+            <div className="d-none d-xl-flex align-items-center gap-2 text-end ps-2 border-start" style={{ borderColor: cardBorder }}>
               <div>
-                <span className="fw-bold text-dark d-block" style={{ fontSize: "11.5px" }}>
+                <span className="fw-bold d-block" style={{ fontSize: "11.5px", color: textTitle }}>
                   Source. Nurture. Convert.
                 </span>
-                <span className="text-muted" style={{ fontSize: "10.5px" }}>
+                <span style={{ fontSize: "10.5px", color: textSub }}>
                   Maximize marketing ROI
                 </span>
               </div>
@@ -1285,9 +1311,9 @@ const LeadBySourceReportView = ({
                 style={{
                   width: "32px",
                   height: "32px",
-                  borderRadius: "4px",
-                  backgroundColor: "rgba(127, 29, 29, 0.08)",
-                  color: "#7f1d1d",
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "rgba(127, 29, 29, 0.25)" : "rgba(127, 29, 29, 0.08)",
+                  color: isDark ? "#f87171" : "#7f1d1d",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",

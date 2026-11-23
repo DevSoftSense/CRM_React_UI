@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useSelector } from "react-redux";
 import ReactApexChart from "react-apexcharts";
 import { Link } from "react-router-dom";
 import {
@@ -22,6 +23,18 @@ const OverdueTasksComplianceView = ({
   onOwnerChange,
   onExport,
 }) => {
+  const layoutMode = useSelector((state) => state.Layout?.layoutModeType);
+  const isDark = layoutMode === "dark";
+
+  // Dynamic Theme Colors
+  const cardBg = isDark ? "#161b22" : "#ffffff";
+  const cardBorder = isDark ? "#21262d" : "#e2e8f0";
+  const subtleBg = isDark ? "#0d1117" : "#f8fafc";
+  const subtleBorder = isDark ? "#30363d" : "#e2e8f0";
+  const textTitle = isDark ? "#f0f6fc" : "#0f172a";
+  const textSub = isDark ? "#8b949e" : "#64748b";
+  const primaryColor = "#7f1d1d";
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [pageSize, setPageSize] = useState(10);
@@ -92,8 +105,7 @@ const OverdueTasksComplianceView = ({
           bar: {
             horizontal: false,
             columnWidth: "44%",
-            borderRadius: 4,
-            borderRadiusApplication: "end",
+            borderRadius: 0,
             dataLabels: {
               position: "top",
             },
@@ -106,13 +118,13 @@ const OverdueTasksComplianceView = ({
             fontSize: "10.5px",
             fontFamily: "Inter, sans-serif",
             fontWeight: 600,
-            colors: ["#1e293b"],
+            colors: [isDark ? "#f0f6fc" : "#1e293b"],
           },
           offsetY: -14,
           formatter: (val) => String(val),
         },
         grid: {
-          borderColor: "#f1f5f9",
+          borderColor: isDark ? "#21262d" : "#f1f5f9",
           strokeDashArray: 3,
           xaxis: { lines: { show: false } },
           yaxis: { lines: { show: true } },
@@ -122,14 +134,14 @@ const OverdueTasksComplianceView = ({
           categories,
           labels: {
             style: {
-              colors: "#475569",
+              colors: isDark ? "#8b949e" : "#475569",
               fontSize: "11px",
               fontFamily: "Inter, sans-serif",
               fontWeight: 500,
             },
             offsetY: 2,
           },
-          axisBorder: { color: "#e2e8f0" },
+          axisBorder: { color: isDark ? "#21262d" : "#e2e8f0" },
           axisTicks: { show: false },
         },
         yaxis: {
@@ -137,7 +149,7 @@ const OverdueTasksComplianceView = ({
           tickAmount: 5,
           labels: {
             style: {
-              colors: "#64748b",
+              colors: textSub,
               fontSize: "11px",
               fontFamily: "Inter, sans-serif",
             },
@@ -154,7 +166,7 @@ const OverdueTasksComplianceView = ({
         },
       },
     };
-  }, []);
+  }, [isDark, textSub]);
 
   // 2. Donut Chart: Compliance Overview
   const donutChartConfig = useMemo(() => {
@@ -168,7 +180,7 @@ const OverdueTasksComplianceView = ({
         },
         labels: ["Completed", "Overdue"],
         colors: ["#16a34a", "#991b1b"], // Emerald Green & Deep Red
-        stroke: { width: 2, colors: ["#ffffff"] },
+        stroke: { width: 2, colors: [cardBg] },
         dataLabels: { enabled: false },
         plotOptions: {
           pie: {
@@ -186,7 +198,7 @@ const OverdueTasksComplianceView = ({
         },
       },
     };
-  }, [completedTasks, overdueTasks]);
+  }, [completedTasks, overdueTasks, cardBg]);
 
   return (
     <div className="overdue-tasks-compliance-view">
@@ -195,11 +207,12 @@ const OverdueTasksComplianceView = ({
         {/* Card 1: Total Tasks Count */}
         <Col lg={4} md={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              borderRadius: 0,
+              border: "1px solid " + cardBorder,
+              backgroundColor: cardBg,
+              boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
               transition: "all 0.15s ease",
             }}
           >
@@ -209,9 +222,9 @@ const OverdueTasksComplianceView = ({
                   style={{
                     width: "48px",
                     height: "48px",
-                    borderRadius: "4px",
-                    backgroundColor: "rgba(127, 29, 29, 0.08)",
-                    color: "#7f1d1d",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(127, 29, 29, 0.2)" : "rgba(127, 29, 29, 0.08)",
+                    color: isDark ? "#f87171" : "#7f1d1d",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -223,17 +236,18 @@ const OverdueTasksComplianceView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "11px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "11px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Total Tasks Count
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "26px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {totalTasks}
@@ -248,7 +262,7 @@ const OverdueTasksComplianceView = ({
                     >
                       <i className="ri-arrow-up-line"></i> 0%
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       vs last period
                     </span>
                   </div>
@@ -259,13 +273,13 @@ const OverdueTasksComplianceView = ({
                 style={{
                   width: "28px",
                   height: "28px",
-                  borderRadius: "50%",
-                  backgroundColor: "#f8fafc",
-                  border: "1px solid #e2e8f0",
+                  borderRadius: 0,
+                  backgroundColor: subtleBg,
+                  border: "1px solid " + subtleBorder,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "#64748b",
+                  color: textSub,
                   fontSize: "14px",
                 }}
               >
@@ -278,11 +292,12 @@ const OverdueTasksComplianceView = ({
         {/* Card 2: Overdue Tasks Count */}
         <Col lg={4} md={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              borderRadius: 0,
+              border: "1px solid " + cardBorder,
+              backgroundColor: cardBg,
+              boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
               transition: "all 0.15s ease",
             }}
           >
@@ -292,9 +307,9 @@ const OverdueTasksComplianceView = ({
                   style={{
                     width: "48px",
                     height: "48px",
-                    borderRadius: "4px",
-                    backgroundColor: "#fef2f2",
-                    color: "#dc2626",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(220, 38, 38, 0.2)" : "#fef2f2",
+                    color: isDark ? "#f87171" : "#dc2626",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -306,17 +321,18 @@ const OverdueTasksComplianceView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "11px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "11px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Overdue Tasks Count
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "26px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {overdueTasks}
@@ -324,14 +340,14 @@ const OverdueTasksComplianceView = ({
                   <div className="d-flex align-items-center gap-1 mt-1">
                     <span
                       style={{
-                        color: "#dc2626",
+                        color: isDark ? "#f87171" : "#dc2626",
                         fontSize: "11px",
                         fontWeight: 600,
                       }}
                     >
                       <i className="ri-arrow-up-line"></i> 100%
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       vs last period
                     </span>
                   </div>
@@ -342,13 +358,13 @@ const OverdueTasksComplianceView = ({
                 style={{
                   width: "28px",
                   height: "28px",
-                  borderRadius: "50%",
-                  backgroundColor: "#f8fafc",
-                  border: "1px solid #e2e8f0",
+                  borderRadius: 0,
+                  backgroundColor: subtleBg,
+                  border: "1px solid " + subtleBorder,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "#64748b",
+                  color: textSub,
                   fontSize: "14px",
                 }}
               >
@@ -361,11 +377,12 @@ const OverdueTasksComplianceView = ({
         {/* Card 3: Compliance Rate */}
         <Col lg={4} md={12}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              borderRadius: 0,
+              border: "1px solid " + cardBorder,
+              backgroundColor: cardBg,
+              boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <CardBody className="p-3 d-flex align-items-center justify-content-between">
@@ -386,7 +403,7 @@ const OverdueTasksComplianceView = ({
                     <path
                       d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                       fill="none"
-                      stroke="#f1f5f9"
+                      stroke={isDark ? "#21262d" : "#f1f5f9"}
                       strokeWidth="4"
                     />
                     <path
@@ -403,7 +420,7 @@ const OverdueTasksComplianceView = ({
                       position: "absolute",
                       fontSize: "12px",
                       fontWeight: 700,
-                      color: "#0f172a",
+                      color: textTitle,
                       fontFamily: "Inter, sans-serif",
                     }}
                   >
@@ -413,14 +430,14 @@ const OverdueTasksComplianceView = ({
 
                 <div>
                   <h6
-                    className="fw-bold text-dark mb-0"
-                    style={{ fontSize: "14px" }}
+                    className="fw-bold mb-0"
+                    style={{ fontSize: "14px", color: textTitle }}
                   >
                     Compliance Rate
                   </h6>
                   <span
-                    className="text-muted d-block mt-0.5"
-                    style={{ fontSize: "11px" }}
+                    className="d-block mt-0.5"
+                    style={{ fontSize: "11px", color: textSub }}
                   >
                     On Time Follow-ups
                   </span>
@@ -434,7 +451,7 @@ const OverdueTasksComplianceView = ({
                     >
                       <i className="ri-arrow-up-line"></i> 0%
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       vs last period
                     </span>
                   </div>
@@ -446,13 +463,13 @@ const OverdueTasksComplianceView = ({
                 style={{
                   width: "48px",
                   height: "48px",
-                  borderRadius: "50%",
-                  backgroundColor: "rgba(127, 29, 29, 0.08)",
-                  border: "1px solid rgba(127, 29, 29, 0.15)",
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "rgba(127, 29, 29, 0.2)" : "rgba(127, 29, 29, 0.08)",
+                  border: "1px solid " + (isDark ? "rgba(127, 29, 29, 0.3)" : "rgba(127, 29, 29, 0.15)"),
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "#7f1d1d",
+                  color: isDark ? "#f87171" : "#7f1d1d",
                   fontSize: "24px",
                   flexShrink: 0,
                 }}
@@ -469,29 +486,30 @@ const OverdueTasksComplianceView = ({
         {/* Col 1: Overdue Tasks Trend Chart */}
         <Col lg={5} md={12}>
           <Card
-            className="h-100 bg-white d-flex flex-column"
+            className="h-100 d-flex flex-column"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              borderRadius: 0,
+              border: "1px solid " + cardBorder,
+              backgroundColor: cardBg,
+              boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
-              style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+              className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
+              style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}
             >
               <div className="d-flex align-items-center gap-2">
                 <i
                   className="ri-bar-chart-2-line"
-                  style={{ color: "#7f1d1d", fontSize: "16px" }}
+                  style={{ color: isDark ? "#f87171" : "#7f1d1d", fontSize: "16px" }}
                 ></i>
-                <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+                <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                   Overdue Tasks Trend
                 </span>
               </div>
               <div
                 className="d-flex align-items-center gap-3"
-                style={{ fontSize: "11.5px", color: "#475569" }}
+                style={{ fontSize: "11.5px", color: textSub }}
               >
                 <span className="d-flex align-items-center gap-1.5">
                   <span
@@ -499,11 +517,11 @@ const OverdueTasksComplianceView = ({
                       width: "9px",
                       height: "9px",
                       backgroundColor: "#7f1d1d",
-                      borderRadius: "2px",
+                      borderRadius: 0,
                       display: "inline-block",
                     }}
                   ></span>
-                  <span className="fw-medium text-dark">Total Tasks</span>
+                  <span className="fw-medium" style={{ color: textTitle }}>Total Tasks</span>
                 </span>
                 <span className="d-flex align-items-center gap-1.5">
                   <span
@@ -511,11 +529,11 @@ const OverdueTasksComplianceView = ({
                       width: "9px",
                       height: "9px",
                       backgroundColor: "#f87171",
-                      borderRadius: "2px",
+                      borderRadius: 0,
                       display: "inline-block",
                     }}
                   ></span>
-                  <span className="fw-medium text-dark">Overdue Tasks</span>
+                  <span className="fw-medium" style={{ color: textTitle }}>Overdue Tasks</span>
                 </span>
               </div>
             </div>
@@ -534,22 +552,23 @@ const OverdueTasksComplianceView = ({
         {/* Col 2: Compliance Overview Donut */}
         <Col lg={4} md={6}>
           <Card
-            className="h-100 bg-white d-flex flex-column"
+            className="h-100 d-flex flex-column"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              borderRadius: 0,
+              border: "1px solid " + cardBorder,
+              backgroundColor: cardBg,
+              boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex align-items-center gap-2"
-              style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+              className="p-3 border-bottom d-flex align-items-center gap-2"
+              style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}
             >
               <i
                 className="ri-pie-chart-2-line"
-                style={{ color: "#7f1d1d", fontSize: "16px" }}
+                style={{ color: isDark ? "#f87171" : "#7f1d1d", fontSize: "16px" }}
               ></i>
-              <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+              <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                 Compliance Overview
               </span>
             </div>
@@ -581,7 +600,7 @@ const OverdueTasksComplianceView = ({
                     style={{
                       fontSize: "22px",
                       fontWeight: 700,
-                      color: "#0f172a",
+                      color: textTitle,
                       fontFamily: "Inter, sans-serif",
                       lineHeight: "1.1",
                     }}
@@ -591,7 +610,7 @@ const OverdueTasksComplianceView = ({
                   <div
                     style={{
                       fontSize: "11px",
-                      color: "#64748b",
+                      color: textSub,
                       fontWeight: 500,
                       fontFamily: "Inter, sans-serif",
                       marginTop: "2px",
@@ -613,14 +632,14 @@ const OverdueTasksComplianceView = ({
                       style={{
                         width: "8px",
                         height: "8px",
-                        borderRadius: "50%",
+                        borderRadius: 0,
                         backgroundColor: "#16a34a",
                         display: "inline-block",
                       }}
                     ></span>
-                    <span style={{ color: "#334155", fontWeight: 500 }}>Completed</span>
+                    <span style={{ color: textSub, fontWeight: 500 }}>Completed</span>
                   </span>
-                  <span className="fw-bold text-dark font-monospace" style={{ fontSize: "13px" }}>
+                  <span className="fw-bold font-monospace" style={{ fontSize: "13px", color: textTitle }}>
                     {completedTasks}
                   </span>
                 </div>
@@ -631,14 +650,14 @@ const OverdueTasksComplianceView = ({
                       style={{
                         width: "8px",
                         height: "8px",
-                        borderRadius: "50%",
+                        borderRadius: 0,
                         backgroundColor: "#991b1b",
                         display: "inline-block",
                       }}
                     ></span>
-                    <span style={{ color: "#334155", fontWeight: 500 }}>Overdue</span>
+                    <span style={{ color: textSub, fontWeight: 500 }}>Overdue</span>
                   </span>
-                  <span className="fw-bold text-dark font-monospace" style={{ fontSize: "13px" }}>
+                  <span className="fw-bold font-monospace" style={{ fontSize: "13px", color: textTitle }}>
                     {overdueTasks}
                   </span>
                 </div>
@@ -649,14 +668,14 @@ const OverdueTasksComplianceView = ({
                       style={{
                         width: "8px",
                         height: "8px",
-                        borderRadius: "50%",
+                        borderRadius: 0,
                         backgroundColor: "#cbd5e1",
                         display: "inline-block",
                       }}
                     ></span>
-                    <span style={{ color: "#64748b", fontWeight: 500 }}>Pending</span>
+                    <span style={{ color: textSub, fontWeight: 500 }}>Pending</span>
                   </span>
-                  <span className="fw-bold text-muted font-monospace" style={{ fontSize: "13px" }}>
+                  <span className="fw-bold font-monospace" style={{ fontSize: "13px", color: textSub }}>
                     {pendingTasks}
                   </span>
                 </div>
@@ -668,22 +687,23 @@ const OverdueTasksComplianceView = ({
         {/* Col 3: Key Insights Card */}
         <Col lg={3} md={6}>
           <Card
-            className="h-100 bg-white d-flex flex-column"
+            className="h-100 d-flex flex-column"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+              borderRadius: 0,
+              border: "1px solid " + cardBorder,
+              backgroundColor: cardBg,
+              boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex align-items-center gap-2"
-              style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+              className="p-3 border-bottom d-flex align-items-center gap-2"
+              style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}
             >
               <i
                 className="ri-lightbulb-line"
-                style={{ color: "#7f1d1d", fontSize: "16px" }}
+                style={{ color: isDark ? "#f87171" : "#7f1d1d", fontSize: "16px" }}
               ></i>
-              <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+              <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                 Key Insights
               </span>
             </div>
@@ -695,15 +715,15 @@ const OverdueTasksComplianceView = ({
                     style={{
                       width: "6px",
                       height: "6px",
-                      borderRadius: "50%",
-                      backgroundColor: "#991b1b",
+                      borderRadius: 0,
+                      backgroundColor: isDark ? "#f87171" : "#991b1b",
                       marginTop: "6px",
                       flexShrink: 0,
                     }}
                   ></span>
                   <p
-                    className="mb-0 text-dark"
-                    style={{ fontSize: "12px", lineHeight: "1.5" }}
+                    className="mb-0"
+                    style={{ fontSize: "12px", lineHeight: "1.5", color: textTitle }}
                   >
                     <span className="fw-semibold">2 tasks are overdue</span> and need immediate attention.
                   </p>
@@ -714,15 +734,15 @@ const OverdueTasksComplianceView = ({
                     style={{
                       width: "6px",
                       height: "6px",
-                      borderRadius: "50%",
-                      backgroundColor: "#7f1d1d",
+                      borderRadius: 0,
+                      backgroundColor: isDark ? "#f87171" : "#7f1d1d",
                       marginTop: "6px",
                       flexShrink: 0,
                     }}
                   ></span>
                   <p
-                    className="mb-0 text-dark"
-                    style={{ fontSize: "12px", lineHeight: "1.5" }}
+                    className="mb-0"
+                    style={{ fontSize: "12px", lineHeight: "1.5", color: textTitle }}
                   >
                     Your follow-up compliance is at <span className="fw-semibold">{complianceRate}%</span>.
                   </p>
@@ -733,15 +753,15 @@ const OverdueTasksComplianceView = ({
                     style={{
                       width: "6px",
                       height: "6px",
-                      borderRadius: "50%",
-                      backgroundColor: "#7f1d1d",
+                      borderRadius: 0,
+                      backgroundColor: isDark ? "#f87171" : "#7f1d1d",
                       marginTop: "6px",
                       flexShrink: 0,
                     }}
                   ></span>
                   <p
-                    className="mb-0 text-dark"
-                    style={{ fontSize: "12px", lineHeight: "1.5" }}
+                    className="mb-0"
+                    style={{ fontSize: "12px", lineHeight: "1.5", color: textTitle }}
                   >
                     Stay on track to improve team compliance rate and prevent deal stalls.
                   </p>
@@ -753,10 +773,10 @@ const OverdueTasksComplianceView = ({
                   to="/crm/tasks"
                   className="btn btn-sm d-inline-flex align-items-center gap-1"
                   style={{
-                    backgroundColor: "#7f1d1d",
-                    borderColor: "#7f1d1d",
+                    backgroundColor: primaryColor,
+                    borderColor: primaryColor,
                     color: "#ffffff",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     fontSize: "12px",
                     fontWeight: 500,
                     padding: "5px 14px",
@@ -772,32 +792,34 @@ const OverdueTasksComplianceView = ({
 
       {/* ─── ROW 3: DETAILED DATA LEDGER (TABLE) ─────────────────────────────── */}
       <Card
-        className="bg-white mb-4"
+        className="mb-4"
         style={{
-          borderRadius: "4px",
-          border: "1px solid #e2e8f0",
-          boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
+          borderRadius: 0,
+          border: "1px solid " + cardBorder,
+          backgroundColor: cardBg,
+          boxShadow: isDark ? "none" : "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
       >
         <div
-          className="p-3 bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
+          className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
           style={{
-            borderRadius: "4px 4px 0 0",
-            borderColor: "#e2e8f0",
+            borderRadius: 0,
+            borderColor: cardBorder,
+            backgroundColor: cardBg,
           }}
         >
           <div>
             <h6
-              className="mb-0 fw-bold text-dark d-flex align-items-center gap-2"
-              style={{ fontSize: "14px" }}
+              className="mb-0 fw-bold d-flex align-items-center gap-2"
+              style={{ fontSize: "14px", color: textTitle }}
             >
               <i
                 className="ri-table-line"
-                style={{ color: "#7f1d1d", fontSize: "16px" }}
+                style={{ color: isDark ? "#f87171" : "#7f1d1d", fontSize: "16px" }}
               ></i>
               Detailed Data Ledger
             </h6>
-            <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+            <span style={{ fontSize: "11.5px", color: textSub }}>
               Showing 1 to {filteredRows.length} of {rows.length} entries
             </span>
           </div>
@@ -810,17 +832,18 @@ const OverdueTasksComplianceView = ({
                 placeholder="Search by keyword..."
                 className="form-control-sm ps-4"
                 style={{
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
-                  borderColor: "#cbd5e1",
-                  backgroundColor: "#ffffff",
+                  borderColor: subtleBorder,
+                  backgroundColor: subtleBg,
+                  color: textTitle,
                 }}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <i
-                className="ri-search-line position-absolute top-50 start-0 translate-middle-y ms-2 text-muted"
-                style={{ fontSize: "12px" }}
+                className="ri-search-line position-absolute top-50 start-0 translate-middle-y ms-2"
+                style={{ fontSize: "12px", color: textSub }}
               ></i>
             </div>
 
@@ -829,9 +852,11 @@ const OverdueTasksComplianceView = ({
               className="form-select form-select-sm"
               style={{
                 width: "125px",
-                borderRadius: "4px",
+                borderRadius: 0,
                 fontSize: "12px",
-                borderColor: "#cbd5e1",
+                borderColor: subtleBorder,
+                backgroundColor: subtleBg,
+                color: textTitle,
               }}
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -846,10 +871,10 @@ const OverdueTasksComplianceView = ({
               type="button"
               className="btn btn-sm d-flex align-items-center gap-1"
               style={{
-                backgroundColor: "#ffffff",
-                color: "#7f1d1d",
-                border: "1px solid #e2e8f0",
-                borderRadius: "4px",
+                backgroundColor: isDark ? "rgba(127, 29, 29, 0.15)" : "#ffffff",
+                color: isDark ? "#f87171" : "#7f1d1d",
+                border: "1px solid " + (isDark ? "rgba(127, 29, 29, 0.3)" : "#e2e8f0"),
+                borderRadius: 0,
                 fontSize: "12px",
                 fontWeight: 500,
                 padding: "5px 12px",
@@ -864,8 +889,8 @@ const OverdueTasksComplianceView = ({
         <CardBody className="p-0">
           <div className="table-responsive">
             <Table className="align-middle table-nowrap mb-0" hover>
-              <thead style={{ backgroundColor: "#f8fafc" }}>
-                <tr style={{ fontSize: "11.5px", color: "#64748b" }}>
+              <thead style={{ backgroundColor: subtleBg }}>
+                <tr style={{ fontSize: "11.5px", color: textSub, borderBottom: "1px solid " + cardBorder }}>
                   <th style={{ width: "40px" }} className="text-center">#</th>
                   <th>COMPANY NAME</th>
                   <th>TITLE</th>
@@ -881,7 +906,7 @@ const OverdueTasksComplianceView = ({
               <tbody style={{ fontSize: "12.5px" }}>
                 {filteredRows.length === 0 ? (
                   <tr>
-                    <td colSpan="10" className="text-center py-4 text-muted">
+                    <td colSpan="10" className="text-center py-4" style={{ color: textSub }}>
                       No overdue task records match the search criteria.
                     </td>
                   </tr>
@@ -891,27 +916,27 @@ const OverdueTasksComplianceView = ({
                     const priority = String(r.priority || "MEDIUM").toUpperCase();
 
                     return (
-                      <tr key={r.task_id || idx}>
-                        <td className="text-center text-muted" style={{ fontSize: "11px" }}>
+                      <tr key={r.task_id || idx} style={{ borderBottom: "1px solid " + cardBorder }}>
+                        <td className="text-center" style={{ fontSize: "11px", color: textSub }}>
                           {idx + 1}
                         </td>
-                        <td className="fw-semibold text-dark">
+                        <td className="fw-semibold" style={{ color: textTitle }}>
                           {r.company_name || "Client Account"}
                         </td>
-                        <td className="fw-semibold text-dark">
+                        <td className="fw-semibold" style={{ color: textTitle }}>
                           {r.title}
                         </td>
                         <td>
                           <span
                             className="font-monospace"
                             style={{
-                              backgroundColor: "#f8fafc",
-                              border: "1px solid #e2e8f0",
-                              color: "#475569",
+                              backgroundColor: subtleBg,
+                              border: "1px solid " + subtleBorder,
+                              color: isDark ? "#cbd5e1" : "#475569",
                               fontSize: "11.5px",
                               fontWeight: 600,
                               padding: "2px 8px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                             }}
                           >
                             {r.task_code || `TSK-${r.task_id}`}
@@ -920,13 +945,21 @@ const OverdueTasksComplianceView = ({
                         <td>
                           <span
                             style={{
-                              backgroundColor: priority === "HIGH" ? "#fef2f2" : "#fffbeb",
-                              color: priority === "HIGH" ? "#991b1b" : "#92400e",
-                              border: `1px solid ${priority === "HIGH" ? "#fecaca" : "#fde68a"}`,
+                              backgroundColor: priority === "HIGH"
+                                ? (isDark ? "rgba(220, 38, 38, 0.2)" : "#fef2f2")
+                                : (isDark ? "rgba(217, 119, 6, 0.2)" : "#fffbeb"),
+                              color: priority === "HIGH"
+                                ? (isDark ? "#f87171" : "#991b1b")
+                                : (isDark ? "#fbbf24" : "#92400e"),
+                              border: `1px solid ${
+                                priority === "HIGH"
+                                  ? (isDark ? "rgba(220, 38, 38, 0.4)" : "#fecaca")
+                                  : (isDark ? "rgba(217, 119, 6, 0.4)" : "#fde68a")
+                              }`,
                               fontSize: "11px",
                               fontWeight: 600,
                               padding: "2px 8px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                             }}
                           >
                             {priority === "HIGH" ? "High" : priority === "LOW" ? "Low" : "Medium"}
@@ -935,19 +968,19 @@ const OverdueTasksComplianceView = ({
                         <td>
                           <span
                             style={{
-                              backgroundColor: "#f8fafc",
-                              border: "1px solid #e2e8f0",
-                              color: "#475569",
+                              backgroundColor: isDark ? "rgba(255, 255, 255, 0.05)" : "#f8fafc",
+                              border: "1px solid " + (isDark ? "#323842" : "#e2e8f0"),
+                              color: isDark ? "#cbd5e1" : "#475569",
                               fontSize: "11.5px",
                               fontWeight: 500,
                               padding: "3px 8px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               display: "inline-flex",
                               alignItems: "center",
                               gap: "4px",
                             }}
                           >
-                            <i className="ri-time-line text-muted" style={{ fontSize: "12px" }}></i>
+                            <i className="ri-time-line" style={{ fontSize: "12px", color: textSub }}></i>
                             {daysOverdue} days
                           </span>
                         </td>
@@ -957,9 +990,9 @@ const OverdueTasksComplianceView = ({
                               style={{
                                 width: "24px",
                                 height: "24px",
-                                borderRadius: "50%",
-                                backgroundColor: "rgba(127, 29, 29, 0.1)",
-                                color: "#7f1d1d",
+                                borderRadius: 0,
+                                backgroundColor: isDark ? "rgba(127, 29, 29, 0.2)" : "rgba(127, 29, 29, 0.1)",
+                                color: isDark ? "#f87171" : "#7f1d1d",
                                 display: "inline-flex",
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -969,24 +1002,24 @@ const OverdueTasksComplianceView = ({
                             >
                               {(r.assignee || "U").charAt(0)}
                             </span>
-                            <span className="text-dark" style={{ fontSize: "12.5px" }}>
+                            <span style={{ fontSize: "12.5px", color: textTitle }}>
                               {r.assignee || "Sales Rep"}
                             </span>
                           </div>
                         </td>
-                        <td className="text-muted" style={{ fontSize: "12px" }}>
+                        <td style={{ fontSize: "12px", color: textSub }}>
                           {r.due_date}
                         </td>
                         <td>
                           <span
                             style={{
-                              backgroundColor: "#fef2f2",
-                              color: "#991b1b",
-                              border: "1px solid #fecaca",
+                              backgroundColor: isDark ? "rgba(220, 38, 38, 0.2)" : "#fef2f2",
+                              color: isDark ? "#f87171" : "#991b1b",
+                              border: "1px solid " + (isDark ? "rgba(220, 38, 38, 0.4)" : "#fecaca"),
                               fontSize: "11px",
                               fontWeight: 600,
                               padding: "2px 8px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               display: "inline-flex",
                               alignItems: "center",
                               gap: "5px",
@@ -996,8 +1029,8 @@ const OverdueTasksComplianceView = ({
                               style={{
                                 width: "6px",
                                 height: "6px",
-                                borderRadius: "50%",
-                                backgroundColor: "#dc2626",
+                                borderRadius: 0,
+                                backgroundColor: isDark ? "#f87171" : "#dc2626",
                                 display: "inline-block",
                               }}
                             ></span>
@@ -1008,24 +1041,54 @@ const OverdueTasksComplianceView = ({
                           <div className="d-flex align-items-center justify-content-center gap-1">
                             <Link
                               to="/crm/tasks"
-                              className="btn btn-sm btn-light border p-1"
-                              style={{ borderRadius: "4px", color: "#475569", width: "26px", height: "26px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                              className="btn btn-sm p-1"
+                              style={{
+                                borderRadius: 0,
+                                backgroundColor: subtleBg,
+                                border: "1px solid " + subtleBorder,
+                                color: textSub,
+                                width: "26px",
+                                height: "26px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
                               title="View Task Details"
                             >
                               <i className="ri-eye-line" style={{ fontSize: "13px" }}></i>
                             </Link>
                             <Link
                               to="/crm/tasks"
-                              className="btn btn-sm btn-light border p-1"
-                              style={{ borderRadius: "4px", color: "#475569", width: "26px", height: "26px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                              className="btn btn-sm p-1"
+                              style={{
+                                borderRadius: 0,
+                                backgroundColor: subtleBg,
+                                border: "1px solid " + subtleBorder,
+                                color: textSub,
+                                width: "26px",
+                                height: "26px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
                               title="Edit Task"
                             >
                               <i className="ri-edit-line" style={{ fontSize: "13px" }}></i>
                             </Link>
                             <button
                               type="button"
-                              className="btn btn-sm btn-light border p-1"
-                              style={{ borderRadius: "4px", color: "#475569", width: "26px", height: "26px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                              className="btn btn-sm p-1"
+                              style={{
+                                borderRadius: 0,
+                                backgroundColor: subtleBg,
+                                border: "1px solid " + subtleBorder,
+                                color: textSub,
+                                width: "26px",
+                                height: "26px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
                               title="More Options"
                             >
                               <i className="ri-more-2-line" style={{ fontSize: "13px" }}></i>
@@ -1041,14 +1104,24 @@ const OverdueTasksComplianceView = ({
           </div>
 
           {/* Table Footer Pagination */}
-          <div className="p-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div
+            className="p-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2"
+            style={{ borderColor: cardBorder }}
+          >
             <div className="d-flex align-items-center gap-2">
-              <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+              <span style={{ fontSize: "11.5px", color: textSub }}>
                 Show
               </span>
               <select
                 className="form-select form-select-sm"
-                style={{ width: "65px", fontSize: "11.5px", borderRadius: "4px" }}
+                style={{
+                  width: "65px",
+                  fontSize: "11.5px",
+                  borderRadius: 0,
+                  borderColor: subtleBorder,
+                  backgroundColor: subtleBg,
+                  color: textTitle,
+                }}
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
               >
@@ -1056,7 +1129,7 @@ const OverdueTasksComplianceView = ({
                 <option value={25}>25</option>
                 <option value={50}>50</option>
               </select>
-              <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+              <span style={{ fontSize: "11.5px", color: textSub }}>
                 Showing 1 to {filteredRows.length} of {rows.length} entries
               </span>
             </div>
@@ -1064,8 +1137,14 @@ const OverdueTasksComplianceView = ({
             <div className="btn-group btn-group-sm">
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "4px 0 0 4px", fontSize: "11px" }}
+                className="btn btn-sm"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  backgroundColor: subtleBg,
+                  borderColor: subtleBorder,
+                  color: textTitle,
+                }}
                 disabled
               >
                 &lt; Prev
@@ -1074,19 +1153,26 @@ const OverdueTasksComplianceView = ({
                 type="button"
                 className="btn btn-sm"
                 style={{
-                  backgroundColor: "#7f1d1d",
+                  backgroundColor: primaryColor,
                   color: "#ffffff",
                   fontSize: "11px",
                   fontWeight: 600,
-                  border: "1px solid #7f1d1d",
+                  border: "1px solid " + primaryColor,
+                  borderRadius: 0,
                 }}
               >
                 1
               </button>
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "0 4px 4px 0", fontSize: "11px" }}
+                className="btn btn-sm"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  backgroundColor: subtleBg,
+                  borderColor: subtleBorder,
+                  color: textTitle,
+                }}
                 disabled
               >
                 Next &gt;

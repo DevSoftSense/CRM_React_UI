@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import { useSelector } from "react-redux";
 import {
   Card,
   CardBody,
@@ -57,6 +58,13 @@ const OpportunityCreateEdit = ({
   onCancel = () => {},
   saving = false,
 }) => {
+  const layoutModeType = useSelector((state) => state.Layout?.layoutModeType);
+  const isDark =
+    layoutModeType === "dark" ||
+    (typeof document !== "undefined" &&
+      (document.documentElement.getAttribute("data-bs-theme") === "dark" ||
+        document.documentElement.getAttribute("data-layout-mode") === "dark"));
+
   // Form state
   const [formData, setFormData] = useState({
     name: "",
@@ -581,12 +589,12 @@ const OpportunityCreateEdit = ({
                   Opportunities
                 </button>
               </li>
-              <li className="breadcrumb-item active text-dark fw-semibold" aria-current="page">
+              <li className="breadcrumb-item active fw-semibold" style={{ color: isDark ? "#f0f6fc" : "#0f172a" }} aria-current="page">
                 {isEdit ? "Edit Opportunity" : "Create New Opportunity"}
               </li>
             </ol>
           </nav>
-          <h4 className="fw-bold mb-0" style={{ color: THEME.textHeading }}>
+          <h4 className="fw-bold mb-0" style={{ color: isDark ? "#f0f6fc" : THEME.textHeading }}>
             {isEdit ? `Edit Opportunity #${opportunityId}` : "Create New Opportunity"}
           </h4>
         </div>
@@ -595,9 +603,9 @@ const OpportunityCreateEdit = ({
             type="button"
             className="rounded-0 px-3 fw-medium"
             style={{
-              backgroundColor: "#ffffff",
-              color: THEME.textHeading,
-              border: `1px solid ${THEME.grayBorder}`,
+              backgroundColor: isDark ? "#21262d" : "#ffffff",
+              color: isDark ? "#f0f6fc" : THEME.textHeading,
+              border: `1px solid ${isDark ? "#30363d" : THEME.grayBorder}`,
             }}
             onClick={onCancel}
             disabled={saving}
@@ -609,9 +617,9 @@ const OpportunityCreateEdit = ({
               type="button"
               className="rounded-0 px-3 fw-medium"
               style={{
-                backgroundColor: "#ffffff",
-                color: THEME.primary,
-                border: `1px solid ${THEME.primary}`,
+                backgroundColor: isDark ? "#21262d" : "#ffffff",
+                color: isDark ? "#fca5a5" : THEME.primary,
+                border: `1px solid ${isDark ? "#fca5a5" : THEME.primary}`,
               }}
               onClick={() => handleSubmit(true)}
               disabled={saving}
@@ -1376,19 +1384,20 @@ const OpportunityCreateEdit = ({
                         onClick={() => handleStageSelect(stage)}
                       >
                         <div
-                          className="d-flex align-items-center justify-content-center mx-auto mb-1 rounded-circle"
+                          className="d-flex align-items-center justify-content-center mx-auto mb-1 rounded-0"
                           style={{
                             width: 28,
                             height: 28,
-                            backgroundColor: isPassed ? THEME.primary : "#ffffff",
-                            border: `2px solid ${isPassed ? THEME.primary : THEME.grayBorder}`,
-                            color: isPassed ? "#ffffff" : THEME.textMuted,
+                            borderRadius: 0,
+                            backgroundColor: isPassed ? THEME.primary : (isDark ? "#21262d" : "#ffffff"),
+                            border: `2px solid ${isPassed ? THEME.primary : (isDark ? "#30363d" : THEME.grayBorder)}`,
+                            color: isPassed ? "#ffffff" : (isDark ? "#8b949e" : THEME.textMuted),
                             fontSize: 12,
                             fontWeight: "bold",
                             transition: "all 0.2s ease",
                           }}
                         >
-                          {isPassed ? <i className="ri-check-line" /> : <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: THEME.grayBorder }} />}
+                          {isPassed ? <i className="ri-check-line" /> : <span style={{ width: 8, height: 8, borderRadius: 0, backgroundColor: isDark ? "#484f58" : THEME.grayBorder }} />}
                         </div>
                         <span
                           className="d-block text-center"
@@ -1514,12 +1523,12 @@ const OpportunityCreateEdit = ({
                   >
                     <div
                       className="d-flex align-items-center justify-content-center p-2 rounded-0"
-                      style={{ backgroundColor: "#fff7ed", color: "#ea580c" }}
+                      style={{ backgroundColor: isDark ? "rgba(234, 88, 12, 0.2)" : "#fff7ed", color: isDark ? "#fb923c" : "#ea580c" }}
                     >
                       <i className="ri-calendar-event-line fs-5" />
                     </div>
                     <div>
-                      <div className="fw-semibold small" style={{ color: THEME.textHeading }}>Schedule Activity</div>
+                      <div className="fw-semibold small" style={{ color: isDark ? "#f0f6fc" : THEME.textHeading }}>Schedule Activity</div>
                       <div className="text-muted" style={{ fontSize: 10 }}>Call or demo</div>
                     </div>
                   </button>
@@ -1529,17 +1538,20 @@ const OpportunityCreateEdit = ({
                   <button
                     type="button"
                     className="btn btn-light w-100 p-2 rounded-0 border text-start d-flex align-items-center gap-2"
-                    style={{ borderColor: THEME.grayBorder }}
+                    style={{
+                      borderColor: isDark ? "#30363d" : THEME.grayBorder,
+                      backgroundColor: isDark ? "#21262d" : undefined,
+                    }}
                     onClick={() => setTaskModalOpen(true)}
                   >
                     <div
                       className="d-flex align-items-center justify-content-center p-2 rounded-0"
-                      style={{ backgroundColor: "#faf5ff", color: "#9333ea" }}
+                      style={{ backgroundColor: isDark ? "rgba(147, 51, 234, 0.2)" : "#faf5ff", color: isDark ? "#c084fc" : "#9333ea" }}
                     >
                       <i className="ri-checkbox-circle-line fs-5" />
                     </div>
                     <div>
-                      <div className="fw-semibold small" style={{ color: THEME.textHeading }}>Add Task</div>
+                      <div className="fw-semibold small" style={{ color: isDark ? "#f0f6fc" : THEME.textHeading }}>Add Task</div>
                       <div className="text-muted" style={{ fontSize: 10 }}>Action item follow-up</div>
                     </div>
                   </button>
@@ -1549,17 +1561,20 @@ const OpportunityCreateEdit = ({
                   <button
                     type="button"
                     className="btn btn-light w-100 p-2 rounded-0 border text-start d-flex align-items-center gap-2"
-                    style={{ borderColor: THEME.grayBorder }}
+                    style={{
+                      borderColor: isDark ? "#30363d" : THEME.grayBorder,
+                      backgroundColor: isDark ? "#21262d" : undefined,
+                    }}
                     onClick={handleOpenQuoteModal}
                   >
                     <div
                       className="d-flex align-items-center justify-content-center p-2 rounded-0"
-                      style={{ backgroundColor: "#f0fdfa", color: "#0d9488" }}
+                      style={{ backgroundColor: isDark ? "rgba(13, 148, 136, 0.2)" : "#f0fdfa", color: isDark ? "#2dd4bf" : "#0d9488" }}
                     >
                       <i className="ri-file-list-3-line fs-5" />
                     </div>
                     <div>
-                      <div className="fw-semibold small" style={{ color: THEME.textHeading }}>Create Quote</div>
+                      <div className="fw-semibold small" style={{ color: isDark ? "#f0f6fc" : THEME.textHeading }}>Create Quote</div>
                       <div className="text-muted" style={{ fontSize: 10 }}>Official proposal</div>
                     </div>
                   </button>
@@ -1569,17 +1584,20 @@ const OpportunityCreateEdit = ({
                   <button
                     type="button"
                     className="btn btn-light w-100 p-2 rounded-0 border text-start d-flex align-items-center gap-2"
-                    style={{ borderColor: THEME.grayBorder }}
+                    style={{
+                      borderColor: isDark ? "#30363d" : THEME.grayBorder,
+                      backgroundColor: isDark ? "#21262d" : undefined,
+                    }}
                     onClick={() => fileInputRef.current?.click()}
                   >
                     <div
                       className="d-flex align-items-center justify-content-center p-2 rounded-0"
-                      style={{ backgroundColor: "#fdf2f8", color: "#db2777" }}
+                      style={{ backgroundColor: isDark ? "rgba(219, 39, 119, 0.2)" : "#fdf2f8", color: isDark ? "#f472b6" : "#db2777" }}
                     >
                       <i className="ri-file-upload-line fs-5" />
                     </div>
                     <div>
-                      <div className="fw-semibold small" style={{ color: THEME.textHeading }}>Upload Document</div>
+                      <div className="fw-semibold small" style={{ color: isDark ? "#f0f6fc" : THEME.textHeading }}>Upload Document</div>
                       <div className="text-muted" style={{ fontSize: 10 }}>Attach files</div>
                     </div>
                   </button>
@@ -1589,7 +1607,10 @@ const OpportunityCreateEdit = ({
                   <button
                     type="button"
                     className="btn btn-light w-100 p-2 rounded-0 border text-start d-flex align-items-center gap-2"
-                    style={{ borderColor: THEME.grayBorder }}
+                    style={{
+                      borderColor: isDark ? "#30363d" : THEME.grayBorder,
+                      backgroundColor: isDark ? "#21262d" : undefined,
+                    }}
                     onClick={() => {
                       notesTextareaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
                       notesTextareaRef.current?.focus();
@@ -1597,12 +1618,12 @@ const OpportunityCreateEdit = ({
                   >
                     <div
                       className="d-flex align-items-center justify-content-center p-2 rounded-0"
-                      style={{ backgroundColor: "#fffbeb", color: "#d97706" }}
+                      style={{ backgroundColor: isDark ? "rgba(217, 119, 6, 0.2)" : "#fffbeb", color: isDark ? "#fbbf24" : "#d97706" }}
                     >
                       <i className="ri-edit-line fs-5" />
                     </div>
                     <div>
-                      <div className="fw-semibold small" style={{ color: THEME.textHeading }}>Add Note</div>
+                      <div className="fw-semibold small" style={{ color: isDark ? "#f0f6fc" : THEME.textHeading }}>Add Note</div>
                       <div className="text-muted" style={{ fontSize: 10 }}>Meeting takeaways</div>
                     </div>
                   </button>

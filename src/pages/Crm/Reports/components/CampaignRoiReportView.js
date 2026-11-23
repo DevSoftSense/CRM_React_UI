@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useSelector } from "react-redux";
 import ReactApexChart from "react-apexcharts";
 import {
   Row,
@@ -21,6 +22,16 @@ const CampaignRoiReportView = ({
   onOwnerChange,
   onExport,
 }) => {
+  const layoutMode = useSelector((state) => state.Layout?.layoutModeType);
+  const isDark = layoutMode === "dark";
+
+  const cardBg = isDark ? "#161b22" : "#ffffff";
+  const cardBorder = isDark ? "#21262d" : "#e2e8f0";
+  const subtleBg = isDark ? "#0d1117" : "#f8fafc";
+  const subtleBorder = isDark ? "#30363d" : "#e2e8f0";
+  const textTitle = isDark ? "#f0f6fc" : "#0f172a";
+  const textSub = isDark ? "#8b949e" : "#64748b";
+
   const [searchTerm, setSearchTerm] = useState("");
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -117,7 +128,7 @@ const CampaignRoiReportView = ({
           bar: {
             horizontal: false,
             columnWidth: hasWonRevenue ? "55%" : "44%",
-            borderRadius: 4,
+            borderRadius: 0,
             borderRadiusApplication: "end",
             dataLabels: {
               position: "top",
@@ -131,7 +142,7 @@ const CampaignRoiReportView = ({
             fontSize: "10.5px",
             fontFamily: "Inter, sans-serif",
             fontWeight: 600,
-            colors: ["#1e293b"],
+            colors: [isDark ? "#f0f6fc" : "#1e293b"],
           },
           offsetY: -14,
           formatter: (val) => {
@@ -140,7 +151,7 @@ const CampaignRoiReportView = ({
           },
         },
         grid: {
-          borderColor: "#f1f5f9",
+          borderColor: isDark ? "#21262d" : "#f1f5f9",
           strokeDashArray: 3,
           xaxis: { lines: { show: false } },
           yaxis: { lines: { show: true } },
@@ -155,7 +166,7 @@ const CampaignRoiReportView = ({
           categories,
           labels: {
             style: {
-              colors: "#334155",
+              colors: isDark ? "#c9d1d9" : "#334155",
               fontSize: "11.5px",
               fontFamily: "Inter, sans-serif",
               fontWeight: 500,
@@ -164,7 +175,7 @@ const CampaignRoiReportView = ({
             trim: false,
             offsetY: 2,
           },
-          axisBorder: { color: "#e2e8f0" },
+          axisBorder: { color: isDark ? "#21262d" : "#e2e8f0" },
           axisTicks: { show: false },
         },
         yaxis: {
@@ -172,7 +183,7 @@ const CampaignRoiReportView = ({
           tickAmount: 4,
           labels: {
             style: {
-              colors: "#64748b",
+              colors: textSub,
               fontSize: "11px",
               fontFamily: "Inter, sans-serif",
             },
@@ -192,7 +203,7 @@ const CampaignRoiReportView = ({
         },
       },
     };
-  }, [chartData, hasWonRevenue]);
+  }, [chartData, hasWonRevenue, isDark, textSub]);
 
   return (
     <div className="campaign-roi-report-view">
@@ -201,10 +212,11 @@ const CampaignRoiReportView = ({
         {/* Card 1: Total Spend */}
         <Col lg={4} md={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
+              backgroundColor: cardBg,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               transition: "all 0.15s ease",
             }}
@@ -215,7 +227,7 @@ const CampaignRoiReportView = ({
                   style={{
                     width: "48px",
                     height: "48px",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     backgroundColor: "rgba(127, 29, 29, 0.08)",
                     color: "#7f1d1d",
                     display: "flex",
@@ -229,24 +241,25 @@ const CampaignRoiReportView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "11.5px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "11.5px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Total Spend
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "26px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {formatCurrency(totalSpend)}
                   </div>
                   <span
-                    className="text-muted mt-1 d-inline-block"
-                    style={{ fontSize: "11px" }}
+                    className="mt-1 d-inline-block"
+                    style={{ fontSize: "11px", color: textSub }}
                   >
                     Actual marketing expenditure
                   </span>
@@ -257,13 +270,13 @@ const CampaignRoiReportView = ({
                 style={{
                   width: "28px",
                   height: "28px",
-                  borderRadius: "50%",
-                  backgroundColor: "#f8fafc",
-                  border: "1px solid #e2e8f0",
+                  borderRadius: 0,
+                  backgroundColor: subtleBg,
+                  border: `1px solid ${cardBorder}`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "#64748b",
+                  color: textSub,
                   fontSize: "14px",
                 }}
               >
@@ -276,10 +289,11 @@ const CampaignRoiReportView = ({
         {/* Card 2: Total Budget */}
         <Col lg={4} md={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
+              backgroundColor: cardBg,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               transition: "all 0.15s ease",
             }}
@@ -290,7 +304,7 @@ const CampaignRoiReportView = ({
                   style={{
                     width: "48px",
                     height: "48px",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     backgroundColor: "rgba(127, 29, 29, 0.08)",
                     color: "#7f1d1d",
                     display: "flex",
@@ -304,24 +318,25 @@ const CampaignRoiReportView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "11.5px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "11.5px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Total Budget
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
+                    className="fw-bold font-monospace"
                     style={{
                       fontSize: "26px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {formatCurrency(totalBudget)}
                   </div>
                   <span
-                    className="text-muted mt-1 d-inline-block"
-                    style={{ fontSize: "11px" }}
+                    className="mt-1 d-inline-block"
+                    style={{ fontSize: "11px", color: textSub }}
                   >
                     Allocated campaign funds
                   </span>
@@ -332,13 +347,13 @@ const CampaignRoiReportView = ({
                 style={{
                   width: "28px",
                   height: "28px",
-                  borderRadius: "50%",
-                  backgroundColor: "#f8fafc",
-                  border: "1px solid #e2e8f0",
+                  borderRadius: 0,
+                  backgroundColor: subtleBg,
+                  border: `1px solid ${cardBorder}`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "#64748b",
+                  color: textSub,
                   fontSize: "14px",
                 }}
               >
@@ -351,10 +366,11 @@ const CampaignRoiReportView = ({
         {/* Card 3: Total Campaigns */}
         <Col lg={4} md={12}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
+              backgroundColor: cardBg,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
@@ -364,7 +380,7 @@ const CampaignRoiReportView = ({
                   style={{
                     width: "48px",
                     height: "48px",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     backgroundColor: "rgba(127, 29, 29, 0.08)",
                     color: "#7f1d1d",
                     display: "flex",
@@ -378,24 +394,25 @@ const CampaignRoiReportView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-1"
-                    style={{ fontSize: "11.5px", letterSpacing: "0.4px" }}
+                    className="text-uppercase fw-semibold d-block mb-1"
+                    style={{ fontSize: "11.5px", letterSpacing: "0.4px", color: textSub }}
                   >
                     Total Campaigns
                   </span>
                   <div
-                    className="fw-bold text-dark"
+                    className="fw-bold"
                     style={{
                       fontSize: "26px",
                       letterSpacing: "-0.5px",
                       lineHeight: "1.1",
+                      color: textTitle,
                     }}
                   >
                     {totalCampaigns}
                   </div>
                   <span
-                    className="text-muted mt-1 d-inline-block"
-                    style={{ fontSize: "11px" }}
+                    className="mt-1 d-inline-block"
+                    style={{ fontSize: "11px", color: textSub }}
                   >
                     {totalLeads} {totalLeads === 1 ? "lead" : "leads"} generated
                   </span>
@@ -406,13 +423,13 @@ const CampaignRoiReportView = ({
                 style={{
                   width: "28px",
                   height: "28px",
-                  borderRadius: "50%",
-                  backgroundColor: "#f8fafc",
-                  border: "1px solid #e2e8f0",
+                  borderRadius: 0,
+                  backgroundColor: subtleBg,
+                  border: `1px solid ${cardBorder}`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "#64748b",
+                  color: textSub,
                   fontSize: "14px",
                 }}
               >
@@ -428,18 +445,20 @@ const CampaignRoiReportView = ({
         {/* Left: Campaign Spend & Revenue Comparison Chart */}
         <Col lg={8} md={12}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
+              backgroundColor: cardBg,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
+              className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
               style={{
-                borderRadius: "4px 4px 0 0",
-                borderColor: "#e2e8f0",
+                borderRadius: 0,
+                borderColor: cardBorder,
+                backgroundColor: cardBg,
               }}
             >
               <div className="d-flex align-items-center gap-2">
@@ -447,13 +466,13 @@ const CampaignRoiReportView = ({
                   className="ri-bar-chart-fill"
                   style={{ color: "#7f1d1d", fontSize: "16px" }}
                 ></i>
-                <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+                <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                   Campaign Spend & Revenue Comparison
                 </span>
               </div>
               <div
                 className="d-flex align-items-center gap-3"
-                style={{ fontSize: "12px", color: "#475569" }}
+                style={{ fontSize: "12px", color: textSub }}
               >
                 <span className="d-flex align-items-center gap-1.5">
                   <span
@@ -461,11 +480,11 @@ const CampaignRoiReportView = ({
                       width: "10px",
                       height: "10px",
                       backgroundColor: "#7f1d1d",
-                      borderRadius: "2px",
+                      borderRadius: 0,
                       display: "inline-block",
                     }}
                   ></span>
-                  <span className="fw-medium text-dark">Budget</span>
+                  <span className="fw-medium" style={{ color: textTitle }}>Budget</span>
                 </span>
                 <span className="d-flex align-items-center gap-1.5">
                   <span
@@ -473,11 +492,11 @@ const CampaignRoiReportView = ({
                       width: "10px",
                       height: "10px",
                       backgroundColor: "#f87171",
-                      borderRadius: "2px",
+                      borderRadius: 0,
                       display: "inline-block",
                     }}
                   ></span>
-                  <span className="fw-medium text-dark">Actual Spend</span>
+                  <span className="fw-medium" style={{ color: textTitle }}>Actual Spend</span>
                 </span>
                 <span className="d-flex align-items-center gap-1.5">
                   <span
@@ -485,11 +504,11 @@ const CampaignRoiReportView = ({
                       width: "10px",
                       height: "10px",
                       backgroundColor: "#16a34a",
-                      borderRadius: "2px",
+                      borderRadius: 0,
                       display: "inline-block",
                     }}
                   ></span>
-                  <span className="fw-medium text-dark">
+                  <span className="fw-medium" style={{ color: textTitle }}>
                     Won Revenue {hasWonRevenue ? "" : "(₹ 0)"}
                   </span>
                 </span>
@@ -510,25 +529,27 @@ const CampaignRoiReportView = ({
         {/* Right: Key Insight Card */}
         <Col lg={4} md={12}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              border: `1px solid ${cardBorder}`,
+              backgroundColor: cardBg,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
             <div
-              className="p-3 bg-white border-bottom d-flex align-items-center gap-2"
+              className="p-3 border-bottom d-flex align-items-center gap-2"
               style={{
-                borderRadius: "4px 4px 0 0",
-                borderColor: "#e2e8f0",
+                borderRadius: 0,
+                borderColor: cardBorder,
+                backgroundColor: cardBg,
               }}
             >
               <i
                 className="ri-lightbulb-line"
                 style={{ color: "#7f1d1d", fontSize: "16px" }}
               ></i>
-              <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
+              <span className="fw-bold" style={{ fontSize: "13.5px", color: textTitle }}>
                 Key Insight
               </span>
             </div>
@@ -539,9 +560,9 @@ const CampaignRoiReportView = ({
                 style={{
                   width: "72px",
                   height: "82px",
-                  borderRadius: "6px",
-                  backgroundColor: "#fef2f2",
-                  border: "1.5px solid #fecaca",
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "rgba(127, 29, 29, 0.15)" : "#fef2f2",
+                  border: isDark ? "1.5px solid rgba(248, 113, 113, 0.3)" : "1.5px solid #fecaca",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
@@ -556,7 +577,7 @@ const CampaignRoiReportView = ({
                     width: "42px",
                     height: "3.5px",
                     backgroundColor: "#f87171",
-                    borderRadius: "2px",
+                    borderRadius: 0,
                     marginBottom: "7px",
                   }}
                 ></div>
@@ -565,7 +586,7 @@ const CampaignRoiReportView = ({
                     width: "32px",
                     height: "3.5px",
                     backgroundColor: "#f87171",
-                    borderRadius: "2px",
+                    borderRadius: 0,
                     marginBottom: "7px",
                   }}
                 ></div>
@@ -574,7 +595,7 @@ const CampaignRoiReportView = ({
                     width: "38px",
                     height: "3.5px",
                     backgroundColor: "#f87171",
-                    borderRadius: "2px",
+                    borderRadius: 0,
                   }}
                 ></div>
                 <div
@@ -584,7 +605,7 @@ const CampaignRoiReportView = ({
                     right: "-8px",
                     width: "28px",
                     height: "28px",
-                    borderRadius: "50%",
+                    borderRadius: 0,
                     backgroundColor: "#7f1d1d",
                     color: "#ffffff",
                     display: "flex",
@@ -592,7 +613,7 @@ const CampaignRoiReportView = ({
                     justifyContent: "center",
                     fontSize: "15px",
                     fontWeight: "bold",
-                    border: "2.5px solid #ffffff",
+                    border: isDark ? "2.5px solid #161b22" : "2.5px solid #ffffff",
                     boxShadow: "0 2px 5px rgba(0, 0, 0, 0.15)",
                   }}
                 >
@@ -601,8 +622,8 @@ const CampaignRoiReportView = ({
               </div>
 
               <h6
-                className="fw-bold text-dark mb-2"
-                style={{ fontSize: "15px", lineHeight: "1.4" }}
+                className="fw-bold mb-2"
+                style={{ fontSize: "15px", lineHeight: "1.4", color: textTitle }}
               >
                 {totalWonRevenue > 0
                   ? `Recorded ${formatCurrency(totalWonRevenue)} won revenue across active campaigns.`
@@ -610,8 +631,8 @@ const CampaignRoiReportView = ({
               </h6>
 
               <p
-                className="text-muted small mb-3"
-                style={{ fontSize: "12px", lineHeight: "1.5", maxWidth: "260px" }}
+                className="small mb-3"
+                style={{ fontSize: "12px", lineHeight: "1.5", maxWidth: "260px", color: textSub }}
               >
                 {totalWonRevenue > 0
                   ? "Campaign attribution is delivering positive returns. Review detailed ROI breakdown in the ledger below."
@@ -619,13 +640,17 @@ const CampaignRoiReportView = ({
               </p>
 
               <div
-                className="p-2 px-3 border bg-light w-100 d-flex align-items-center justify-content-between"
-                style={{ borderRadius: "4px", borderColor: "#e2e8f0" }}
+                className="p-2 px-3 border w-100 d-flex align-items-center justify-content-between"
+                style={{
+                  borderRadius: 0,
+                  borderColor: cardBorder,
+                  backgroundColor: subtleBg,
+                }}
               >
-                <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+                <span className="small" style={{ fontSize: "11.5px", color: textSub }}>
                   Budget Utilization
                 </span>
-                <span className="fw-bold text-dark font-monospace" style={{ fontSize: "12px" }}>
+                <span className="fw-bold font-monospace" style={{ fontSize: "12px", color: textTitle }}>
                   100% Allocated
                 </span>
               </div>
@@ -636,24 +661,26 @@ const CampaignRoiReportView = ({
 
       {/* ─── ROW 3: DETAILED DATA LEDGER (TABLE) ─────────────────────────────── */}
       <Card
-        className="bg-white mb-4"
+        className="mb-4"
         style={{
-          borderRadius: "4px",
-          border: "1px solid #e2e8f0",
+          borderRadius: 0,
+          border: `1px solid ${cardBorder}`,
+          backgroundColor: cardBg,
           boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
       >
         <div
-          className="p-3 bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
+          className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
           style={{
-            borderRadius: "4px 4px 0 0",
-            borderColor: "#e2e8f0",
+            borderRadius: 0,
+            borderColor: cardBorder,
+            backgroundColor: cardBg,
           }}
         >
           <div>
             <h6
-              className="mb-0 fw-bold text-dark d-flex align-items-center gap-2"
-              style={{ fontSize: "14px" }}
+              className="mb-0 fw-bold d-flex align-items-center gap-2"
+              style={{ fontSize: "14px", color: textTitle }}
             >
               <i
                 className="ri-table-line"
@@ -661,7 +688,7 @@ const CampaignRoiReportView = ({
               ></i>
               Detailed Data Ledger
             </h6>
-            <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+            <span className="small" style={{ fontSize: "11.5px", color: textSub }}>
               Showing {filteredRows.length} of {rows.length} transaction records
             </span>
           </div>
@@ -674,10 +701,11 @@ const CampaignRoiReportView = ({
                 placeholder="Search campaign..."
                 className="form-control-sm ps-4"
                 style={{
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
-                  borderColor: "#cbd5e1",
-                  backgroundColor: "#ffffff",
+                  borderColor: subtleBorder,
+                  backgroundColor: subtleBg,
+                  color: textTitle,
                 }}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -693,10 +721,10 @@ const CampaignRoiReportView = ({
               type="button"
               className="btn btn-sm d-flex align-items-center gap-1"
               style={{
-                backgroundColor: "#ffffff",
-                color: "#7f1d1d",
-                border: "1px solid #e2e8f0",
-                borderRadius: "4px",
+                backgroundColor: subtleBg,
+                color: isDark ? "#f87171" : "#7f1d1d",
+                border: `1px solid ${cardBorder}`,
+                borderRadius: 0,
                 fontSize: "12px",
                 fontWeight: 500,
                 padding: "5px 12px",
@@ -710,22 +738,22 @@ const CampaignRoiReportView = ({
 
         <CardBody className="p-0">
           <div className="table-responsive">
-            <Table className="align-middle table-nowrap mb-0" hover>
-              <thead style={{ backgroundColor: "#f8fafc" }}>
-                <tr style={{ fontSize: "11.5px", color: "#64748b" }}>
-                  <th style={{ width: "40px" }} className="text-center">#</th>
-                  <th>CAMPAIGN NAME</th>
-                  <th>WON REVENUE</th>
-                  <th>BUDGET</th>
-                  <th>ACTUAL SPEND</th>
-                  <th>ROI PERCENTAGE</th>
-                  <th>LEADS GENERATED</th>
+            <Table className="align-middle table-nowrap mb-0" hover style={{ borderColor: cardBorder }}>
+              <thead style={{ backgroundColor: subtleBg, borderBottom: `1px solid ${cardBorder}` }}>
+                <tr style={{ fontSize: "11.5px", color: textSub }}>
+                  <th style={{ width: "40px", backgroundColor: "transparent", color: textSub }} className="text-center">#</th>
+                  <th style={{ backgroundColor: "transparent", color: textSub }}>CAMPAIGN NAME</th>
+                  <th style={{ backgroundColor: "transparent", color: textSub }}>WON REVENUE</th>
+                  <th style={{ backgroundColor: "transparent", color: textSub }}>BUDGET</th>
+                  <th style={{ backgroundColor: "transparent", color: textSub }}>ACTUAL SPEND</th>
+                  <th style={{ backgroundColor: "transparent", color: textSub }}>ROI PERCENTAGE</th>
+                  <th style={{ backgroundColor: "transparent", color: textSub }}>LEADS GENERATED</th>
                 </tr>
               </thead>
               <tbody style={{ fontSize: "12.5px" }}>
                 {filteredRows.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="text-center py-4 text-muted">
+                    <td colSpan="7" className="text-center py-4" style={{ color: textSub }}>
                       No campaign records match the search criteria.
                     </td>
                   </tr>
@@ -736,8 +764,8 @@ const CampaignRoiReportView = ({
                     const isZero = roi === 0;
 
                     return (
-                      <tr key={c.campaign_id || idx}>
-                        <td className="text-center text-muted" style={{ fontSize: "11px" }}>
+                      <tr key={c.campaign_id || idx} style={{ borderBottom: `1px solid ${cardBorder}` }}>
+                        <td className="text-center" style={{ fontSize: "11px", color: textSub }}>
                           {idx + 1}
                         </td>
                         <td>
@@ -746,7 +774,7 @@ const CampaignRoiReportView = ({
                               style={{
                                 width: "24px",
                                 height: "24px",
-                                borderRadius: "4px",
+                                borderRadius: 0,
                                 backgroundColor: "rgba(127, 29, 29, 0.08)",
                                 color: "#7f1d1d",
                                 display: "inline-flex",
@@ -758,44 +786,44 @@ const CampaignRoiReportView = ({
                             >
                               <i className="ri-megaphone-line"></i>
                             </span>
-                            <span className="fw-semibold text-dark">
+                            <span className="fw-semibold" style={{ color: textTitle }}>
                               {c.campaign_name}
                             </span>
                           </div>
                         </td>
-                        <td className="fw-bold text-dark font-monospace" style={{ fontSize: "12px" }}>
+                        <td className="fw-bold font-monospace" style={{ fontSize: "12px", color: textTitle }}>
                           {formatCurrency(c.won_revenue || 0)}
                         </td>
-                        <td className="fw-bold text-dark font-monospace" style={{ fontSize: "12px" }}>
+                        <td className="fw-bold font-monospace" style={{ fontSize: "12px", color: textTitle }}>
                           {formatCurrency(c.budget || 0)}
                         </td>
-                        <td className="fw-bold text-dark font-monospace" style={{ fontSize: "12px" }}>
+                        <td className="fw-bold font-monospace" style={{ fontSize: "12px", color: textTitle }}>
                           {formatCurrency(c.actual_spend || c.budget || 0)}
                         </td>
                         <td>
                           <span
                             style={{
                               backgroundColor: isPositive
-                                ? "#f0fdf4"
+                                ? (isDark ? "rgba(22, 101, 52, 0.2)" : "#f0fdf4")
                                 : isZero
-                                ? "#f8fafc"
-                                : "#fef2f2",
+                                ? (isDark ? "rgba(100, 116, 139, 0.15)" : "#f8fafc")
+                                : (isDark ? "rgba(153, 27, 27, 0.2)" : "#fef2f2"),
                               color: isPositive
-                                ? "#166534"
+                                ? (isDark ? "#4ade80" : "#166534")
                                 : isZero
-                                ? "#475569"
-                                : "#991b1b",
+                                ? (isDark ? "#94a3b8" : "#475569")
+                                : (isDark ? "#f87171" : "#991b1b"),
                               border: `1px solid ${
                                 isPositive
-                                  ? "#bbf7d0"
+                                  ? (isDark ? "rgba(74, 222, 128, 0.3)" : "#bbf7d0")
                                   : isZero
-                                  ? "#e2e8f0"
-                                  : "#fecaca"
+                                  ? (isDark ? "#30363d" : "#e2e8f0")
+                                  : (isDark ? "rgba(248, 113, 113, 0.3)" : "#fecaca")
                               }`,
                               fontSize: "11.5px",
                               fontWeight: 600,
                               padding: "2px 8px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               display: "inline-block",
                             }}
                           >
@@ -805,13 +833,21 @@ const CampaignRoiReportView = ({
                         <td>
                           <span
                             style={{
-                              backgroundColor: (c.leads_generated || 0) > 0 ? "#f0fdf4" : "#f8fafc",
-                              border: `1px solid ${(c.leads_generated || 0) > 0 ? "#bbf7d0" : "#e2e8f0"}`,
-                              color: (c.leads_generated || 0) > 0 ? "#166534" : "#64748b",
+                              backgroundColor: (c.leads_generated || 0) > 0
+                                ? (isDark ? "rgba(22, 101, 52, 0.2)" : "#f0fdf4")
+                                : (isDark ? "rgba(100, 116, 139, 0.15)" : "#f8fafc"),
+                              border: `1px solid ${
+                                (c.leads_generated || 0) > 0
+                                  ? (isDark ? "rgba(74, 222, 128, 0.3)" : "#bbf7d0")
+                                  : (isDark ? "#30363d" : "#e2e8f0")
+                              }`,
+                              color: (c.leads_generated || 0) > 0
+                                ? (isDark ? "#4ade80" : "#166534")
+                                : textSub,
                               fontSize: "11px",
                               fontWeight: 600,
                               padding: "2px 8px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                             }}
                           >
                             {(c.leads_generated || 0) > 0
@@ -828,14 +864,24 @@ const CampaignRoiReportView = ({
           </div>
 
           {/* Table Footer Pagination */}
-          <div className="p-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div
+            className="p-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2"
+            style={{ borderColor: cardBorder }}
+          >
             <div className="d-flex align-items-center gap-2">
-              <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+              <span className="small" style={{ fontSize: "11.5px", color: textSub }}>
                 Show
               </span>
               <select
                 className="form-select form-select-sm"
-                style={{ width: "65px", fontSize: "11.5px", borderRadius: "4px" }}
+                style={{
+                  width: "65px",
+                  fontSize: "11.5px",
+                  borderRadius: 0,
+                  backgroundColor: subtleBg,
+                  color: textTitle,
+                  borderColor: subtleBorder,
+                }}
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
               >
@@ -843,7 +889,7 @@ const CampaignRoiReportView = ({
                 <option value={25}>25</option>
                 <option value={50}>50</option>
               </select>
-              <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+              <span className="small" style={{ fontSize: "11.5px", color: textSub }}>
                 Showing 1 to {filteredRows.length} of {rows.length} records
               </span>
             </div>
@@ -851,8 +897,14 @@ const CampaignRoiReportView = ({
             <div className="btn-group btn-group-sm">
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "4px 0 0 4px", fontSize: "11px" }}
+                className="btn btn-sm"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  backgroundColor: subtleBg,
+                  color: textSub,
+                  border: `1px solid ${cardBorder}`,
+                }}
                 disabled
               >
                 &lt; Prev
@@ -861,6 +913,7 @@ const CampaignRoiReportView = ({
                 type="button"
                 className="btn btn-sm"
                 style={{
+                  borderRadius: 0,
                   backgroundColor: "#7f1d1d",
                   color: "#ffffff",
                   fontSize: "11px",
@@ -872,8 +925,14 @@ const CampaignRoiReportView = ({
               </button>
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "0 4px 4px 0", fontSize: "11px" }}
+                className="btn btn-sm"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  backgroundColor: subtleBg,
+                  color: textSub,
+                  border: `1px solid ${cardBorder}`,
+                }}
                 disabled
               >
                 Next &gt;

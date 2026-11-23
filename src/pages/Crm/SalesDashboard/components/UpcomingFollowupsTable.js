@@ -64,11 +64,11 @@ const UpcomingFollowupsTable = ({ followups = [] }) => {
 
   return (
     <Card
-      className="border shadow-none h-100 mb-0 bg-white"
+      className="border shadow-none h-100 mb-0"
       style={{
         borderRadius: 0,
-        borderColor: isDark ? "#262626" : "#e2e8f0",
-        backgroundColor: isDark ? "#121212" : "#ffffff",
+        borderColor: isDark ? "#21262d" : "#e2e8f0",
+        backgroundColor: isDark ? "#161b22" : "#ffffff",
       }}
     >
       {/* Top Header: Indicator + Title */}
@@ -79,7 +79,7 @@ const UpcomingFollowupsTable = ({ followups = [] }) => {
               width: 8,
               height: 8,
               backgroundColor: "#b91c1c",
-              borderRadius: "50%",
+              borderRadius: 0,
               display: "inline-block",
             }}
           />
@@ -108,7 +108,7 @@ const UpcomingFollowupsTable = ({ followups = [] }) => {
               return (
                 <div
                   key={idx}
-                  className="d-flex align-items-center justify-content-between p-2 rounded-2"
+                  className="d-flex align-items-center justify-content-between p-2 rounded-0"
                   style={{
                     borderBottom: isLast
                       ? "none"
@@ -124,15 +124,15 @@ const UpcomingFollowupsTable = ({ followups = [] }) => {
                     e.currentTarget.style.backgroundColor = "transparent";
                   }}
                 >
-                  {/* Left: Circular Pink Date Badge + Title & Company */}
+                  {/* Left: Square Pink Date Badge + Title & Company */}
                   <div className="d-flex align-items-center gap-3 min-w-0">
-                    {/* Pink Coin Circular Date Badge */}
+                    {/* Pink Coin Square Date Badge */}
                     <div
                       className="d-flex flex-column align-items-center justify-content-center flex-shrink-0"
                       style={{
                         width: "44px",
                         height: "44px",
-                        borderRadius: "50%",
+                        borderRadius: 0,
                         background: isDark
                           ? "radial-gradient(circle at 35% 35%, rgba(244, 63, 94, 0.25), #141414)"
                           : "radial-gradient(circle at 35% 35%, #fff1f2 0%, #ffe4e6 70%, #fecdd3 100%)",

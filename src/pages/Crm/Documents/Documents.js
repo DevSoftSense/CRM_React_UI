@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import {
   Container,
@@ -36,7 +37,7 @@ const TAB_OPTIONS = [
   { id: "trash", label: "Trash" },
 ];
 
-const FILE_TYPE_CONFIG = {
+const FILE_TYPE_CONFIG_LIGHT = {
   pdf: { icon: "ri-file-pdf-line", color: "#7f1d1d", bg: "#fef2f2", label: "PDF" },
   xlsx: { icon: "ri-file-excel-line", color: "#10b981", bg: "#ecfdf5", label: "XLSX" },
   xls: { icon: "ri-file-excel-line", color: "#10b981", bg: "#ecfdf5", label: "XLS" },
@@ -52,13 +53,30 @@ const FILE_TYPE_CONFIG = {
   jpeg: { icon: "ri-image-line", color: "#0f766e", bg: "#f0fdfa", label: "JPEG" },
 };
 
-const getFileTypeMeta = (ext) => {
+const FILE_TYPE_CONFIG_DARK = {
+  pdf: { icon: "ri-file-pdf-line", color: "#f87171", bg: "rgba(239, 68, 68, 0.2)", label: "PDF" },
+  xlsx: { icon: "ri-file-excel-line", color: "#34d399", bg: "rgba(16, 185, 129, 0.2)", label: "XLSX" },
+  xls: { icon: "ri-file-excel-line", color: "#34d399", bg: "rgba(16, 185, 129, 0.2)", label: "XLS" },
+  csv: { icon: "ri-file-excel-line", color: "#34d399", bg: "rgba(16, 185, 129, 0.2)", label: "CSV" },
+  docx: { icon: "ri-file-word-line", color: "#94a3b8", bg: "rgba(148, 163, 184, 0.2)", label: "DOCX" },
+  doc: { icon: "ri-file-word-line", color: "#94a3b8", bg: "rgba(148, 163, 184, 0.2)", label: "DOC" },
+  pptx: { icon: "ri-file-ppt-line", color: "#fbbf24", bg: "rgba(245, 158, 11, 0.2)", label: "PPTX" },
+  ppt: { icon: "ri-file-ppt-line", color: "#fbbf24", bg: "rgba(245, 158, 11, 0.2)", label: "PPT" },
+  zip: { icon: "ri-file-zip-line", color: "#c084fc", bg: "rgba(168, 85, 247, 0.2)", label: "ZIP" },
+  rar: { icon: "ri-file-zip-line", color: "#c084fc", bg: "rgba(168, 85, 247, 0.2)", label: "RAR" },
+  png: { icon: "ri-image-line", color: "#2dd4bf", bg: "rgba(20, 184, 166, 0.2)", label: "PNG" },
+  jpg: { icon: "ri-image-line", color: "#2dd4bf", bg: "rgba(20, 184, 166, 0.2)", label: "JPG" },
+  jpeg: { icon: "ri-image-line", color: "#2dd4bf", bg: "rgba(20, 184, 166, 0.2)", label: "JPEG" },
+};
+
+const getFileTypeMeta = (ext, isDark = false) => {
   const norm = String(ext || "").toLowerCase().replace(".", "");
+  const config = isDark ? FILE_TYPE_CONFIG_DARK : FILE_TYPE_CONFIG_LIGHT;
   return (
-    FILE_TYPE_CONFIG[norm] || {
+    config[norm] || {
       icon: "ri-file-line",
-      color: "#64748b",
-      bg: "#f8fafc",
+      color: isDark ? "#94a3b8" : "#64748b",
+      bg: isDark ? "rgba(148, 163, 184, 0.15)" : "#f8fafc",
       label: (norm || "FILE").toUpperCase(),
     }
   );
@@ -73,6 +91,21 @@ const formatStorageAmount = (usedGb, usedBytes) => {
 };
 
 const Documents = () => {
+  document.title = "Documents | SoftOnCloud CRM";
+
+  const layoutModeType = useSelector(
+    (state) => state.Layout.layoutModeType
+  );
+  const isDark = layoutModeType === "dark";
+
+  // Dynamic Theme Palette
+  const cardBg = isDark ? "#121212" : "#ffffff";
+  const cardBorder = isDark ? "#2d3748" : "#e2e8f0";
+  const subtleBg = isDark ? "#1a202c" : "#f8fafc";
+  const subtleBorder = isDark ? "#334155" : "#cbd5e1";
+  const textTitle = isDark ? "#f8fafc" : "#0f172a";
+  const textSub = isDark ? "#94a3b8" : "#64748b";
+  const primaryColor = isDark ? "#fca5a5" : "#7f1d1d";
   document.title = "Documents | SoftOnCloud CRM";
 
   // Data state
@@ -221,7 +254,7 @@ const Documents = () => {
             size: "68%",
           },
           track: {
-            background: "#e2e8f0",
+            background: isDark ? "#21262d" : "#e2e8f0",
             strokeWidth: "100%",
             margin: 0,
           },
@@ -231,7 +264,7 @@ const Documents = () => {
               offsetY: 6,
               fontSize: "17px",
               fontWeight: 700,
-              color: "#1e293b",
+              color: isDark ? "#f8fafc" : "#1e293b",
               formatter: function (val) {
                 return (val || 0) + "% Used";
               },
@@ -240,14 +273,14 @@ const Documents = () => {
         },
       },
       fill: {
-        colors: ["#7f1d1d"],
+        colors: [isDark ? "#f87171" : "#7f1d1d"],
       },
       stroke: {
         lineCap: "round",
       },
       labels: ["Used"],
     }),
-    []
+    [isDark]
   );
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -263,11 +296,11 @@ const Documents = () => {
   const distributionList = useMemo(() => {
     const backendDist = stats?.type_distribution || [];
     const defaults = [
-      { file_type: "PDF", count: 0, color: "#7f1d1d" },
-      { file_type: "DOCX", count: 0, color: "#475569" },
-      { file_type: "XLSX", count: 0, color: "#10b981" },
-      { file_type: "PPTX", count: 0, color: "#d97706" },
-      { file_type: "Others", count: 0, color: "#94a3b8" },
+      { file_type: "PDF", count: 0, color: isDark ? "#f87171" : "#7f1d1d" },
+      { file_type: "DOCX", count: 0, color: isDark ? "#94a3b8" : "#475569" },
+      { file_type: "XLSX", count: 0, color: isDark ? "#34d399" : "#10b981" },
+      { file_type: "PPTX", count: 0, color: isDark ? "#fbbf24" : "#d97706" },
+      { file_type: "Others", count: 0, color: isDark ? "#64748b" : "#94a3b8" },
     ];
 
     if (backendDist.length === 0) return defaults;
@@ -284,19 +317,19 @@ const Documents = () => {
         count: match ? match.count : 0,
       };
     });
-  }, [stats?.type_distribution]);
+  }, [stats?.type_distribution, isDark]);
 
   return (
-    <div className="page-content" style={{ backgroundColor: "#f8fafc", minHeight: "100vh" }}>
+    <div className="page-content" style={{ backgroundColor: isDark ? "#0d1117" : "#f8fafc", minHeight: "100vh" }}>
       <Container fluid className="px-4 py-3">
         {/* Top Header Row */}
         <Row className="align-items-center mb-3">
           <Col sm={6}>
             <div>
-              <h4 className="fw-bold text-dark mb-1" style={{ fontSize: "22px" }}>
+              <h4 className="fw-bold mb-1" style={{ fontSize: "22px", color: textTitle }}>
                 Documents
               </h4>
-              <p className="text-muted small mb-0">Store, manage and share important files</p>
+              <p className="small mb-0" style={{ color: textSub }}>Store, manage and share important files</p>
             </div>
           </Col>
           <Col sm={6} className="text-sm-end mt-3 mt-sm-0 d-flex justify-content-sm-end gap-2">
@@ -310,11 +343,15 @@ const Documents = () => {
             </Button>
             <Button
               type="button"
-              color="light"
-              className="rounded-0 border d-flex align-items-center gap-2 px-3 py-2 text-dark bg-white"
+              className="rounded-0 border d-flex align-items-center gap-2 px-3 py-2"
+              style={{
+                backgroundColor: subtleBg,
+                borderColor: subtleBorder,
+                color: textTitle,
+              }}
               onClick={() => setNewFolderModalOpen(true)}
             >
-              <i className="ri-folder-add-line text-muted" /> New Folder
+              <i className="ri-folder-add-line" style={{ color: textSub }} /> New Folder
             </Button>
 
             {/* Header More Dropdown (matching mockup) */}
@@ -324,12 +361,17 @@ const Documents = () => {
             >
               <DropdownToggle
                 tag="button"
-                className="btn btn-light rounded-0 border px-3 text-muted bg-white d-flex align-items-center justify-content-center"
-                style={{ height: "38px" }}
+                className="btn rounded-0 border px-3 d-flex align-items-center justify-content-center"
+                style={{
+                  height: "38px",
+                  backgroundColor: subtleBg,
+                  borderColor: subtleBorder,
+                  color: textSub,
+                }}
               >
                 <i className="ri-more-fill fs-16" />
               </DropdownToggle>
-              <DropdownMenu end className="rounded-0 shadow-sm border">
+              <DropdownMenu end className="rounded-0 shadow-sm border" style={{ backgroundColor: cardBg, borderColor: cardBorder }}>
                 <DropdownItem
                   onClick={() => {
                     fetchDocuments();
@@ -337,11 +379,12 @@ const Documents = () => {
                     toastSuccess("Documents refreshed.");
                   }}
                   className="small"
+                  style={{ color: textTitle }}
                 >
-                  <i className="ri-refresh-line me-2 text-muted" /> Refresh Data
+                  <i className="ri-refresh-line me-2" style={{ color: textSub }} /> Refresh Data
                 </DropdownItem>
-                <DropdownItem onClick={handleResetFilters} className="small">
-                  <i className="ri-filter-off-line me-2 text-muted" /> Clear Filters
+                <DropdownItem onClick={handleResetFilters} className="small" style={{ color: textTitle }}>
+                  <i className="ri-filter-off-line me-2" style={{ color: textSub }} /> Clear Filters
                 </DropdownItem>
               </DropdownMenu>
             </Dropdown>
@@ -352,10 +395,10 @@ const Documents = () => {
         <Row className="g-4">
           {/* Left Column: Tabs, Filters, Table (Approx 72% width) */}
           <Col lg={8} xl={9}>
-            <Card className="rounded-0 border bg-white shadow-sm mb-4">
+            <Card className="rounded-0 border shadow-sm mb-4" style={{ backgroundColor: cardBg, borderColor: cardBorder }}>
               <CardBody className="p-0">
                 {/* Tabs Row */}
-                <div className="d-flex align-items-center border-bottom px-4 pt-2 gap-4 overflow-auto">
+                <div className="d-flex align-items-center border-bottom px-4 pt-2 gap-4 overflow-auto" style={{ borderColor: cardBorder }}>
                   {TAB_OPTIONS.map((t) => {
                     const isActive = activeTab === t.id;
                     return (
@@ -365,8 +408,8 @@ const Documents = () => {
                         onClick={() => handleTabChange(t.id)}
                         className="btn btn-link text-decoration-none px-2 py-3 rounded-0 fw-semibold position-relative"
                         style={{
-                          color: isActive ? "#7f1d1d" : "#64748b",
-                          borderBottom: isActive ? "3px solid #7f1d1d" : "3px solid transparent",
+                          color: isActive ? primaryColor : textSub,
+                          borderBottom: isActive ? `3px solid ${primaryColor}` : "3px solid transparent",
                           fontSize: "14px",
                         }}
                       >
@@ -377,25 +420,30 @@ const Documents = () => {
                 </div>
 
                 {/* Filter Toolbar */}
-                <div className="p-3 bg-light border-bottom">
+                <div className="p-3 border-bottom" style={{ backgroundColor: subtleBg, borderColor: cardBorder }}>
                   <Row className="g-2 align-items-center">
                     {/* Search Input */}
                     <Col md={4} sm={12}>
                       <div className="position-relative">
                         <Input
                           type="text"
-                          className="rounded-0 ps-5 bg-white border"
+                          className="rounded-0 ps-5 border"
                           placeholder="Search documents..."
                           value={search}
                           onChange={(e) => {
                             setSearch(e.target.value);
                             setPage(1);
                           }}
-                          style={{ height: "38px" }}
+                          style={{
+                            height: "38px",
+                            backgroundColor: isDark ? "#121212" : "#ffffff",
+                            borderColor: subtleBorder,
+                            color: textTitle,
+                          }}
                         />
                         <i
-                          className="ri-search-line position-absolute text-muted"
-                          style={{ left: "14px", top: "10px", fontSize: "16px" }}
+                          className="ri-search-line position-absolute"
+                          style={{ left: "14px", top: "10px", fontSize: "16px", color: textSub }}
                         />
                       </div>
                     </Col>
@@ -404,13 +452,18 @@ const Documents = () => {
                     <Col md={2} sm={4}>
                       <Input
                         type="select"
-                        className="rounded-0 bg-white border"
+                        className="rounded-0 border"
                         value={selectedType}
                         onChange={(e) => {
                           setSelectedType(e.target.value);
                           setPage(1);
                         }}
-                        style={{ height: "38px" }}
+                        style={{
+                          height: "38px",
+                          backgroundColor: isDark ? "#121212" : "#ffffff",
+                          borderColor: subtleBorder,
+                          color: textTitle,
+                        }}
                       >
                         <option value="">All Types</option>
                         <option value="PDF">PDF</option>
@@ -426,13 +479,18 @@ const Documents = () => {
                     <Col md={3} sm={4}>
                       <Input
                         type="select"
-                        className="rounded-0 bg-white border"
+                        className="rounded-0 border"
                         value={selectedOwner}
                         onChange={(e) => {
                           setSelectedOwner(e.target.value);
                           setPage(1);
                         }}
-                        style={{ height: "38px" }}
+                        style={{
+                          height: "38px",
+                          backgroundColor: isDark ? "#121212" : "#ffffff",
+                          borderColor: subtleBorder,
+                          color: textTitle,
+                        }}
                       >
                         <option value="">All Owners</option>
                         {lookups.owners.map((o) => (
@@ -447,13 +505,18 @@ const Documents = () => {
                     <Col md={2} sm={4}>
                       <Input
                         type="select"
-                        className="rounded-0 bg-white border"
+                        className="rounded-0 border"
                         value={selectedFolder}
                         onChange={(e) => {
                           setSelectedFolder(e.target.value);
                           setPage(1);
                         }}
-                        style={{ height: "38px" }}
+                        style={{
+                          height: "38px",
+                          backgroundColor: isDark ? "#121212" : "#ffffff",
+                          borderColor: subtleBorder,
+                          color: textTitle,
+                        }}
                       >
                         <option value="">All Folders</option>
                         {displayFolders.map((f) => (
@@ -468,13 +531,17 @@ const Documents = () => {
                     <Col md={1} sm={12} className="text-end">
                       <Button
                         type="button"
-                        color="light"
-                        className="rounded-0 border w-100 bg-white"
+                        className="rounded-0 border w-100"
                         onClick={handleResetFilters}
                         title="Clear Filters"
-                        style={{ height: "38px" }}
+                        style={{
+                          height: "38px",
+                          backgroundColor: isDark ? "#121212" : "#ffffff",
+                          borderColor: subtleBorder,
+                          color: textSub,
+                        }}
                       >
-                        <i className="ri-filter-off-line text-muted" />
+                        <i className="ri-filter-off-line" style={{ color: textSub }} />
                       </Button>
                     </Col>
                   </Row>
@@ -484,8 +551,8 @@ const Documents = () => {
                 <div className="table-responsive" style={{ minHeight: "360px" }}>
                   {loading ? (
                     <div className="text-center py-5">
-                      <Spinner style={{ color: "#7f1d1d" }} />
-                      <p className="text-muted small mt-2">Loading documents...</p>
+                      <Spinner style={{ color: primaryColor }} />
+                      <p className="small mt-2" style={{ color: textSub }}>Loading documents...</p>
                     </div>
                   ) : documents.length === 0 ? (
                     <div className="text-center py-5">
@@ -494,16 +561,16 @@ const Documents = () => {
                         style={{
                           width: "64px",
                           height: "64px",
-                          backgroundColor: "#fef2f2",
+                          backgroundColor: isDark ? "rgba(239, 68, 68, 0.15)" : "#fef2f2",
                           borderRadius: 0,
-                          color: "#7f1d1d",
+                          color: isDark ? "#f87171" : "#7f1d1d",
                           fontSize: "32px",
                         }}
                       >
                         <i className="ri-folder-open-line" />
                       </div>
-                      <h5 className="fw-bold text-dark mb-1">No documents found</h5>
-                      <p className="text-muted small mb-3">
+                      <h5 className="fw-bold mb-1" style={{ color: textTitle }}>No documents found</h5>
+                      <p className="small mb-3" style={{ color: textSub }}>
                         {search || selectedFolder || selectedType || selectedOwner
                           ? "Try adjusting your filters or search term."
                           : "Upload your first file to keep sales assets organized."}
@@ -519,9 +586,9 @@ const Documents = () => {
                     </div>
                   ) : (
                     <Table responsive hover className="align-middle mb-0 table-nowrap">
-                      <thead className="table-light text-muted small text-uppercase">
+                      <thead className="small text-uppercase" style={{ backgroundColor: subtleBg }}>
                         <tr>
-                          <th style={{ width: "40px" }} className="text-center">
+                          <th style={{ width: "40px", backgroundColor: subtleBg, borderColor: cardBorder, color: textSub }} className="text-center">
                             <Input
                               type="checkbox"
                               className="rounded-0"
@@ -532,28 +599,28 @@ const Documents = () => {
                               onChange={handleSelectAll}
                             />
                           </th>
-                          <th style={{ width: "105px" }} className="text-center">
+                          <th style={{ width: "105px", backgroundColor: subtleBg, borderColor: cardBorder, color: textSub }} className="text-center">
                             Actions
                           </th>
-                          <th style={{ minWidth: "220px" }}>Document Name</th>
-                          <th>Folder</th>
-                          <th>Related To</th>
-                          <th>Type</th>
-                          <th>Size</th>
-                          <th>Owner</th>
-                          <th>Modified On</th>
+                          <th style={{ minWidth: "220px", backgroundColor: subtleBg, borderColor: cardBorder, color: textSub }}>Document Name</th>
+                          <th style={{ backgroundColor: subtleBg, borderColor: cardBorder, color: textSub }}>Folder</th>
+                          <th style={{ backgroundColor: subtleBg, borderColor: cardBorder, color: textSub }}>Related To</th>
+                          <th style={{ backgroundColor: subtleBg, borderColor: cardBorder, color: textSub }}>Type</th>
+                          <th style={{ backgroundColor: subtleBg, borderColor: cardBorder, color: textSub }}>Size</th>
+                          <th style={{ backgroundColor: subtleBg, borderColor: cardBorder, color: textSub }}>Owner</th>
+                          <th style={{ backgroundColor: subtleBg, borderColor: cardBorder, color: textSub }}>Modified On</th>
                         </tr>
                       </thead>
                       <tbody>
                         {documents.map((doc) => {
-                          const meta = getFileTypeMeta(doc.file_type);
+                          const meta = getFileTypeMeta(doc.file_type, isDark);
                           const isSelected = selectedDocIds.includes(doc.document_id);
                           const downloadUrl = getDocumentDownloadUrl(doc.document_id);
 
                           return (
                             <tr key={doc.document_id} className={isSelected ? "table-active" : ""}>
                               {/* Checkbox */}
-                              <td className="text-center">
+                              <td className="text-center" style={{ borderColor: cardBorder }}>
                                 <Input
                                   type="checkbox"
                                   className="rounded-0"
@@ -563,13 +630,21 @@ const Documents = () => {
                               </td>
 
                               {/* Actions */}
-                              <td className="text-center" style={{ width: "105px" }}>
+                              <td className="text-center" style={{ width: "105px", borderColor: cardBorder }}>
                                 <div className="d-flex align-items-center justify-content-center gap-1 flex-nowrap">
                                   <Button
-                                    color="light"
                                     size="sm"
-                                    className="border rounded-0 p-1 text-muted"
-                                    style={{ width: "28px", height: "28px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                                    className="border rounded-0 p-1"
+                                    style={{
+                                      width: "28px",
+                                      height: "28px",
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      backgroundColor: subtleBg,
+                                      borderColor: subtleBorder,
+                                      color: textSub,
+                                    }}
                                     title="View Details"
                                     onClick={() => {
                                       setActiveDocForDetail(doc);
@@ -582,17 +657,33 @@ const Documents = () => {
                                     href={downloadUrl}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="btn btn-sm btn-light border rounded-0 p-1 text-primary"
-                                    style={{ width: "28px", height: "28px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                                    className="btn btn-sm border rounded-0 p-1"
+                                    style={{
+                                      width: "28px",
+                                      height: "28px",
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      backgroundColor: subtleBg,
+                                      borderColor: subtleBorder,
+                                      color: isDark ? "#60a5fa" : "#2563eb",
+                                    }}
                                     title="Download Document"
                                   >
                                     <i className="ri-download-2-line fs-14" />
                                   </a>
                                   <Button
-                                    color="light"
                                     size="sm"
                                     className="border rounded-0 p-1 text-danger"
-                                    style={{ width: "28px", height: "28px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                                    style={{
+                                      width: "28px",
+                                      height: "28px",
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      backgroundColor: subtleBg,
+                                      borderColor: subtleBorder,
+                                    }}
                                     title="Delete Document"
                                     onClick={() => {
                                       setActiveDocForDelete(doc);
@@ -605,7 +696,7 @@ const Documents = () => {
                               </td>
 
                               {/* Document Name */}
-                              <td>
+                              <td style={{ borderColor: cardBorder }}>
                                 <div className="d-flex align-items-center gap-3">
                                   <div
                                     className="d-flex align-items-center justify-content-center flex-shrink-0"
@@ -616,6 +707,7 @@ const Documents = () => {
                                       color: meta.color,
                                       fontSize: "20px",
                                       borderRadius: 0,
+                                      border: `1px solid ${meta.color}33`,
                                     }}
                                   >
                                     <i className={meta.icon} />
@@ -623,8 +715,8 @@ const Documents = () => {
                                   <div className="overflow-hidden">
                                     <button
                                       type="button"
-                                      className="btn btn-link p-0 text-decoration-none text-start d-block fw-semibold text-dark text-truncate"
-                                      style={{ maxWidth: "240px", fontSize: "14px" }}
+                                      className="btn btn-link p-0 text-decoration-none text-start d-block fw-semibold text-truncate"
+                                      style={{ maxWidth: "240px", fontSize: "14px", color: textTitle }}
                                       onClick={() => {
                                         setActiveDocForDetail(doc);
                                         setDetailModalOpen(true);
@@ -633,8 +725,8 @@ const Documents = () => {
                                       {doc.file_name}
                                     </button>
                                     <span
-                                      className="text-muted small text-truncate d-block"
-                                      style={{ maxWidth: "240px", fontSize: "12px" }}
+                                      className="small text-truncate d-block"
+                                      style={{ maxWidth: "240px", fontSize: "12px", color: textSub }}
                                     >
                                       {doc.description || "No description"}
                                     </span>
@@ -643,20 +735,20 @@ const Documents = () => {
                               </td>
 
                               {/* Folder */}
-                              <td>
-                                <span className="text-dark small d-flex align-items-center gap-1">
-                                  <i className="ri-folder-line text-muted" />
+                              <td style={{ borderColor: cardBorder }}>
+                                <span className="small d-flex align-items-center gap-1" style={{ color: textTitle }}>
+                                  <i className="ri-folder-line" style={{ color: textSub }} />
                                   {doc.folder_name || "General"}
                                 </span>
                               </td>
 
                               {/* Related To */}
-                              <td>
+                              <td style={{ borderColor: cardBorder }}>
                                 {doc.entity_type === "OPPORTUNITY" && doc.entity_id ? (
                                   <Link
                                     to={`/crm/opportunities/${doc.entity_id}`}
                                     className="small fw-semibold text-decoration-none"
-                                    style={{ color: "#7f1d1d" }}
+                                    style={{ color: primaryColor }}
                                     title="View Opportunity"
                                   >
                                     {doc.related_to || "Opportunity"}
@@ -665,7 +757,7 @@ const Documents = () => {
                                   <Link
                                     to={`/crm/customers/${doc.entity_id}`}
                                     className="small fw-semibold text-decoration-none"
-                                    style={{ color: "#7f1d1d" }}
+                                    style={{ color: primaryColor }}
                                     title="View Customer"
                                   >
                                     {doc.related_to || "Customer Account"}
@@ -674,20 +766,20 @@ const Documents = () => {
                                   <Link
                                     to={`/crm/leads/${doc.entity_id}`}
                                     className="small fw-semibold text-decoration-none"
-                                    style={{ color: "#7f1d1d" }}
+                                    style={{ color: primaryColor }}
                                     title="View Lead"
                                   >
                                     {doc.related_to || "Lead"}
                                   </Link>
                                 ) : (
-                                  <span className="small text-muted">
+                                  <span className="small" style={{ color: textSub }}>
                                     {doc.related_to || "All Customers"}
                                   </span>
                                 )}
                               </td>
 
                               {/* Type Badge (Square, no bootstrap blue) */}
-                              <td>
+                              <td style={{ borderColor: cardBorder }}>
                                 <span
                                   className="rounded-0 px-2 py-1 fw-bold text-uppercase d-inline-block"
                                   style={{
@@ -703,32 +795,32 @@ const Documents = () => {
                               </td>
 
                               {/* Size */}
-                              <td className="text-muted small">
+                              <td className="small" style={{ borderColor: cardBorder, color: textSub }}>
                                 {doc.file_size_label || "—"}
                               </td>
 
                               {/* Owner */}
-                              <td>
+                              <td style={{ borderColor: cardBorder }}>
                                 <div className="d-flex align-items-center gap-2">
                                   <div
                                     className="rounded-0 d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
                                     style={{
                                       width: "26px",
                                       height: "26px",
-                                      backgroundColor: "#7f1d1d",
+                                      backgroundColor: isDark ? "#334155" : "#7f1d1d",
                                       fontSize: "11px",
                                     }}
                                   >
                                     {(doc.owner_name || "U").charAt(0).toUpperCase()}
                                   </div>
-                                  <span className="small text-dark fw-medium">
+                                  <span className="small fw-medium" style={{ color: textTitle }}>
                                     {doc.owner_name || "Staff"}
                                   </span>
                                 </div>
                               </td>
 
                               {/* Modified On */}
-                              <td className="text-muted small">
+                              <td className="small" style={{ borderColor: cardBorder, color: textSub }}>
                                 {doc.modified_label ||
                                   (doc.modified_on ? new Date(doc.modified_on).toLocaleDateString() : "—")}
                               </td>
@@ -741,8 +833,8 @@ const Documents = () => {
                 </div>
 
                 {/* Table Footer: Pagination & Page Size */}
-                <div className="d-flex align-items-center justify-content-between p-3 border-top bg-light flex-wrap gap-2">
-                  <div className="text-muted small">
+                <div className="d-flex align-items-center justify-content-between p-3 border-top flex-wrap gap-2" style={{ backgroundColor: subtleBg, borderColor: cardBorder }}>
+                  <div className="small" style={{ color: textSub }}>
                     Showing {totalCount === 0 ? 0 : (page - 1) * pageSize + 1} to{" "}
                     {Math.min(page * pageSize, totalCount)} of {totalCount} documents
                   </div>
@@ -752,9 +844,13 @@ const Documents = () => {
                     <div className="btn-group rounded-0" role="group">
                       <Button
                         type="button"
-                        color="light"
                         size="sm"
-                        className="rounded-0 border bg-white"
+                        className="rounded-0 border"
+                        style={{
+                          backgroundColor: isDark ? "#121212" : "#ffffff",
+                          borderColor: subtleBorder,
+                          color: textTitle,
+                        }}
                         disabled={page <= 1}
                         onClick={() => setPage((p) => Math.max(1, p - 1))}
                       >
@@ -769,9 +865,9 @@ const Documents = () => {
                             size="sm"
                             className="rounded-0 border"
                             style={{
-                              backgroundColor: p === page ? "#7f1d1d" : "#ffffff",
-                              borderColor: p === page ? "#7f1d1d" : "#e2e8f0",
-                              color: p === page ? "#ffffff" : "#334155",
+                              backgroundColor: p === page ? "#7f1d1d" : (isDark ? "#121212" : "#ffffff"),
+                              borderColor: p === page ? "#7f1d1d" : subtleBorder,
+                              color: p === page ? "#ffffff" : textTitle,
                               fontWeight: p === page ? 600 : 400,
                             }}
                             onClick={() => setPage(p)}
@@ -781,9 +877,13 @@ const Documents = () => {
                         ))}
                       <Button
                         type="button"
-                        color="light"
                         size="sm"
-                        className="rounded-0 border bg-white"
+                        className="rounded-0 border"
+                        style={{
+                          backgroundColor: isDark ? "#121212" : "#ffffff",
+                          borderColor: subtleBorder,
+                          color: textTitle,
+                        }}
                         disabled={page >= totalPages}
                         onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       >
@@ -794,8 +894,13 @@ const Documents = () => {
                     {/* Page Size select */}
                     <Input
                       type="select"
-                      className="rounded-0 form-select-sm border bg-white"
-                      style={{ width: "110px" }}
+                      className="rounded-0 form-select-sm border"
+                      style={{
+                        width: "110px",
+                        backgroundColor: isDark ? "#121212" : "#ffffff",
+                        borderColor: subtleBorder,
+                        color: textTitle,
+                      }}
                       value={pageSize}
                       onChange={(e) => {
                         setPageSize(Number(e.target.value));
@@ -815,16 +920,16 @@ const Documents = () => {
           {/* Right Column: Storage Overview, Folders, Activity, Type Distribution (Approx 28% width) */}
           <Col lg={4} xl={3}>
             {/* 1. Storage Overview Card */}
-            <Card className="rounded-0 border bg-white shadow-sm mb-4">
+            <Card className="rounded-0 border shadow-sm mb-4" style={{ backgroundColor: cardBg, borderColor: cardBorder }}>
               <CardBody className="p-3">
                 <div className="d-flex align-items-center justify-content-between mb-2">
-                  <h6 className="fw-bold text-dark mb-0" style={{ fontSize: "14px" }}>
+                  <h6 className="fw-bold mb-0" style={{ fontSize: "14px", color: textTitle }}>
                     Storage Overview
                   </h6>
                   <button
                     type="button"
                     className="btn btn-link p-0 text-decoration-none small fw-semibold"
-                    style={{ color: "#7f1d1d" }}
+                    style={{ color: primaryColor }}
                     onClick={() => toastSuccess(`Storage Quota: ${stats.quota_gb ?? 20} GB`)}
                   >
                     Manage
@@ -841,14 +946,14 @@ const Documents = () => {
                     />
                   </div>
                   <div className="flex-grow-1 ps-3">
-                    <div className="fw-bold text-dark" style={{ fontSize: "16px" }}>
+                    <div className="fw-bold" style={{ fontSize: "16px", color: textTitle }}>
                       {formatStorageAmount(stats.used_gb, stats.used_bytes)} Used
                     </div>
-                    <div className="text-muted small">
+                    <div className="small" style={{ color: textSub }}>
                       of {Number(stats.quota_gb || 20).toFixed(0)} GB
                     </div>
                     {/* Linear bar (Maroon accent) */}
-                    <div className="progress rounded-0 mt-2" style={{ height: "6px", backgroundColor: "#f1f5f9" }}>
+                    <div className="progress rounded-0 mt-2" style={{ height: "6px", backgroundColor: subtleBg }}>
                       <div
                         className="progress-bar"
                         role="progressbar"
@@ -862,28 +967,28 @@ const Documents = () => {
                 </div>
 
                 {/* Storage Legend */}
-                <div className="border-top pt-2 mt-2">
+                <div className="border-top pt-2 mt-2" style={{ borderColor: cardBorder }}>
                   <div className="d-flex align-items-center justify-content-between py-1 small">
-                    <span className="d-flex align-items-center gap-2 text-muted">
+                    <span className="d-flex align-items-center gap-2" style={{ color: textSub }}>
                       <span
                         className="rounded-0"
                         style={{ width: "8px", height: "8px", backgroundColor: "#7f1d1d", display: "inline-block" }}
                       />
                       Documents
                     </span>
-                    <span className="fw-semibold text-dark">
+                    <span className="fw-semibold" style={{ color: textTitle }}>
                       {formatStorageAmount(stats.used_gb, stats.used_bytes)}
                     </span>
                   </div>
                   <div className="d-flex align-items-center justify-content-between py-1 small">
-                    <span className="d-flex align-items-center gap-2 text-muted">
+                    <span className="d-flex align-items-center gap-2" style={{ color: textSub }}>
                       <span
                         className="rounded-0"
-                        style={{ width: "8px", height: "8px", backgroundColor: "#cbd5e1", display: "inline-block" }}
+                        style={{ width: "8px", height: "8px", backgroundColor: isDark ? "#475569" : "#cbd5e1", display: "inline-block" }}
                       />
                       Available
                     </span>
-                    <span className="fw-semibold text-dark">
+                    <span className="fw-semibold" style={{ color: textTitle }}>
                       {Number(stats.available_gb || 20).toFixed(2)} GB
                     </span>
                   </div>
@@ -892,16 +997,16 @@ const Documents = () => {
             </Card>
 
             {/* 2. Document Folders Card */}
-            <Card className="rounded-0 border bg-white shadow-sm mb-4">
+            <Card className="rounded-0 border shadow-sm mb-4" style={{ backgroundColor: cardBg, borderColor: cardBorder }}>
               <CardBody className="p-3">
                 <div className="d-flex align-items-center justify-content-between mb-3">
-                  <h6 className="fw-bold text-dark mb-0" style={{ fontSize: "14px" }}>
+                  <h6 className="fw-bold mb-0" style={{ fontSize: "14px", color: textTitle }}>
                     Document Folders
                   </h6>
                   <button
                     type="button"
                     className="btn btn-link p-0 text-decoration-none small fw-semibold"
-                    style={{ color: "#7f1d1d" }}
+                    style={{ color: primaryColor }}
                     onClick={() => setNewFolderModalOpen(true)}
                   >
                     + New Folder
@@ -910,7 +1015,7 @@ const Documents = () => {
 
                 <div className="d-flex flex-column gap-2">
                   {displayFolders.length === 0 ? (
-                    <p className="text-muted small mb-0 py-2 text-center">No folders available</p>
+                    <p className="small mb-0 py-2 text-center" style={{ color: textSub }}>No folders available</p>
                   ) : (
                     displayFolders.slice(0, 8).map((fc) => {
                       const isFilterActive = selectedFolder === fc.folder_name;
@@ -924,24 +1029,32 @@ const Documents = () => {
                           className="d-flex align-items-center justify-content-between px-2 py-2 rounded-0 border"
                           style={{
                             cursor: "pointer",
-                            backgroundColor: isFilterActive ? "#fef2f2" : "#f8fafc",
-                            borderColor: isFilterActive ? "#7f1d1d" : "#e2e8f0",
+                            backgroundColor: isFilterActive
+                              ? (isDark ? "rgba(127, 29, 29, 0.3)" : "#fef2f2")
+                              : (isDark ? "#1a202c" : "#f8fafc"),
+                            borderColor: isFilterActive
+                              ? (isDark ? "#f87171" : "#7f1d1d")
+                              : cardBorder,
                             transition: "all 0.15s ease",
                           }}
                         >
-                          <span className="d-flex align-items-center gap-2 small fw-medium text-dark">
+                          <span className="d-flex align-items-center gap-2 small fw-medium" style={{ color: isFilterActive ? primaryColor : textTitle }}>
                             <i
                               className="ri-folder-2-line"
-                              style={{ color: isFilterActive ? "#7f1d1d" : "#64748b" }}
+                              style={{ color: isFilterActive ? primaryColor : textSub }}
                             />
                             {fc.folder_name}
                           </span>
                           <span
                             className="rounded-0 px-2 py-1 fw-semibold text-center"
                             style={{
-                              backgroundColor: isFilterActive ? "#7f1d1d" : "#f1f5f9",
-                              color: isFilterActive ? "#ffffff" : "#475569",
-                              border: isFilterActive ? "1px solid #7f1d1d" : "1px solid #e2e8f0",
+                              backgroundColor: isFilterActive
+                                ? (isDark ? "#7f1d1d" : "#7f1d1d")
+                                : (isDark ? "#21262d" : "#f1f5f9"),
+                              color: isFilterActive ? "#ffffff" : textTitle,
+                              border: isFilterActive
+                                ? (isDark ? "1px solid #991b1b" : "1px solid #7f1d1d")
+                                : `1px solid ${subtleBorder}`,
                               fontSize: "11px",
                               minWidth: "22px",
                               display: "inline-block",
@@ -958,7 +1071,8 @@ const Documents = () => {
                 {displayFolders.length > 8 && (
                   <button
                     type="button"
-                    className="btn btn-link p-0 text-decoration-none small text-muted mt-2 d-block"
+                    className="btn btn-link p-0 text-decoration-none small mt-2 d-block"
+                    style={{ color: primaryColor }}
                     onClick={() => setSelectedFolder("")}
                   >
                     View All Folders →
@@ -968,15 +1082,16 @@ const Documents = () => {
             </Card>
 
             {/* 3. Recent Activity Card */}
-            <Card className="rounded-0 border bg-white shadow-sm mb-4">
+            <Card className="rounded-0 border shadow-sm mb-4" style={{ backgroundColor: cardBg, borderColor: cardBorder }}>
               <CardBody className="p-3">
                 <div className="d-flex align-items-center justify-content-between mb-3">
-                  <h6 className="fw-bold text-dark mb-0" style={{ fontSize: "14px" }}>
+                  <h6 className="fw-bold mb-0" style={{ fontSize: "14px", color: textTitle }}>
                     Recent Activity
                   </h6>
                   <button
                     type="button"
-                    className="btn btn-link p-0 text-decoration-none small text-muted"
+                    className="btn btn-link p-0 text-decoration-none small"
+                    style={{ color: textSub }}
                     onClick={loadLookupsAndStats}
                   >
                     Refresh
@@ -985,8 +1100,8 @@ const Documents = () => {
 
                 <div className="d-flex flex-column gap-3">
                   {(stats?.recent_activity || []).length === 0 ? (
-                    <div className="text-center py-2 text-muted small">
-                      <i className="ri-history-line fs-18 d-block mb-1 text-muted" />
+                    <div className="text-center py-2 small" style={{ color: textSub }}>
+                      <i className="ri-history-line fs-18 d-block mb-1" style={{ color: textSub }} />
                       No recent activity yet
                     </div>
                   ) : (
@@ -999,9 +1114,15 @@ const Documents = () => {
                             style={{
                               width: "28px",
                               height: "28px",
-                              backgroundColor: isUpload ? "#ecfdf5" : "#fef2f2",
-                              color: isUpload ? "#10b981" : "#7f1d1d",
+                              backgroundColor: isUpload
+                                ? (isDark ? "rgba(16, 185, 129, 0.18)" : "#ecfdf5")
+                                : (isDark ? "rgba(239, 68, 68, 0.18)" : "#fef2f2"),
+                              color: isUpload
+                                ? (isDark ? "#34d399" : "#10b981")
+                                : (isDark ? "#f87171" : "#7f1d1d"),
                               fontSize: "14px",
+                              borderRadius: 0,
+                              border: `1px solid ${isUpload ? (isDark ? "rgba(16, 185, 129, 0.3)" : "transparent") : (isDark ? "rgba(239, 68, 68, 0.3)" : "transparent")}`,
                             }}
                           >
                             <i
@@ -1013,18 +1134,18 @@ const Documents = () => {
                             />
                           </div>
                           <div className="flex-grow-1 overflow-hidden">
-                            <div className="small text-dark text-truncate">
+                            <div className="small text-truncate" style={{ color: textTitle }}>
                               <strong>{act.employee_name}</strong> {act.title}
                             </div>
                             {act.description && (
                               <div
                                 className="text-truncate fw-medium"
-                                style={{ fontSize: "12px", color: "#7f1d1d" }}
+                                style={{ fontSize: "12px", color: isDark ? "#fca5a5" : "#7f1d1d" }}
                               >
                                 {act.description}
                               </div>
                             )}
-                            <div className="text-muted" style={{ fontSize: "11px" }}>
+                            <div style={{ fontSize: "11px", color: textSub }}>
                               {act.time_label}
                             </div>
                           </div>
@@ -1037,13 +1158,13 @@ const Documents = () => {
             </Card>
 
             {/* 4. File Type Distribution Card */}
-            <Card className="rounded-0 border bg-white shadow-sm mb-4">
+            <Card className="rounded-0 border shadow-sm mb-4" style={{ backgroundColor: cardBg, borderColor: cardBorder }}>
               <CardBody className="p-3">
                 <div className="d-flex align-items-center justify-content-between mb-3">
-                  <h6 className="fw-bold text-dark mb-0" style={{ fontSize: "14px" }}>
+                  <h6 className="fw-bold mb-0" style={{ fontSize: "14px", color: textTitle }}>
                     File Type Distribution
                   </h6>
-                  <span className="text-muted small">All Time</span>
+                  <span className="small" style={{ color: textSub }}>All Time</span>
                 </div>
 
                 <div className="d-flex flex-column gap-3">
@@ -1055,10 +1176,10 @@ const Documents = () => {
                     return (
                       <div key={dist.file_type}>
                         <div className="d-flex align-items-center justify-content-between small mb-1">
-                          <span className="fw-semibold text-dark">{dist.file_type}</span>
-                          <span className="text-muted">{dist.count}</span>
+                          <span className="fw-semibold" style={{ color: textTitle }}>{dist.file_type}</span>
+                          <span style={{ color: textSub }}>{dist.count}</span>
                         </div>
-                        <div className="progress rounded-0" style={{ height: "6px", backgroundColor: "#f1f5f9" }}>
+                        <div className="progress rounded-0" style={{ height: "6px", backgroundColor: subtleBg }}>
                           <div
                             className="progress-bar"
                             role="progressbar"

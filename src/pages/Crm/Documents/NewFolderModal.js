@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
 import {
   Modal,
   ModalHeader,
@@ -17,6 +18,17 @@ import { toastSuccess, toastApiError } from "../../../helpers/crmToast";
 const NewFolderModal = ({ isOpen, toggle, onSuccess }) => {
   const [folderName, setFolderName] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const layoutModeType = useSelector((state) => state.Layout.layoutModeType);
+  const isDark = layoutModeType === "dark";
+
+  const modalBg = isDark ? "#121212" : "#ffffff";
+  const headerFooterBg = isDark ? "#1a202c" : "#f8fafc";
+  const modalBorder = isDark ? "#2d3748" : "#e2e8f0";
+  const inputBg = isDark ? "#1a202c" : "#ffffff";
+  const inputBorder = isDark ? "#334155" : "#ced4da";
+  const textTitle = isDark ? "#f8fafc" : "#0f172a";
+  const textSub = isDark ? "#94a3b8" : "#64748b";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,70 +62,78 @@ const NewFolderModal = ({ isOpen, toggle, onSuccess }) => {
         }
       }}
       centered
-      contentClassName="rounded-0 border-0 shadow-lg"
+      contentClassName="rounded-0 border shadow-lg"
+      style={{ borderRadius: 0 }}
     >
-      <ModalHeader
-        toggle={() => {
-          if (!submitting) {
-            toggle();
-            setFolderName("");
-          }
-        }}
-        className="rounded-0 bg-light border-bottom py-3"
-      >
-        <span className="fw-semibold text-dark" style={{ fontSize: "16px" }}>
-          Create New Folder
-        </span>
-      </ModalHeader>
-      <Form onSubmit={handleSubmit}>
-        <ModalBody className="p-4">
-          <FormGroup className="mb-3">
-            <Label className="form-label text-muted small fw-semibold">
-              Folder Name <span className="text-danger">*</span>
-            </Label>
-            <Input
-              type="text"
-              className="rounded-0"
-              placeholder="e.g. Compliance, NDAs, Invoices"
-              value={folderName}
-              onChange={(e) => setFolderName(e.target.value)}
-              required
-              autoFocus
-            />
-          </FormGroup>
-          <p className="text-muted small mb-0">
-            Folders help organize sales documents, agreements, proposals, and customer attachments.
-          </p>
-        </ModalBody>
-        <ModalFooter className="rounded-0 bg-light border-top py-2 px-4 d-flex justify-content-end gap-2">
-          <Button
-            type="button"
-            color="light"
-            className="rounded-0 px-4"
-            onClick={() => {
+      <div style={{ backgroundColor: modalBg, color: textTitle }}>
+        <ModalHeader
+          toggle={() => {
+            if (!submitting) {
               toggle();
               setFolderName("");
-            }}
-            disabled={submitting}
+            }
+          }}
+          className="rounded-0 border-bottom py-3"
+          style={{ backgroundColor: headerFooterBg, borderColor: modalBorder }}
+        >
+          <span className="fw-semibold" style={{ fontSize: "16px", color: textTitle }}>
+            Create New Folder
+          </span>
+        </ModalHeader>
+        <Form onSubmit={handleSubmit}>
+          <ModalBody className="p-4" style={{ backgroundColor: modalBg }}>
+            <FormGroup className="mb-3">
+              <Label className="form-label small fw-semibold" style={{ color: textSub }}>
+                Folder Name <span className="text-danger">*</span>
+              </Label>
+              <Input
+                type="text"
+                className="rounded-0"
+                placeholder="e.g. Compliance, NDAs, Invoices"
+                value={folderName}
+                onChange={(e) => setFolderName(e.target.value)}
+                required
+                autoFocus
+                style={{ backgroundColor: inputBg, borderColor: inputBorder, color: textTitle }}
+              />
+            </FormGroup>
+            <p className="small mb-0" style={{ color: textSub }}>
+              Folders help organize sales documents, agreements, proposals, and customer attachments.
+            </p>
+          </ModalBody>
+          <ModalFooter
+            className="rounded-0 border-top py-2 px-4 d-flex justify-content-end gap-2"
+            style={{ backgroundColor: headerFooterBg, borderColor: modalBorder }}
           >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            className="rounded-0 px-4 text-white"
-            style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d" }}
-            disabled={submitting}
-          >
-            {submitting ? (
-              <>
-                <Spinner size="sm" className="me-2" /> Creating...
-              </>
-            ) : (
-              "Create Folder"
-            )}
-          </Button>
-        </ModalFooter>
-      </Form>
+            <Button
+              type="button"
+              className="rounded-0 px-4 border"
+              style={{ backgroundColor: inputBg, borderColor: inputBorder, color: textTitle }}
+              onClick={() => {
+                toggle();
+                setFolderName("");
+              }}
+              disabled={submitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="rounded-0 px-4 text-white"
+              style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d" }}
+              disabled={submitting}
+            >
+              {submitting ? (
+                <>
+                  <Spinner size="sm" className="me-2" /> Creating...
+                </>
+              ) : (
+                "Create Folder"
+              )}
+            </Button>
+          </ModalFooter>
+        </Form>
+      </div>
     </Modal>
   );
 };

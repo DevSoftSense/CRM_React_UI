@@ -94,7 +94,7 @@
 .crm-icon-sphere-3d {
   width: 44px;
   height: 44px;
-  border-radius: 50% !important;
+  border-radius: 0 !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -253,7 +253,7 @@
 .crm-action-icon-box {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -594,6 +594,7 @@ body[data-layout-mode="dark"] {
   .crm-followup-card {
     background: #262a2f !important;
     border-color: #363d45 !important;
+    border-radius: 0 !important;
   }
 
   .crm-followup-card .fw-bold,
@@ -601,15 +602,34 @@ body[data-layout-mode="dark"] {
     color: #f1f5f9 !important;
   }
 
+  .crm-arrow-btn {
+    background-color: #1a1d21 !important;
+    border: 1px solid #363d45 !important;
+    border-radius: 0 !important;
+    color: #f1f5f9 !important;
+  }
+
+  .crm-arrow-btn i {
+    color: #f1f5f9 !important;
+  }
+
   /* 10. Recent Activities Timeline */
   .crm-activity-pill {
     background-color: #262a2f !important;
     border-color: #363d45 !important;
+    border-radius: 0 !important;
   }
 
   .crm-activity-pill .text-dark,
   .crm-activity-pill .crm-activity-title {
     color: #f1f5f9 !important;
+  }
+
+  .crm-activity-time-badge {
+    background-color: #1a1d21 !important;
+    border: 1px solid #363d45 !important;
+    color: #cbd5e1 !important;
+    border-radius: 0 !important;
   }
 
   .crm-activity-author {
@@ -619,6 +639,7 @@ body[data-layout-mode="dark"] {
   .crm-activity-bell-pill {
     background: #262a2f !important;
     border-color: #363d45 !important;
+    border-radius: 0 !important;
   }
 
   .crm-activity-count {

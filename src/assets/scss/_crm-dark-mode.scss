@@ -551,33 +551,58 @@ body[data-layout-mode="dark"] {
   /* ── 13. Calendar Module (/crm/calendar) ── */
   .fc-theme-standard th,
   .fc-theme-standard td,
-  .fc-scrollgrid {
-    border-color: #32383e !important;
+  .fc-theme-bootstrap th,
+  .fc-theme-bootstrap td,
+  .fc .fc-scrollgrid,
+  .fc .fc-scrollgrid-section > td,
+  .fc .fc-scrollgrid-section > th,
+  .fc .table-bordered,
+  .fc .table-bordered th,
+  .fc .table-bordered td {
+    border-color: #262626 !important;
+    background-color: transparent !important;
   }
 
-  .fc-col-header-cell {
-    background-color: #1e2227 !important;
-    color: #cbd5e1 !important;
+  .fc-col-header-cell,
+  .fc-col-header-cell.table-light {
+    background-color: #161b22 !important;
+    color: #f1f5f9 !important;
+    border-color: #262626 !important;
+  }
+
+  .fc-col-header-cell-cushion {
+    color: #f1f5f9 !important;
+    font-weight: 600;
   }
 
   .fc-daygrid-day-number {
     color: #cbd5e1 !important;
+    font-weight: 500;
   }
 
   .fc-day-other .fc-daygrid-day-number {
-    color: #64748b !important;
+    color: #484f58 !important;
   }
 
   .fc-day-today {
-    background-color: rgba(127, 29, 29, 0.16) !important;
+    background-color: rgba(127, 29, 29, 0.18) !important;
   }
 
   .fc-timegrid-slot-minor {
-    border-color: #2a3036 !important;
+    border-color: #262626 !important;
   }
 
   .fc-timegrid-slot-label-cushion {
     color: #94a3b8 !important;
+  }
+
+  .fc-list-event:hover td {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  .fc-list-day-cushion {
+    background-color: #161b22 !important;
+    color: #f1f5f9 !important;
   }
 
   /* ── 14. Documents Module (/crm/documents) ── */
@@ -860,4 +885,52 @@ body[data-layout-mode="dark"] {
     }
   }
 
+  /* ── 22. Opportunity Detail & Stepper (100% Square Geometry & Dark Mode Contrast) ── */
+  .crm-opp-metrics-bar {
+    background-color: #161b22 !important;
+    border-color: #2d3748 !important;
+  }
+
+  .crm-opp-notes-box {
+    background-color: rgba(245, 158, 11, 0.12) !important;
+    border-color: rgba(245, 158, 11, 0.3) !important;
+    color: #fde68a !important;
+  }
+
+  .crm-opp-stepper-node-pending {
+    background-color: #21262d !important;
+    border-color: #3d444d !important;
+  }
+
+  /* ── 23. Activities Module & Widgets (100% Square Geometry & High Contrast) ── */
+  .crm-activity-toolbar {
+    background-color: #161b22 !important;
+    border-color: #262626 !important;
+  }
+
+  .crm-activity-calendar-cell {
+    color: #f1f5f9 !important;
+  }
+
+  .crm-activity-sidebar-card-header {
+    background-color: #161b22 !important;
+    border-color: #262626 !important;
+    color: #f1f5f9 !important;
+  }
+
+  /* ── 24. Communication Timeline (/crm/timeline & CommunicationTimelineTab) ── */
+  .communication-timeline-wrapper {
+    .timeline-row .card {
+      background-color: #121212 !important;
+      border-color: #262626 !important;
+    }
+  }
+
+  /* ── 25. Tasks Module (/crm/tasks) ── */
+  .crm-pending-task-row {
+    border-color: #262626 !important;
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+  }
 }

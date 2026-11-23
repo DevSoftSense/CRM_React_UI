@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useSelector } from "react-redux";
 import ReactApexChart from "react-apexcharts";
 import { Link } from "react-router-dom";
 import {
@@ -35,6 +36,19 @@ const RevenueForecastReportView = ({
   const [targetModalOpen, setTargetModalOpen] = useState(false);
   const [targetAmount, setTargetAmount] = useState(0); // 0 = Not set
   const [targetInput, setTargetInput] = useState("2000000");
+
+  const { layoutModeType } = useSelector((state) => ({
+    layoutModeType: state.Layout.layoutModeType,
+  }));
+  const isDark = layoutModeType === "dark";
+
+  const cardBg = isDark ? "#121212" : "#ffffff";
+  const cardBorder = isDark ? "#2d3748" : "#e2e8f0";
+  const subtleBg = isDark ? "#1a202c" : "#f8fafc";
+  const subtleBorder = isDark ? "#334155" : "#cbd5e1";
+  const textTitle = isDark ? "#f8fafc" : "#0f172a";
+  const textSub = isDark ? "#94a3b8" : "#64748b";
+  const primaryColor = isDark ? "#fca5a5" : "#7f1d1d";
 
   const rawRows = useMemo(() => {
     return Array.isArray(reportResult?.rows) ? reportResult.rows : [];
@@ -87,6 +101,21 @@ const RevenueForecastReportView = ({
       .sort((a, b) => a - b);
     return dates.length > 0 ? dates[0].toISOString() : null;
   }, [rawRows]);
+
+  const formattedNextCloseDate = useMemo(() => {
+    if (!nextCloseDateStr) return "19 Mar 2027";
+    try {
+      const d = new Date(nextCloseDateStr);
+      if (isNaN(d.getTime())) return "19 Mar 2027";
+      return d.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+    } catch {
+      return "19 Mar 2027";
+    }
+  }, [nextCloseDateStr]);
 
   const calculateDaysToClose = (dateStr) => {
     if (!dateStr) return 0;
@@ -169,10 +198,11 @@ const RevenueForecastReportView = ({
         {/* Card 1: GROSS PIPELINE */}
         <Col lg={3} sm={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              backgroundColor: cardBg,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
@@ -182,9 +212,9 @@ const RevenueForecastReportView = ({
                   style={{
                     width: "38px",
                     height: "38px",
-                    borderRadius: "4px",
-                    backgroundColor: "#fef2f2",
-                    color: "#991b1b",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(153, 27, 27, 0.2)" : "#fef2f2",
+                    color: isDark ? "#f87171" : "#991b1b",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -197,18 +227,18 @@ const RevenueForecastReportView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-0.5"
-                    style={{ fontSize: "10.5px", letterSpacing: "0.3px" }}
+                    className="text-uppercase fw-semibold d-block mb-0.5"
+                    style={{ fontSize: "10.5px", letterSpacing: "0.3px", color: textSub }}
                   >
                     GROSS PIPELINE
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
-                    style={{ fontSize: "22px", lineHeight: "1.1" }}
+                    className="fw-bold font-monospace"
+                    style={{ fontSize: "22px", lineHeight: "1.1", color: textTitle }}
                   >
                     {formatCurrency(grossPipeline)}
                   </div>
-                  <div className="text-muted mt-1" style={{ fontSize: "11px" }}>
+                  <div style={{ fontSize: "11px", color: textSub, marginTop: "4px" }}>
                     {activeDealsCount} open deal • unweighted
                   </div>
                 </div>
@@ -220,10 +250,11 @@ const RevenueForecastReportView = ({
         {/* Card 2: WEIGHTED FORECAST */}
         <Col lg={3} sm={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              backgroundColor: cardBg,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
@@ -233,9 +264,9 @@ const RevenueForecastReportView = ({
                   style={{
                     width: "38px",
                     height: "38px",
-                    borderRadius: "4px",
-                    backgroundColor: "#f0fdf4",
-                    color: "#166534",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(22, 101, 52, 0.2)" : "#f0fdf4",
+                    color: isDark ? "#4ade80" : "#166534",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -247,18 +278,18 @@ const RevenueForecastReportView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-0.5"
-                    style={{ fontSize: "10.5px", letterSpacing: "0.3px" }}
+                    className="text-uppercase fw-semibold d-block mb-0.5"
+                    style={{ fontSize: "10.5px", letterSpacing: "0.3px", color: textSub }}
                   >
                     WEIGHTED FORECAST
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
-                    style={{ fontSize: "22px", lineHeight: "1.1" }}
+                    className="fw-bold font-monospace"
+                    style={{ fontSize: "22px", lineHeight: "1.1", color: textTitle }}
                   >
                     {formatCurrency(weightedForecast)}
                   </div>
-                  <div className="text-muted mt-1" style={{ fontSize: "11px" }}>
+                  <div style={{ fontSize: "11px", color: textSub, marginTop: "4px" }}>
                     Expected revenue • {confidencePct}% of gross
                   </div>
                 </div>
@@ -266,21 +297,21 @@ const RevenueForecastReportView = ({
 
               {/* Confidence Mini Gauge */}
               <div style={{ width: "75px", textAlign: "right" }}>
-                <span className="text-muted d-block mb-1" style={{ fontSize: "10px" }}>
+                <span className="d-block mb-1" style={{ fontSize: "10px", color: textSub }}>
                   Confidence {confidencePct}%
                 </span>
                 <div
                   className="progress"
                   style={{
                     height: "4px",
-                    backgroundColor: "#e2e8f0",
-                    borderRadius: "2px",
+                    backgroundColor: isDark ? "#2d3748" : "#e2e8f0",
+                    borderRadius: 0,
                     overflow: "hidden",
                   }}
                 >
                   <div
                     className="progress-bar"
-                    style={{ width: `${confidencePct}%`, backgroundColor: "#16a34a" }}
+                    style={{ width: `${confidencePct}%`, backgroundColor: "#16a34a", borderRadius: 0 }}
                   ></div>
                 </div>
               </div>
@@ -291,10 +322,11 @@ const RevenueForecastReportView = ({
         {/* Card 3: ACTIVE DEALS */}
         <Col lg={3} sm={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              backgroundColor: cardBg,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
@@ -304,9 +336,9 @@ const RevenueForecastReportView = ({
                   style={{
                     width: "38px",
                     height: "38px",
-                    borderRadius: "4px",
-                    backgroundColor: "#eff6ff",
-                    color: "#1d4ed8",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(29, 78, 216, 0.2)" : "#eff6ff",
+                    color: isDark ? "#60a5fa" : "#1d4ed8",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -318,18 +350,18 @@ const RevenueForecastReportView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-0.5"
-                    style={{ fontSize: "10.5px", letterSpacing: "0.3px" }}
+                    className="text-uppercase fw-semibold d-block mb-0.5"
+                    style={{ fontSize: "10.5px", letterSpacing: "0.3px", color: textSub }}
                   >
                     ACTIVE DEALS
                   </span>
                   <div
-                    className="fw-bold text-dark font-monospace"
-                    style={{ fontSize: "22px", lineHeight: "1.1" }}
+                    className="fw-bold font-monospace"
+                    style={{ fontSize: "22px", lineHeight: "1.1", color: textTitle }}
                   >
                     {activeDealsCount}
                   </div>
-                  <div className="text-muted mt-1" style={{ fontSize: "11px" }}>
+                  <div style={{ fontSize: "11px", color: textSub, marginTop: "4px" }}>
                     Avg deal size {formatCurrency(avgDealSize)}
                   </div>
                 </div>
@@ -341,10 +373,11 @@ const RevenueForecastReportView = ({
         {/* Card 4: NEXT EXPECTED CLOSE */}
         <Col lg={3} sm={6}>
           <Card
-            className="h-100 bg-white"
+            className="h-100"
             style={{
-              borderRadius: "4px",
-              border: "1px solid #e2e8f0",
+              borderRadius: 0,
+              backgroundColor: cardBg,
+              border: `1px solid ${cardBorder}`,
               boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
             }}
           >
@@ -354,9 +387,9 @@ const RevenueForecastReportView = ({
                   style={{
                     width: "38px",
                     height: "38px",
-                    borderRadius: "4px",
-                    backgroundColor: "#fffbeb",
-                    color: "#b45309",
+                    borderRadius: 0,
+                    backgroundColor: isDark ? "rgba(180, 83, 9, 0.2)" : "#fffbeb",
+                    color: isDark ? "#fbbf24" : "#b45309",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -368,18 +401,18 @@ const RevenueForecastReportView = ({
                 </div>
                 <div>
                   <span
-                    className="text-muted text-uppercase fw-semibold d-block mb-0.5"
-                    style={{ fontSize: "10.5px", letterSpacing: "0.3px" }}
+                    className="text-uppercase fw-semibold d-block mb-0.5"
+                    style={{ fontSize: "10.5px", letterSpacing: "0.3px", color: textSub }}
                   >
                     NEXT EXPECTED CLOSE
                   </span>
                   <div
-                    className="fw-bold text-dark"
-                    style={{ fontSize: "20px", lineHeight: "1.1" }}
+                    className="fw-bold"
+                    style={{ fontSize: "20px", lineHeight: "1.1", color: textTitle }}
                   >
-                    {nextCloseDateStr}
+                    {formattedNextCloseDate}
                   </div>
-                  <div className="text-muted mt-1" style={{ fontSize: "11px" }}>
+                  <div style={{ fontSize: "11px", color: textSub, marginTop: "4px" }}>
                     In {daysToClose} days • Q1 2027
                   </div>
                 </div>
@@ -396,36 +429,36 @@ const RevenueForecastReportView = ({
           <div className="d-flex flex-column gap-3">
             {/* Card A: From gross pipeline to weighted forecast (Waterfall & Timeline) */}
             <Card
-              className="bg-white"
               style={{
-                borderRadius: "4px",
-                border: "1px solid #e2e8f0",
+                borderRadius: 0,
+                backgroundColor: cardBg,
+                border: `1px solid ${cardBorder}`,
                 boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
             >
               <div
-                className="p-3 bg-white border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2"
-                style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+                className="p-3 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2"
+                style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}
               >
                 <div>
-                  <h6 className="fw-bold text-dark mb-0" style={{ fontSize: "14px" }}>
+                  <h6 className="fw-bold mb-0" style={{ fontSize: "14px", color: textTitle }}>
                     From gross pipeline to weighted forecast
                   </h6>
-                  <span className="text-muted" style={{ fontSize: "11.5px" }}>
+                  <span style={{ fontSize: "11.5px", color: textSub }}>
                     How deal-stage probability reduces what you can expect to earn
                   </span>
                 </div>
 
                 {/* Legend */}
                 <div className="d-flex align-items-center gap-3" style={{ fontSize: "11px" }}>
-                  <span className="d-flex align-items-center gap-1 text-dark">
-                    <span style={{ color: "#93c5fd", fontSize: "12px" }}>●</span> Gross
+                  <span className="d-flex align-items-center gap-1" style={{ color: textTitle }}>
+                    <span style={{ color: isDark ? "#38bdf8" : "#93c5fd", fontSize: "12px" }}>●</span> Gross
                   </span>
-                  <span className="d-flex align-items-center gap-1 text-dark">
-                    <span style={{ color: "#dc2626", fontSize: "12px" }}>●</span> Risk haircut
+                  <span className="d-flex align-items-center gap-1" style={{ color: textTitle }}>
+                    <span style={{ color: isDark ? "#ef4444" : "#dc2626", fontSize: "12px" }}>●</span> Risk haircut
                   </span>
-                  <span className="d-flex align-items-center gap-1 text-dark">
-                    <span style={{ color: "#7f1d1d", fontSize: "12px" }}>●</span> Weighted
+                  <span className="d-flex align-items-center gap-1" style={{ color: textTitle }}>
+                    <span style={{ color: isDark ? "#fca5a5" : "#7f1d1d", fontSize: "12px" }}>●</span> Weighted
                   </span>
                 </div>
               </div>
@@ -433,20 +466,21 @@ const RevenueForecastReportView = ({
               <CardBody className="p-3">
                 {/* Visual Waterfall Bridge Columns */}
                 <div
-                  className="p-3 border rounded mb-3 position-relative"
+                  className="p-3 border mb-3 position-relative"
                   style={{
-                    backgroundColor: "#fafafa",
-                    borderColor: "#f1f5f9",
+                    backgroundColor: isDark ? "#161b22" : "#fafafa",
+                    borderColor: cardBorder,
                     height: "230px",
                     display: "flex",
                     alignItems: "flex-end",
                     justifyContent: "space-around",
+                    borderRadius: 0,
                   }}
                 >
                   {/* Y-Axis Reference Ticks */}
                   <div
-                    className="position-absolute start-0 top-0 bottom-0 d-flex flex-column justify-content-between ps-2 text-muted"
-                    style={{ fontSize: "10.5px", pointerEvents: "none" }}
+                    className="position-absolute start-0 top-0 bottom-0 d-flex flex-column justify-content-between ps-2"
+                    style={{ fontSize: "10.5px", pointerEvents: "none", color: textSub }}
                   >
                     <span>₹20 L</span>
                     <span>₹15 L</span>
@@ -458,8 +492,8 @@ const RevenueForecastReportView = ({
                   {/* Pillar 1: Gross pipeline */}
                   <div className="d-flex flex-column align-items-center" style={{ width: "90px" }}>
                     <span
-                      className="font-monospace fw-bold text-dark mb-1"
-                      style={{ fontSize: "11.5px" }}
+                      className="font-monospace fw-bold mb-1"
+                      style={{ fontSize: "11.5px", color: textTitle }}
                     >
                       {formatCurrency(grossPipeline)}
                     </span>
@@ -467,14 +501,14 @@ const RevenueForecastReportView = ({
                       style={{
                         width: "80px",
                         height: "140px",
-                        backgroundColor: "#93c5fd",
-                        borderRadius: "2px 2px 0 0",
+                        backgroundColor: isDark ? "#38bdf8" : "#93c5fd",
+                        borderRadius: 0,
                       }}
                     ></div>
-                    <span className="fw-semibold text-dark mt-1" style={{ fontSize: "11px" }}>
+                    <span className="fw-semibold mt-1" style={{ fontSize: "11px", color: textTitle }}>
                       Gross pipeline
                     </span>
-                    <span className="text-muted" style={{ fontSize: "10px" }}>
+                    <span style={{ fontSize: "10px", color: textSub }}>
                       1 deal
                     </span>
                   </div>
@@ -482,8 +516,8 @@ const RevenueForecastReportView = ({
                   {/* Pillar 2: Probability risk (Haircut) */}
                   <div className="d-flex flex-column align-items-center" style={{ width: "90px" }}>
                     <span
-                      className="font-monospace fw-bold text-danger mb-1"
-                      style={{ fontSize: "11.5px" }}
+                      className="font-monospace fw-bold mb-1"
+                      style={{ fontSize: "11.5px", color: isDark ? "#f87171" : "#dc2626" }}
                     >
                       - {formatCurrency(riskHaircut)}
                     </span>
@@ -492,14 +526,14 @@ const RevenueForecastReportView = ({
                       style={{
                         width: "80px",
                         height: "16px",
-                        backgroundColor: "#dc2626",
-                        borderRadius: "2px",
+                        backgroundColor: isDark ? "#ef4444" : "#dc2626",
+                        borderRadius: 0,
                       }}
                     ></div>
-                    <span className="fw-semibold text-dark mt-1" style={{ fontSize: "11px" }}>
+                    <span className="fw-semibold mt-1" style={{ fontSize: "11px", color: textTitle }}>
                       Probability risk
                     </span>
-                    <span className="text-muted" style={{ fontSize: "10px" }}>
+                    <span style={{ fontSize: "10px", color: textSub }}>
                       10% of gross
                     </span>
                   </div>
@@ -508,7 +542,7 @@ const RevenueForecastReportView = ({
                   <div className="d-flex flex-column align-items-center" style={{ width: "90px" }}>
                     <span
                       className="font-monospace fw-bold mb-1"
-                      style={{ fontSize: "11.5px", color: "#7f1d1d" }}
+                      style={{ fontSize: "11.5px", color: isDark ? "#fca5a5" : "#7f1d1d" }}
                     >
                       {formatCurrency(weightedForecast)}
                     </span>
@@ -516,21 +550,21 @@ const RevenueForecastReportView = ({
                       style={{
                         width: "80px",
                         height: "125px",
-                        backgroundColor: "#7f1d1d",
-                        borderRadius: "2px 2px 0 0",
+                        backgroundColor: isDark ? "#991b1b" : "#7f1d1d",
+                        borderRadius: 0,
                       }}
                     ></div>
-                    <span className="fw-semibold text-dark mt-1" style={{ fontSize: "11px" }}>
+                    <span className="fw-semibold mt-1" style={{ fontSize: "11px", color: textTitle }}>
                       Weighted forecast
                     </span>
-                    <span className="text-muted" style={{ fontSize: "10px" }}>
+                    <span style={{ fontSize: "10px", color: textSub }}>
                       90% confidence
                     </span>
                   </div>
 
                   {/* Pillar 4: Target */}
                   <div className="d-flex flex-column align-items-center" style={{ width: "90px" }}>
-                    <span className="text-muted mb-1" style={{ fontSize: "11px" }}>
+                    <span className="mb-1" style={{ fontSize: "11px", color: textSub }}>
                       {targetAmount > 0 ? formatCurrency(targetAmount) : "No target"}
                     </span>
                     <div
@@ -538,30 +572,30 @@ const RevenueForecastReportView = ({
                       style={{
                         width: "80px",
                         height: targetAmount > 0 ? "150px" : "110px",
-                        border: "1px dashed #cbd5e1",
-                        backgroundColor: "#ffffff",
-                        borderRadius: "2px",
+                        border: `1px dashed ${isDark ? "#475569" : "#cbd5e1"}`,
+                        backgroundColor: isDark ? "#1e2430" : "#ffffff",
+                        borderRadius: 0,
                         cursor: "pointer",
                       }}
                       onClick={() => setTargetModalOpen(true)}
                     >
-                      <span className="text-muted small" style={{ fontSize: "11px" }}>
+                      <span className="small" style={{ fontSize: "11px", color: textSub }}>
                         {targetAmount > 0 ? "Target set" : "Set target"}
                       </span>
                     </div>
-                    <span className="fw-semibold text-dark mt-1" style={{ fontSize: "11px" }}>
+                    <span className="fw-semibold mt-1" style={{ fontSize: "11px", color: textTitle }}>
                       Target
                     </span>
-                    <span className="text-muted" style={{ fontSize: "10px" }}>
+                    <span style={{ fontSize: "10px", color: textSub }}>
                       {targetAmount > 0 ? "Q1 Goal" : "Not set"}
                     </span>
                   </div>
                 </div>
 
                 {/* Sub-section: Expected Close Timeline */}
-                <div className="pt-2 border-top">
+                <div className="pt-2" style={{ borderTop: `1px solid ${cardBorder}` }}>
                   <div className="d-flex align-items-center justify-content-between mb-2">
-                    <span className="fw-bold text-dark" style={{ fontSize: "12px" }}>
+                    <span className="fw-bold" style={{ fontSize: "12px", color: textTitle }}>
                       Expected close timeline
                     </span>
                   </div>
@@ -572,7 +606,7 @@ const RevenueForecastReportView = ({
                     <div
                       style={{
                         height: "2px",
-                        backgroundColor: "#e2e8f0",
+                        backgroundColor: isDark ? "#334155" : "#e2e8f0",
                         width: "100%",
                         position: "absolute",
                         top: "50%",
@@ -584,7 +618,7 @@ const RevenueForecastReportView = ({
                     <div
                       style={{
                         height: "2px",
-                        borderTop: "2px dashed #7f1d1d",
+                        borderTop: `2px dashed ${isDark ? "#fca5a5" : "#7f1d1d"}`,
                         width: "70%",
                         position: "absolute",
                         top: "50%",
@@ -598,10 +632,10 @@ const RevenueForecastReportView = ({
                       className="position-absolute d-flex flex-column align-items-center"
                       style={{ left: "10%", top: "-4px" }}
                     >
-                      <span className="text-dark fw-bold mb-0.5" style={{ fontSize: "10px" }}>
+                      <span className="fw-bold mb-0.5" style={{ fontSize: "10px", color: textTitle }}>
                         Today • 20 Nov
                       </span>
-                      <i className="ri-arrow-down-s-fill text-dark" style={{ fontSize: "14px", lineHeight: "0.5" }}></i>
+                      <i className="ri-arrow-down-s-fill" style={{ fontSize: "14px", lineHeight: "0.5", color: textTitle }}></i>
                     </div>
 
                     {/* Days to Close Badge on Dotted Line */}
@@ -610,12 +644,12 @@ const RevenueForecastReportView = ({
                       style={{
                         left: "45%",
                         top: "2px",
-                        backgroundColor: "#ffffff",
-                        border: "1px solid #e2e8f0",
+                        backgroundColor: isDark ? "#1e293b" : "#ffffff",
+                        border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`,
                         padding: "1px 8px",
-                        borderRadius: "10px",
+                        borderRadius: 0,
                         fontSize: "10px",
-                        color: "#475569",
+                        color: textTitle,
                         fontWeight: 600,
                       }}
                     >
@@ -631,18 +665,18 @@ const RevenueForecastReportView = ({
                         style={{
                           width: "10px",
                           height: "10px",
-                          backgroundColor: "#7f1d1d",
+                          backgroundColor: isDark ? "#f87171" : "#7f1d1d",
                           transform: "rotate(45deg)",
                         }}
                       ></div>
                       <div
                         className="mt-1 px-1.5 py-0.5 border"
                         style={{
-                          backgroundColor: "#fef2f2",
-                          borderColor: "#fecaca",
-                          borderRadius: "3px",
+                          backgroundColor: isDark ? "rgba(127, 29, 29, 0.3)" : "#fef2f2",
+                          borderColor: isDark ? "rgba(248, 113, 113, 0.4)" : "#fecaca",
+                          borderRadius: 0,
                           fontSize: "10px",
-                          color: "#7f1d1d",
+                          color: isDark ? "#fca5a5" : "#7f1d1d",
                           fontWeight: 600,
                           whiteSpace: "nowrap",
                         }}
@@ -654,8 +688,8 @@ const RevenueForecastReportView = ({
 
                   {/* Timeline Months Labels */}
                   <div
-                    className="d-flex align-items-center justify-content-between text-muted mt-2"
-                    style={{ fontSize: "10.5px" }}
+                    className="d-flex align-items-center justify-content-between mt-2"
+                    style={{ fontSize: "10.5px", color: textSub }}
                   >
                     <span>Nov 2026</span>
                     <span>Dec 2026</span>
@@ -665,7 +699,7 @@ const RevenueForecastReportView = ({
                     <span>Apr 2027</span>
                   </div>
 
-                  <div className="text-muted mt-2 pt-1 border-top" style={{ fontSize: "11px" }}>
+                  <div className="mt-2 pt-1" style={{ borderTop: `1px solid ${cardBorder}`, fontSize: "11px", color: textSub }}>
                     Waterfall shows what probability removes from the pipeline; the timeline shows when the money is expected.
                   </div>
                 </div>
@@ -674,21 +708,21 @@ const RevenueForecastReportView = ({
 
             {/* Card B: Forecast vs target */}
             <Card
-              className="bg-white"
               style={{
-                borderRadius: "4px",
-                border: "1px solid #e2e8f0",
+                borderRadius: 0,
+                backgroundColor: cardBg,
+                border: `1px solid ${cardBorder}`,
                 boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
             >
               <div
-                className="p-3 bg-white border-bottom"
-                style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+                className="p-3 border-bottom"
+                style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}
               >
-                <h6 className="fw-bold text-dark mb-0" style={{ fontSize: "14px" }}>
+                <h6 className="fw-bold mb-0" style={{ fontSize: "14px", color: textTitle }}>
                   Forecast vs target
                 </h6>
-                <span className="text-muted" style={{ fontSize: "11.5px" }}>
+                <span style={{ fontSize: "11.5px", color: textSub }}>
                   Track progress to your Q1 2027 revenue goal
                 </span>
               </div>
@@ -699,8 +733,8 @@ const RevenueForecastReportView = ({
                   className="progress mb-3"
                   style={{
                     height: "8px",
-                    backgroundColor: "#f1f5f9",
-                    borderRadius: "4px",
+                    backgroundColor: isDark ? "#2d3748" : "#f1f5f9",
+                    borderRadius: 0,
                   }}
                 >
                   <div
@@ -708,16 +742,17 @@ const RevenueForecastReportView = ({
                     style={{
                       width: targetAmount > 0 ? `${Math.min(100, Math.round((weightedForecast / targetAmount) * 100))}%` : "0%",
                       backgroundColor: "#7f1d1d",
+                      borderRadius: 0,
                     }}
                   ></div>
                 </div>
 
                 <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
                   <div>
-                    <span className="fw-bold text-dark d-block" style={{ fontSize: "13px" }}>
+                    <span className="fw-bold d-block" style={{ fontSize: "13px", color: textTitle }}>
                       {targetAmount > 0 ? `Target: ${formatCurrency(targetAmount)} (${Math.round((weightedForecast / targetAmount) * 100)}% achieved)` : "No target set"}
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       Set a quarterly target to see % achieved, gap to goal and required pipeline.
                     </span>
                   </div>
@@ -732,7 +767,7 @@ const RevenueForecastReportView = ({
                       fontSize: "11.5px",
                       fontWeight: 600,
                       padding: "5px 14px",
-                      borderRadius: "4px",
+                      borderRadius: 0,
                     }}
                     onClick={() => setTargetModalOpen(true)}
                   >
@@ -749,21 +784,21 @@ const RevenueForecastReportView = ({
           <div className="d-flex flex-column gap-3">
             {/* Card 1: Forecast scenarios */}
             <Card
-              className="bg-white"
               style={{
-                borderRadius: "4px",
-                border: "1px solid #e2e8f0",
+                borderRadius: 0,
+                backgroundColor: cardBg,
+                border: `1px solid ${cardBorder}`,
                 boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
             >
               <div
-                className="p-3 bg-white border-bottom d-flex align-items-center justify-content-between"
-                style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+                className="p-3 border-bottom d-flex align-items-center justify-content-between"
+                style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}
               >
-                <h6 className="fw-bold text-dark mb-0" style={{ fontSize: "14px" }}>
+                <h6 className="fw-bold mb-0" style={{ fontSize: "14px", color: textTitle }}>
                   Forecast scenarios
                 </h6>
-                <span className="text-muted" style={{ fontSize: "11px" }}>
+                <span style={{ fontSize: "11px", color: textSub }}>
                   for the full period
                 </span>
               </div>
@@ -774,24 +809,24 @@ const RevenueForecastReportView = ({
                   <div>
                     <div className="d-flex align-items-center justify-content-between mb-1">
                       <div>
-                        <span className="fw-bold text-dark d-block" style={{ fontSize: "12px" }}>
+                        <span className="fw-bold d-block" style={{ fontSize: "12px", color: textTitle }}>
                           Best case
                         </span>
-                        <span className="text-muted" style={{ fontSize: "10.5px" }}>
+                        <span style={{ fontSize: "10.5px", color: textSub }}>
                           All deals close
                         </span>
                       </div>
-                      <span className="font-monospace fw-bold text-dark" style={{ fontSize: "12.5px" }}>
+                      <span className="font-monospace fw-bold" style={{ fontSize: "12.5px", color: textTitle }}>
                         {formatCurrency(grossPipeline)}
                       </span>
                     </div>
                     <div
                       className="progress"
-                      style={{ height: "6px", backgroundColor: "#f1f5f9", borderRadius: "3px" }}
+                      style={{ height: "6px", backgroundColor: isDark ? "#2d3748" : "#f1f5f9", borderRadius: 0 }}
                     >
                       <div
                         className="progress-bar"
-                        style={{ width: "100%", backgroundColor: "#16a34a" }}
+                        style={{ width: "100%", backgroundColor: "#16a34a", borderRadius: 0 }}
                       ></div>
                     </div>
                   </div>
@@ -800,24 +835,24 @@ const RevenueForecastReportView = ({
                   <div>
                     <div className="d-flex align-items-center justify-content-between mb-1">
                       <div>
-                        <span className="fw-bold text-dark d-block" style={{ fontSize: "12px" }}>
+                        <span className="fw-bold d-block" style={{ fontSize: "12px", color: textTitle }}>
                           Expected
                         </span>
-                        <span className="text-muted" style={{ fontSize: "10.5px" }}>
+                        <span style={{ fontSize: "10.5px", color: textSub }}>
                           Probability-weighted
                         </span>
                       </div>
-                      <span className="font-monospace fw-bold text-dark" style={{ fontSize: "12.5px" }}>
+                      <span className="font-monospace fw-bold" style={{ fontSize: "12.5px", color: textTitle }}>
                         {formatCurrency(weightedForecast)}
                       </span>
                     </div>
                     <div
                       className="progress"
-                      style={{ height: "6px", backgroundColor: "#f1f5f9", borderRadius: "3px" }}
+                      style={{ height: "6px", backgroundColor: isDark ? "#2d3748" : "#f1f5f9", borderRadius: 0 }}
                     >
                       <div
                         className="progress-bar"
-                        style={{ width: `${confidencePct}%`, backgroundColor: "#7f1d1d" }}
+                        style={{ width: `${confidencePct}%`, backgroundColor: isDark ? "#fca5a5" : "#7f1d1d", borderRadius: 0 }}
                       ></div>
                     </div>
                   </div>
@@ -826,22 +861,22 @@ const RevenueForecastReportView = ({
                   <div>
                     <div className="d-flex align-items-center justify-content-between mb-1">
                       <div>
-                        <span className="fw-bold text-dark d-block" style={{ fontSize: "12px" }}>
+                        <span className="fw-bold d-block" style={{ fontSize: "12px", color: textTitle }}>
                           Worst case
                         </span>
-                        <span className="text-muted" style={{ fontSize: "10.5px" }}>
+                        <span style={{ fontSize: "10.5px", color: textSub }}>
                           Deal slips or is lost
                         </span>
                       </div>
-                      <span className="font-monospace text-muted" style={{ fontSize: "12.5px" }}>
+                      <span className="font-monospace" style={{ fontSize: "12.5px", color: textSub }}>
                         ₹0
                       </span>
                     </div>
                     <div
                       className="progress"
-                      style={{ height: "6px", backgroundColor: "#f1f5f9", borderRadius: "3px" }}
+                      style={{ height: "6px", backgroundColor: isDark ? "#2d3748" : "#f1f5f9", borderRadius: 0 }}
                     >
-                      <div className="progress-bar" style={{ width: "0%" }}></div>
+                      <div className="progress-bar" style={{ width: "0%", borderRadius: 0 }}></div>
                     </div>
                   </div>
                 </div>
@@ -850,21 +885,21 @@ const RevenueForecastReportView = ({
 
             {/* Card 2: Pipeline by stage */}
             <Card
-              className="bg-white"
               style={{
-                borderRadius: "4px",
-                border: "1px solid #e2e8f0",
+                borderRadius: 0,
+                backgroundColor: cardBg,
+                border: `1px solid ${cardBorder}`,
                 boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
             >
               <div
-                className="p-3 bg-white border-bottom d-flex align-items-center justify-content-between"
-                style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+                className="p-3 border-bottom d-flex align-items-center justify-content-between"
+                style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}
               >
-                <h6 className="fw-bold text-dark mb-0" style={{ fontSize: "14px" }}>
+                <h6 className="fw-bold mb-0" style={{ fontSize: "14px", color: textTitle }}>
                   Pipeline by stage
                 </h6>
-                <span className="text-muted" style={{ fontSize: "11px" }}>
+                <span style={{ fontSize: "11px", color: textSub }}>
                   gross &rarr; weighted
                 </span>
               </div>
@@ -875,7 +910,7 @@ const RevenueForecastReportView = ({
                   className="p-1.5 text-center text-white fw-bold mb-2.5"
                   style={{
                     backgroundColor: "#0d9488",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     fontSize: "11.5px",
                     letterSpacing: "0.2px",
                   }}
@@ -883,28 +918,40 @@ const RevenueForecastReportView = ({
                   Qualified 100%
                 </div>
 
-                <div className="d-flex align-items-center justify-content-between pb-2 mb-2 border-bottom">
+                <div
+                  className="d-flex align-items-center justify-content-between pb-2 mb-2"
+                  style={{ borderBottom: `1px solid ${cardBorder}` }}
+                >
                   <div>
-                    <span className="d-flex align-items-center gap-1.5 text-dark fw-semibold" style={{ fontSize: "12px" }}>
+                    <span className="d-flex align-items-center gap-1.5 fw-semibold" style={{ fontSize: "12px", color: textTitle }}>
                       <span style={{ color: "#0d9488", fontSize: "12px" }}>●</span> Qualified
                     </span>
-                    <span className="text-muted" style={{ fontSize: "11px" }}>
+                    <span style={{ fontSize: "11px", color: textSub }}>
                       Gross {formatCurrency(grossPipeline)}
                     </span>
                   </div>
 
                   <div className="text-end">
-                    <span className="text-muted d-block" style={{ fontSize: "11px" }}>
+                    <span className="d-block" style={{ fontSize: "11px", color: textSub }}>
                       1 deal • 90% probability
                     </span>
-                    <span className="fw-bold text-dark font-monospace" style={{ fontSize: "12px" }}>
+                    <span className="fw-bold font-monospace" style={{ fontSize: "12px", color: textTitle }}>
                       Weighted {formatCurrency(weightedForecast)}
                     </span>
                   </div>
                 </div>
 
-                <div className="d-flex align-items-center gap-1.5 text-muted" style={{ fontSize: "11px" }}>
-                  <i className="ri-alert-line text-warning" style={{ fontSize: "13px" }}></i>
+                <div
+                  className="d-flex align-items-center gap-1.5 p-2"
+                  style={{
+                    backgroundColor: isDark ? "rgba(234, 179, 8, 0.1)" : "#fefce8",
+                    border: `1px solid ${isDark ? "rgba(234, 179, 8, 0.2)" : "#fef08a"}`,
+                    borderRadius: 0,
+                    fontSize: "11px",
+                    color: isDark ? "#fde047" : "#854d0e",
+                  }}
+                >
+                  <i className="ri-alert-line" style={{ fontSize: "13px" }}></i>
                   <span>90% is high for "Qualified". Review stage probabilities.</span>
                 </div>
               </CardBody>
@@ -912,18 +959,18 @@ const RevenueForecastReportView = ({
 
             {/* Card 3: Forecast by sales rep */}
             <Card
-              className="bg-white"
               style={{
-                borderRadius: "4px",
-                border: "1px solid #e2e8f0",
+                borderRadius: 0,
+                backgroundColor: cardBg,
+                border: `1px solid ${cardBorder}`,
                 boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
               }}
             >
               <div
-                className="p-3 bg-white border-bottom"
-                style={{ borderRadius: "4px 4px 0 0", borderColor: "#e2e8f0" }}
+                className="p-3 border-bottom"
+                style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}
               >
-                <h6 className="fw-bold text-dark mb-0" style={{ fontSize: "14px" }}>
+                <h6 className="fw-bold mb-0" style={{ fontSize: "14px", color: textTitle }}>
                   Forecast by sales rep
                 </h6>
               </div>
@@ -931,8 +978,8 @@ const RevenueForecastReportView = ({
               <CardBody className="p-3">
                 {/* Rep Header */}
                 <div
-                  className="d-flex align-items-center text-muted text-uppercase fw-semibold pb-1.5 mb-1.5 border-bottom"
-                  style={{ fontSize: "10px", letterSpacing: "0.3px" }}
+                  className="d-flex align-items-center text-uppercase fw-semibold pb-1.5 mb-1.5"
+                  style={{ fontSize: "10px", letterSpacing: "0.3px", borderBottom: `1px solid ${cardBorder}`, color: textSub }}
                 >
                   <div style={{ width: "120px" }}>REP</div>
                   <div style={{ width: "40px", textAlign: "center" }}>DEALS</div>
@@ -942,7 +989,7 @@ const RevenueForecastReportView = ({
 
                 {/* Rep Rows */}
                 {repForecastData.length === 0 ? (
-                  <div className="py-2 text-center text-muted" style={{ fontSize: "12px" }}>
+                  <div className="py-2 text-center" style={{ fontSize: "12px", color: textSub }}>
                     No sales rep forecast data.
                   </div>
                 ) : (
@@ -953,9 +1000,9 @@ const RevenueForecastReportView = ({
                           style={{
                             width: "22px",
                             height: "22px",
-                            borderRadius: "3px",
-                            backgroundColor: "#fef2f2",
-                            color: "#991b1b",
+                            borderRadius: 0,
+                            backgroundColor: isDark ? "rgba(153, 27, 27, 0.2)" : "#fef2f2",
+                            color: isDark ? "#f87171" : "#991b1b",
                             fontSize: "10px",
                             fontWeight: 700,
                             display: "inline-flex",
@@ -965,25 +1012,25 @@ const RevenueForecastReportView = ({
                         >
                           {getInitials(rep.name)}
                         </span>
-                        <span className="text-dark fw-medium text-truncate" style={{ fontSize: "11.5px" }}>
+                        <span className="fw-medium text-truncate" style={{ fontSize: "11.5px", color: textTitle }}>
                           {rep.name}
                         </span>
                       </div>
 
-                      <div className="text-center font-monospace" style={{ width: "40px", flexShrink: 0 }}>
+                      <div className="text-center font-monospace" style={{ width: "40px", flexShrink: 0, color: textTitle }}>
                         {rep.deals}
                       </div>
-                      <div className="text-end font-monospace text-muted" style={{ width: "60px", flexShrink: 0 }}>
+                      <div className="text-end font-monospace" style={{ width: "60px", flexShrink: 0, color: textSub }}>
                         {formatShortLakhs(rep.gross)}
                       </div>
-                      <div className="text-end font-monospace fw-bold text-dark" style={{ width: "65px", flexShrink: 0 }}>
+                      <div className="text-end font-monospace fw-bold" style={{ width: "65px", flexShrink: 0, color: textTitle }}>
                         {formatShortLakhs(rep.weighted)}
                       </div>
                     </div>
                   ))
                 )}
 
-                <div className="pt-2 mt-2 border-top text-muted" style={{ fontSize: "10.5px" }}>
+                <div className="pt-2 mt-2" style={{ borderTop: `1px solid ${cardBorder}`, fontSize: "10.5px", color: textSub }}>
                   {repForecastData.length > 0
                     ? `${repForecastData.length} active sales rep${repForecastData.length > 1 ? "s" : ""} in pipeline.`
                     : "No forecast pipeline available."}
@@ -996,24 +1043,26 @@ const RevenueForecastReportView = ({
 
       {/* ─── ROW 3: OPPORTUNITY LEDGER TABLE ───────────────────────────────────── */}
       <Card
-        className="bg-white mb-4"
+        className="mb-4"
         style={{
-          borderRadius: "4px",
-          border: "1px solid #e2e8f0",
+          borderRadius: 0,
+          backgroundColor: cardBg,
+          border: `1px solid ${cardBorder}`,
           boxShadow: "0 1px 3px rgba(15, 23, 42, 0.04)",
         }}
       >
         <div
-          className="p-3 bg-white border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
+          className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2"
           style={{
-            borderRadius: "4px 4px 0 0",
-            borderColor: "#e2e8f0",
+            borderRadius: 0,
+            borderColor: cardBorder,
+            backgroundColor: cardBg,
           }}
         >
           <div>
-            <h6 className="mb-0 fw-bold text-dark d-flex align-items-center gap-1.5" style={{ fontSize: "14px" }}>
+            <h6 className="mb-0 fw-bold d-flex align-items-center gap-1.5" style={{ fontSize: "14px", color: textTitle }}>
               Opportunity Ledger
-              <span className="text-muted fw-normal small ms-1" style={{ fontSize: "11.5px" }}>
+              <span className="fw-normal small ms-1" style={{ fontSize: "11.5px", color: textSub }}>
                 Showing {filteredRows.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} of {rawRows.length} deal
               </span>
             </h6>
@@ -1027,10 +1076,11 @@ const RevenueForecastReportView = ({
                 placeholder="Search deal or customer..."
                 className="form-control-sm ps-4"
                 style={{
-                  borderRadius: "4px",
+                  borderRadius: 0,
                   fontSize: "12px",
-                  borderColor: "#cbd5e1",
-                  backgroundColor: "#ffffff",
+                  borderColor: isDark ? "#334155" : "#cbd5e1",
+                  backgroundColor: isDark ? "#1a202c" : "#ffffff",
+                  color: textTitle,
                 }}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -1046,9 +1096,11 @@ const RevenueForecastReportView = ({
               className="form-select form-select-sm"
               style={{
                 width: "120px",
-                borderRadius: "4px",
+                borderRadius: 0,
                 fontSize: "12px",
-                borderColor: "#cbd5e1",
+                borderColor: isDark ? "#334155" : "#cbd5e1",
+                backgroundColor: isDark ? "#1a202c" : "#ffffff",
+                color: textTitle,
               }}
               value={stageFilter}
               onChange={(e) => setStageFilter(e.target.value)}
@@ -1065,10 +1117,10 @@ const RevenueForecastReportView = ({
               type="button"
               className="btn btn-sm d-flex align-items-center gap-1"
               style={{
-                backgroundColor: "#ffffff",
-                color: "#1e293b",
-                border: "1px solid #cbd5e1",
-                borderRadius: "4px",
+                backgroundColor: isDark ? "#1a202c" : "#ffffff",
+                color: textTitle,
+                border: `1px solid ${isDark ? "#334155" : "#cbd5e1"}`,
+                borderRadius: 0,
                 fontSize: "12px",
                 fontWeight: 500,
                 padding: "4px 12px",
@@ -1083,22 +1135,22 @@ const RevenueForecastReportView = ({
         <CardBody className="p-0">
           <div className="table-responsive">
             <Table className="align-middle table-nowrap mb-0" hover>
-              <thead style={{ backgroundColor: "#f8fafc" }}>
-                <tr style={{ fontSize: "10.5px", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.3px" }}>
-                  <th style={{ width: "24%" }}>DEAL</th>
-                  <th style={{ width: "12%" }}>STAGE</th>
-                  <th style={{ width: "15%" }}>SALES REP</th>
-                  <th style={{ width: "13%" }}>AMOUNT</th>
-                  <th style={{ width: "14%" }}>PROBABILITY</th>
-                  <th style={{ width: "12%" }}>WEIGHTED</th>
-                  <th style={{ width: "14%" }}>EXPECTED CLOSE</th>
-                  <th style={{ width: "100px" }} className="text-end pe-3">ACTIONS</th>
+              <thead style={{ backgroundColor: subtleBg }}>
+                <tr style={{ fontSize: "10.5px", color: textSub, textTransform: "uppercase", letterSpacing: "0.3px" }}>
+                  <th style={{ width: "24%", borderBottom: `1px solid ${cardBorder}` }}>DEAL</th>
+                  <th style={{ width: "12%", borderBottom: `1px solid ${cardBorder}` }}>STAGE</th>
+                  <th style={{ width: "15%", borderBottom: `1px solid ${cardBorder}` }}>SALES REP</th>
+                  <th style={{ width: "13%", borderBottom: `1px solid ${cardBorder}` }}>AMOUNT</th>
+                  <th style={{ width: "14%", borderBottom: `1px solid ${cardBorder}` }}>PROBABILITY</th>
+                  <th style={{ width: "12%", borderBottom: `1px solid ${cardBorder}` }}>WEIGHTED</th>
+                  <th style={{ width: "14%", borderBottom: `1px solid ${cardBorder}` }}>EXPECTED CLOSE</th>
+                  <th style={{ width: "100px", borderBottom: `1px solid ${cardBorder}` }} className="text-end pe-3">ACTIONS</th>
                 </tr>
               </thead>
               <tbody style={{ fontSize: "12.5px" }}>
                 {paginatedRows.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="text-center py-4 text-muted">
+                    <td colSpan="8" className="text-center py-4" style={{ color: textSub }}>
                       No opportunities match the selected filters.
                     </td>
                   </tr>
@@ -1108,20 +1160,36 @@ const RevenueForecastReportView = ({
                     const amt = Number(r.amount || grossPipeline);
                     const wAmt = Number(r.weighted_amount || weightedForecast);
                     const dealDays = calculateDaysToClose(r.expected_close_date);
+                    const formattedDealClose = r.expected_close_date
+                      ? (() => {
+                          try {
+                            const d = new Date(r.expected_close_date);
+                            return isNaN(d.getTime())
+                              ? r.expected_close_date
+                              : d.toLocaleDateString("en-GB", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                });
+                          } catch {
+                            return r.expected_close_date;
+                          }
+                        })()
+                      : "19 Mar 2027";
 
                     return (
-                      <tr key={r.opportunity_id || idx}>
+                      <tr key={r.opportunity_id || idx} style={{ borderBottom: `1px solid ${cardBorder}` }}>
                         {/* DEAL */}
                         <td>
                           <div>
                             <Link
                               to={`/crm/opportunities/${r.opportunity_id || 1}`}
-                              className="fw-bold text-dark text-decoration-none d-block"
-                              style={{ fontSize: "12.5px" }}
+                              className="fw-bold text-decoration-none d-block"
+                              style={{ fontSize: "12.5px", color: textTitle }}
                             >
                               {r.opportunity_name || "—"}
                             </Link>
-                            <span className="text-muted d-block" style={{ fontSize: "11px" }}>
+                            <span className="d-block" style={{ fontSize: "11px", color: isDark ? "#60a5fa" : "#2563eb" }}>
                               {r.customer_name || "—"}
                             </span>
                           </div>
@@ -1131,13 +1199,13 @@ const RevenueForecastReportView = ({
                         <td>
                           <span
                             style={{
-                              backgroundColor: "#f0fdf4",
-                              color: "#0d9488",
-                              border: "1px solid #bbf7d0",
+                              backgroundColor: isDark ? "rgba(13, 148, 136, 0.2)" : "#f0fdf4",
+                              color: isDark ? "#2dd4bf" : "#0d9488",
+                              border: `1px solid ${isDark ? "rgba(13, 148, 136, 0.3)" : "#bbf7d0"}`,
                               fontSize: "11px",
                               fontWeight: 600,
                               padding: "2.5px 8px",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                             }}
                           >
                             {r.stage_name || "Qualified"}
@@ -1151,9 +1219,9 @@ const RevenueForecastReportView = ({
                               style={{
                                 width: "22px",
                                 height: "22px",
-                                borderRadius: "3px",
-                                backgroundColor: "#fef2f2",
-                                color: "#991b1b",
+                                borderRadius: 0,
+                                backgroundColor: isDark ? "rgba(153, 27, 27, 0.2)" : "#fef2f2",
+                                color: isDark ? "#f87171" : "#991b1b",
                                 fontSize: "10px",
                                 fontWeight: 700,
                                 display: "inline-flex",
@@ -1163,14 +1231,14 @@ const RevenueForecastReportView = ({
                             >
                               {getInitials(r.sales_rep)}
                             </span>
-                            <span className="text-dark fw-medium" style={{ fontSize: "12px" }}>
+                            <span className="fw-medium" style={{ fontSize: "12px", color: textTitle }}>
                               {r.sales_rep || "Unassigned"}
                             </span>
                           </div>
                         </td>
 
                         {/* AMOUNT */}
-                        <td className="fw-bold text-dark font-monospace" style={{ fontSize: "13px" }}>
+                        <td className="fw-bold font-monospace" style={{ fontSize: "13px", color: textTitle }}>
                           {formatCurrency(amt)}
                         </td>
 
@@ -1179,11 +1247,11 @@ const RevenueForecastReportView = ({
                           <div className="d-flex align-items-center gap-2" style={{ maxWidth: "110px" }}>
                             <div
                               className="progress flex-grow-1"
-                              style={{ height: "6px", backgroundColor: "#f1f5f9", borderRadius: "3px" }}
+                              style={{ height: "6px", backgroundColor: isDark ? "#2d3748" : "#f1f5f9", borderRadius: 0 }}
                             >
                               <div
                                 className="progress-bar"
-                                style={{ width: `${prob}%`, backgroundColor: "#16a34a" }}
+                                style={{ width: `${prob}%`, backgroundColor: "#16a34a", borderRadius: 0 }}
                               ></div>
                             </div>
                             <span className="font-monospace fw-bold text-success" style={{ fontSize: "11px" }}>
@@ -1193,25 +1261,25 @@ const RevenueForecastReportView = ({
                         </td>
 
                         {/* WEIGHTED */}
-                        <td className="fw-bold text-dark font-monospace" style={{ fontSize: "13px" }}>
+                        <td className="fw-bold font-monospace" style={{ fontSize: "13px", color: textTitle }}>
                           {formatCurrency(wAmt)}
                         </td>
 
                         {/* EXPECTED CLOSE */}
                         <td>
                           <div className="d-flex align-items-center gap-1.5">
-                            <span className="text-dark" style={{ fontSize: "12px" }}>
-                              {r.expected_close_date || "19 Mar 2027"}
+                            <span style={{ fontSize: "12px", color: textTitle }}>
+                              {formattedDealClose}
                             </span>
                             <span
                               style={{
-                                backgroundColor: "#fffbeb",
-                                color: "#b45309",
-                                border: "1px solid #fde68a",
+                                backgroundColor: isDark ? "rgba(180, 83, 9, 0.2)" : "#fffbeb",
+                                color: isDark ? "#fbbf24" : "#b45309",
+                                border: `1px solid ${isDark ? "rgba(180, 83, 9, 0.3)" : "#fde68a"}`,
                                 fontSize: "10.5px",
                                 fontWeight: 600,
                                 padding: "1px 6px",
-                                borderRadius: "3px",
+                                borderRadius: 0,
                               }}
                             >
                               in {dealDays} days
@@ -1223,13 +1291,15 @@ const RevenueForecastReportView = ({
                         <td className="text-end pe-3">
                           <Link
                             to={`/crm/opportunities/${r.opportunity_id || 1}`}
-                            className="btn btn-sm btn-light border"
+                            className="btn btn-sm border"
                             style={{
                               fontSize: "11.5px",
                               fontWeight: 500,
                               padding: "3px 12px",
-                              borderRadius: "3px",
-                              color: "#334155",
+                              borderRadius: 0,
+                              backgroundColor: isDark ? "#1a202c" : "#f8fafc",
+                              borderColor: isDark ? "#334155" : "#cbd5e1",
+                              color: textTitle,
                             }}
                           >
                             View deal
@@ -1244,14 +1314,24 @@ const RevenueForecastReportView = ({
           </div>
 
           {/* Table Footer Pagination */}
-          <div className="p-3 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div
+            className="p-3 d-flex align-items-center justify-content-between flex-wrap gap-2"
+            style={{ borderTop: `1px solid ${cardBorder}`, backgroundColor: subtleBg }}
+          >
             <div className="d-flex align-items-center gap-2">
-              <span className="text-muted small" style={{ fontSize: "11.5px" }}>
+              <span className="small" style={{ fontSize: "11.5px", color: textSub }}>
                 Rows per page:
               </span>
               <select
                 className="form-select form-select-sm"
-                style={{ width: "65px", fontSize: "11.5px", borderRadius: "4px" }}
+                style={{
+                  width: "65px",
+                  fontSize: "11.5px",
+                  borderRadius: 0,
+                  borderColor: isDark ? "#334155" : "#cbd5e1",
+                  backgroundColor: isDark ? "#1a202c" : "#ffffff",
+                  color: textTitle,
+                }}
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
               >
@@ -1264,8 +1344,14 @@ const RevenueForecastReportView = ({
             <div className="btn-group btn-group-sm">
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "4px 0 0 4px", fontSize: "11px" }}
+                className="btn btn-sm border"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  backgroundColor: isDark ? "#1a202c" : "#ffffff",
+                  borderColor: isDark ? "#334155" : "#cbd5e1",
+                  color: textTitle,
+                }}
                 disabled={currentPage <= 1}
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               >
@@ -1280,14 +1366,21 @@ const RevenueForecastReportView = ({
                   fontSize: "11px",
                   fontWeight: 600,
                   border: "1px solid #7f1d1d",
+                  borderRadius: 0,
                 }}
               >
                 {currentPage}
               </button>
               <button
                 type="button"
-                className="btn btn-sm btn-light border"
-                style={{ borderRadius: "0 4px 4px 0", fontSize: "11px" }}
+                className="btn btn-sm border"
+                style={{
+                  borderRadius: 0,
+                  fontSize: "11px",
+                  backgroundColor: isDark ? "#1a202c" : "#ffffff",
+                  borderColor: isDark ? "#334155" : "#cbd5e1",
+                  color: textTitle,
+                }}
                 disabled={currentPage >= totalPages}
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               >
@@ -1300,12 +1393,15 @@ const RevenueForecastReportView = ({
 
       {/* ─── MODAL: SET QUARTERLY TARGET ───────────────────────────────────────── */}
       <Modal isOpen={targetModalOpen} toggle={() => setTargetModalOpen(!targetModalOpen)} centered>
-        <ModalHeader toggle={() => setTargetModalOpen(false)}>
+        <ModalHeader
+          toggle={() => setTargetModalOpen(false)}
+          style={{ backgroundColor: subtleBg, borderColor: cardBorder, color: textTitle, borderRadius: 0 }}
+        >
           Set Revenue Forecast Target
         </ModalHeader>
-        <ModalBody>
+        <ModalBody style={{ backgroundColor: cardBg, color: textTitle }}>
           <FormGroup>
-            <Label for="targetInput" style={{ fontSize: "12px", fontWeight: 600 }}>
+            <Label for="targetInput" style={{ fontSize: "12px", fontWeight: 600, color: textTitle }}>
               Quarterly Revenue Target (₹)
             </Label>
             <Input
@@ -1314,19 +1410,34 @@ const RevenueForecastReportView = ({
               value={targetInput}
               onChange={(e) => setTargetInput(e.target.value)}
               placeholder="e.g. 2000000"
+              style={{
+                borderRadius: 0,
+                backgroundColor: isDark ? "#1a202c" : "#ffffff",
+                borderColor: isDark ? "#334155" : "#cbd5e1",
+                color: textTitle,
+              }}
             />
-            <small className="text-muted mt-1 d-block">
+            <small className="mt-1 d-block" style={{ color: textSub }}>
               Currently forecasting {formatCurrency(weightedForecast)}. Setting a target will benchmark goal attainment.
             </small>
           </FormGroup>
         </ModalBody>
-        <ModalFooter>
-          <Button color="light" size="sm" onClick={() => setTargetModalOpen(false)}>
+        <ModalFooter style={{ backgroundColor: subtleBg, borderColor: cardBorder, borderRadius: 0 }}>
+          <Button
+            size="sm"
+            onClick={() => setTargetModalOpen(false)}
+            style={{
+              borderRadius: 0,
+              backgroundColor: isDark ? "#1a202c" : "#f8fafc",
+              borderColor: isDark ? "#334155" : "#cbd5e1",
+              color: textTitle,
+            }}
+          >
             Cancel
           </Button>
           <Button
             size="sm"
-            style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d", color: "#ffffff" }}
+            style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d", color: "#ffffff", borderRadius: 0 }}
             onClick={handleSaveTarget}
           >
             Save Target

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   Alert,
   Badge,
@@ -96,6 +97,25 @@ const TYPE_CONFIG = {
   },
 };
 
+const getTypeConfig = (typeKey, isDark = false) => {
+  const key = (typeKey || "CALL").toUpperCase();
+  const base = TYPE_CONFIG[key] || TYPE_CONFIG.CALL;
+  if (!isDark) return base;
+  const darkTints = {
+    CALL: { bgColor: "rgba(22, 163, 74, 0.18)", textColor: "#4ade80" },
+    MEETING: { bgColor: "rgba(37, 99, 235, 0.18)", textColor: "#60a5fa" },
+    EMAIL: { bgColor: "rgba(2, 132, 199, 0.18)", textColor: "#38bdf8" },
+    TASK: { bgColor: "rgba(217, 119, 6, 0.18)", textColor: "#fbbf24" },
+    DEMO: { bgColor: "rgba(147, 51, 234, 0.18)", textColor: "#c084fc" },
+    VISIT: { bgColor: "rgba(219, 39, 119, 0.18)", textColor: "#f472b6" },
+  };
+  return {
+    ...base,
+    bgColor: darkTints[key]?.bgColor || base.bgColor,
+    textColor: darkTints[key]?.textColor || base.textColor,
+  };
+};
+
 const pad = (n) => String(n).padStart(2, "0");
 
 const toDatetimeLocalValue = (value) => {
@@ -121,6 +141,24 @@ const formatDateStr = (value) => {
 
 const Activities = () => {
   document.title = "Activities | SoftOnCloud CRM";
+
+  // Redux Dark Mode detection
+  const { layoutModeType } = useSelector((state) => ({
+    layoutModeType: state.Layout.layoutModeType,
+  }));
+  const isDark =
+    layoutModeType === "dark" ||
+    (typeof document !== "undefined" &&
+      (document.documentElement.getAttribute("data-bs-theme") === "dark" ||
+        document.documentElement.getAttribute("data-layout-mode") === "dark"));
+
+  const primaryColor = isDark ? "#fca5a5" : THEME.primary;
+  const cardBg = isDark ? "#121212" : "#ffffff";
+  const cardBorder = isDark ? "#262626" : THEME.grayBorder;
+  const subtleBg = isDark ? "#161b22" : "#f8fafc";
+  const subtleBorder = isDark ? "#2d3748" : THEME.grayBorder;
+  const textTitle = isDark ? "#f1f5f9" : THEME.textHeading;
+  const textSub = isDark ? "#94a3b8" : THEME.textMuted;
 
   // Active Tab: 'ALL' | 'CALL' | 'MEETING' | 'EMAIL' | 'TASK'
   const [activeTab, setActiveTab] = useState("ALL");
@@ -718,19 +756,19 @@ const Activities = () => {
         <div className="d-flex flex-wrap justify-content-between align-items-center mb-3">
           <div>
             <nav aria-label="breadcrumb">
-              <ol className="breadcrumb mb-1 text-muted small">
+              <ol className="breadcrumb mb-1 small">
                 <li className="breadcrumb-item">
-                  <Link to="/crm/dashboard" style={{ color: THEME.textMuted }}>CRM</Link>
+                  <Link to="/crm/dashboard" style={{ color: textSub }}>CRM</Link>
                 </li>
-                <li className="breadcrumb-item active text-dark fw-semibold" aria-current="page">
+                <li className="breadcrumb-item active fw-semibold" aria-current="page" style={{ color: textTitle }}>
                   Activities
                 </li>
               </ol>
             </nav>
-            <h4 className="fw-bold mb-0" style={{ color: THEME.textHeading }}>
+            <h4 className="fw-bold mb-0" style={{ color: textTitle }}>
               Activities
             </h4>
-            <p className="text-muted small mb-0">Manage calls, meetings, emails and tasks</p>
+            <p className="small mb-0" style={{ color: textSub }}>Manage calls, meetings, emails and tasks</p>
           </div>
 
           <div className="d-flex align-items-center gap-2 mt-2 mt-sm-0">
@@ -747,9 +785,9 @@ const Activities = () => {
               type="button"
               className="rounded-0 px-3 fw-medium shadow-sm"
               style={{
-                backgroundColor: "#ffffff",
-                color: THEME.primary,
-                border: `1px solid ${THEME.primary}`,
+                backgroundColor: isDark ? "transparent" : "#ffffff",
+                color: primaryColor,
+                border: `1px solid ${primaryColor}`,
               }}
               onClick={() => openModal("schedule")}
             >
@@ -761,19 +799,20 @@ const Activities = () => {
               <DropdownToggle
                 color="light"
                 className="rounded-0 border px-2 text-muted shadow-none"
+                style={{ borderColor: subtleBorder, backgroundColor: isDark ? "#21262d" : undefined }}
               >
                 <i className="ri-more-2-fill fs-5" />
               </DropdownToggle>
-              <DropdownMenu end className="rounded-0 shadow-sm border">
-                <DropdownItem onClick={() => { loadActivitiesList(); loadStats(); }}>
+              <DropdownMenu end className="rounded-0 shadow-sm border" style={{ backgroundColor: cardBg, borderColor: cardBorder }}>
+                <DropdownItem onClick={() => { loadActivitiesList(); loadStats(); }} style={{ color: textTitle }}>
                   <i className="ri-refresh-line me-2 text-muted" />
                   Refresh Activities
                 </DropdownItem>
-                <DropdownItem tag={Link} to="/crm/calendar">
+                <DropdownItem tag={Link} to="/crm/calendar" style={{ color: textTitle }}>
                   <i className="ri-calendar-2-line me-2 text-muted" />
                   Open Full Calendar
                 </DropdownItem>
-                <DropdownItem divider />
+                <DropdownItem divider style={{ borderColor: subtleBorder }} />
                 <DropdownItem onClick={() => {
                   setSelectedCalendarDate(null);
                   setTypeFilter("");
@@ -783,7 +822,7 @@ const Activities = () => {
                   setDateRangeTo("");
                   setSearchInput("");
                   setSearch("");
-                }}>
+                }} style={{ color: textTitle }}>
                   <i className="ri-filter-off-line me-2 text-muted" />
                   Clear All Filters
                 </DropdownItem>
@@ -796,20 +835,26 @@ const Activities = () => {
         <Row className="g-3 mb-3">
           {/* Card 1: Total Activities */}
           <Col xl={2} lg={4} md={4} sm={6} className="flex-fill">
-            <Card className="rounded-0 border shadow-none mb-0 h-100" style={{ borderColor: THEME.grayBorder }}>
+            <Card className="rounded-0 border shadow-none mb-0 h-100" style={{ borderColor: cardBorder, backgroundColor: cardBg }}>
               <CardBody className="p-3 d-flex align-items-center gap-3">
                 <div
                   className="d-flex align-items-center justify-content-center rounded-0 flex-shrink-0"
-                  style={{ width: 42, height: 42, backgroundColor: "#f5f3ff", color: "#8b5cf6", fontSize: 20 }}
+                  style={{
+                    width: 42,
+                    height: 42,
+                    backgroundColor: isDark ? "rgba(139, 92, 246, 0.18)" : "#f5f3ff",
+                    color: isDark ? "#a78bfa" : "#8b5cf6",
+                    fontSize: 20
+                  }}
                 >
                   <i className="ri-pulse-line" />
                 </div>
                 <div>
-                  <h3 className="fw-bold mb-0" style={{ color: THEME.textHeading, fontSize: 22, lineHeight: 1.1 }}>
+                  <h3 className="fw-bold mb-0" style={{ color: textTitle, fontSize: 22, lineHeight: 1.1 }}>
                     {stats.total_activities}
                   </h3>
-                  <div className="small fw-semibold text-muted">Total Activities</div>
-                  <span className="text-muted" style={{ fontSize: 11 }}>This Month</span>
+                  <div className="small fw-semibold" style={{ color: textSub }}>Total Activities</div>
+                  <span style={{ fontSize: 11, color: textSub }}>This Month</span>
                 </div>
               </CardBody>
             </Card>
@@ -817,20 +862,26 @@ const Activities = () => {
 
           {/* Card 2: Meetings */}
           <Col xl={2} lg={4} md={4} sm={6} className="flex-fill">
-            <Card className="rounded-0 border shadow-none mb-0 h-100" style={{ borderColor: THEME.grayBorder }}>
+            <Card className="rounded-0 border shadow-none mb-0 h-100" style={{ borderColor: cardBorder, backgroundColor: cardBg }}>
               <CardBody className="p-3 d-flex align-items-center gap-3">
                 <div
                   className="d-flex align-items-center justify-content-center rounded-0 flex-shrink-0"
-                  style={{ width: 42, height: 42, backgroundColor: "#eff6ff", color: "#2563eb", fontSize: 20 }}
+                  style={{
+                    width: 42,
+                    height: 42,
+                    backgroundColor: isDark ? "rgba(37, 99, 235, 0.18)" : "#eff6ff",
+                    color: isDark ? "#60a5fa" : "#2563eb",
+                    fontSize: 20
+                  }}
                 >
                   <i className="ri-calendar-event-line" />
                 </div>
                 <div>
-                  <h3 className="fw-bold mb-0" style={{ color: THEME.textHeading, fontSize: 22, lineHeight: 1.1 }}>
+                  <h3 className="fw-bold mb-0" style={{ color: textTitle, fontSize: 22, lineHeight: 1.1 }}>
                     {stats.meetings_count}
                   </h3>
-                  <div className="small fw-semibold text-muted">Meetings</div>
-                  <span className="text-muted" style={{ fontSize: 11 }}>This Month</span>
+                  <div className="small fw-semibold" style={{ color: textSub }}>Meetings</div>
+                  <span style={{ fontSize: 11, color: textSub }}>This Month</span>
                 </div>
               </CardBody>
             </Card>
@@ -838,20 +889,26 @@ const Activities = () => {
 
           {/* Card 3: Calls */}
           <Col xl={2} lg={4} md={4} sm={6} className="flex-fill">
-            <Card className="rounded-0 border shadow-none mb-0 h-100" style={{ borderColor: THEME.grayBorder }}>
+            <Card className="rounded-0 border shadow-none mb-0 h-100" style={{ borderColor: cardBorder, backgroundColor: cardBg }}>
               <CardBody className="p-3 d-flex align-items-center gap-3">
                 <div
                   className="d-flex align-items-center justify-content-center rounded-0 flex-shrink-0"
-                  style={{ width: 42, height: 42, backgroundColor: "#f0fdf4", color: "#16a34a", fontSize: 20 }}
+                  style={{
+                    width: 42,
+                    height: 42,
+                    backgroundColor: isDark ? "rgba(22, 163, 74, 0.18)" : "#f0fdf4",
+                    color: isDark ? "#4ade80" : "#16a34a",
+                    fontSize: 20
+                  }}
                 >
                   <i className="ri-phone-line" />
                 </div>
                 <div>
-                  <h3 className="fw-bold mb-0" style={{ color: THEME.textHeading, fontSize: 22, lineHeight: 1.1 }}>
+                  <h3 className="fw-bold mb-0" style={{ color: textTitle, fontSize: 22, lineHeight: 1.1 }}>
                     {stats.calls_count}
                   </h3>
-                  <div className="small fw-semibold text-muted">Calls</div>
-                  <span className="text-muted" style={{ fontSize: 11 }}>This Month</span>
+                  <div className="small fw-semibold" style={{ color: textSub }}>Calls</div>
+                  <span style={{ fontSize: 11, color: textSub }}>This Month</span>
                 </div>
               </CardBody>
             </Card>
@@ -859,20 +916,26 @@ const Activities = () => {
 
           {/* Card 4: Emails */}
           <Col xl={2} lg={4} md={4} sm={6} className="flex-fill">
-            <Card className="rounded-0 border shadow-none mb-0 h-100" style={{ borderColor: THEME.grayBorder }}>
+            <Card className="rounded-0 border shadow-none mb-0 h-100" style={{ borderColor: cardBorder, backgroundColor: cardBg }}>
               <CardBody className="p-3 d-flex align-items-center gap-3">
                 <div
                   className="d-flex align-items-center justify-content-center rounded-0 flex-shrink-0"
-                  style={{ width: 42, height: 42, backgroundColor: "#f0f9ff", color: "#0284c7", fontSize: 20 }}
+                  style={{
+                    width: 42,
+                    height: 42,
+                    backgroundColor: isDark ? "rgba(2, 132, 199, 0.18)" : "#f0f9ff",
+                    color: isDark ? "#38bdf8" : "#0284c7",
+                    fontSize: 20
+                  }}
                 >
                   <i className="ri-mail-line" />
                 </div>
                 <div>
-                  <h3 className="fw-bold mb-0" style={{ color: THEME.textHeading, fontSize: 22, lineHeight: 1.1 }}>
+                  <h3 className="fw-bold mb-0" style={{ color: textTitle, fontSize: 22, lineHeight: 1.1 }}>
                     {stats.emails_count}
                   </h3>
-                  <div className="small fw-semibold text-muted">Emails</div>
-                  <span className="text-muted" style={{ fontSize: 11 }}>This Month</span>
+                  <div className="small fw-semibold" style={{ color: textSub }}>Emails</div>
+                  <span style={{ fontSize: 11, color: textSub }}>This Month</span>
                 </div>
               </CardBody>
             </Card>
@@ -880,20 +943,26 @@ const Activities = () => {
 
           {/* Card 5: Tasks */}
           <Col xl={2} lg={4} md={4} sm={6} className="flex-fill">
-            <Card className="rounded-0 border shadow-none mb-0 h-100" style={{ borderColor: THEME.grayBorder }}>
+            <Card className="rounded-0 border shadow-none mb-0 h-100" style={{ borderColor: cardBorder, backgroundColor: cardBg }}>
               <CardBody className="p-3 d-flex align-items-center gap-3">
                 <div
                   className="d-flex align-items-center justify-content-center rounded-0 flex-shrink-0"
-                  style={{ width: 42, height: 42, backgroundColor: "#fffbeb", color: "#d97706", fontSize: 20 }}
+                  style={{
+                    width: 42,
+                    height: 42,
+                    backgroundColor: isDark ? "rgba(217, 119, 6, 0.18)" : "#fffbeb",
+                    color: isDark ? "#fbbf24" : "#d97706",
+                    fontSize: 20
+                  }}
                 >
                   <i className="ri-checkbox-circle-line" />
                 </div>
                 <div>
-                  <h3 className="fw-bold mb-0" style={{ color: THEME.textHeading, fontSize: 22, lineHeight: 1.1 }}>
+                  <h3 className="fw-bold mb-0" style={{ color: textTitle, fontSize: 22, lineHeight: 1.1 }}>
                     {stats.tasks_count}
                   </h3>
-                  <div className="small fw-semibold text-muted">Tasks</div>
-                  <span className="text-muted" style={{ fontSize: 11 }}>This Month</span>
+                  <div className="small fw-semibold" style={{ color: textSub }}>Tasks</div>
+                  <span style={{ fontSize: 11, color: textSub }}>This Month</span>
                 </div>
               </CardBody>
             </Card>
@@ -902,8 +971,8 @@ const Activities = () => {
 
         {/* Tabs & Filter Bar */}
         <div
-          className="d-flex flex-wrap justify-content-between align-items-center mb-3 p-2 bg-white border"
-          style={{ borderColor: THEME.grayBorder }}
+          className="d-flex flex-wrap justify-content-between align-items-center mb-3 p-2 border"
+          style={{ borderColor: cardBorder, backgroundColor: subtleBg }}
         >
           {/* Left Tabs */}
           <div className="d-flex gap-1 overflow-auto">
@@ -921,9 +990,9 @@ const Activities = () => {
                   type="button"
                   className="btn btn-sm rounded-0 fw-medium px-3 py-1 position-relative"
                   style={{
-                    backgroundColor: isActive ? THEME.lightBg : "transparent",
-                    color: isActive ? THEME.primary : THEME.textMuted,
-                    borderBottom: isActive ? `2px solid ${THEME.primary}` : "2px solid transparent",
+                    backgroundColor: isActive ? (isDark ? "rgba(239, 68, 68, 0.18)" : THEME.lightBg) : "transparent",
+                    color: isActive ? primaryColor : textSub,
+                    borderBottom: isActive ? `2px solid ${primaryColor}` : "2px solid transparent",
                     borderTop: "none",
                     borderLeft: "none",
                     borderRight: "none",
@@ -1044,34 +1113,33 @@ const Activities = () => {
         <Row>
           {/* Left Column: Activities Table (Col 8) */}
           <Col xl={8} lg={8}>
-            <Card className="rounded-0 border shadow-none mb-3" style={{ borderColor: THEME.grayBorder }}>
+            <Card className="rounded-0 border shadow-none mb-3" style={{ borderColor: cardBorder, backgroundColor: cardBg }}>
               <div className="table-responsive">
                 <Table className="align-middle mb-0" hover>
-                  <thead style={{ backgroundColor: "#f8fafc", borderColor: THEME.grayBorder }}>
-                    <tr className="small text-muted text-uppercase">
-                      <th style={{ width: 105 }} className="text-center">Actions</th>
-                      <th style={{ width: 140 }}>Activity</th>
-                      <th>Subject / With</th>
-                      <th>Related To</th>
-                      <th style={{ width: 130 }}>Owner</th>
-                      <th style={{ width: 140 }}>Date & Time</th>
-                      <th style={{ width: 100 }}>Status</th>
-                      
+                  <thead style={{ backgroundColor: subtleBg, borderColor: cardBorder }}>
+                    <tr className="small text-uppercase">
+                      <th style={{ width: 105, backgroundColor: subtleBg, color: textSub, borderColor: cardBorder }} className="text-center">Actions</th>
+                      <th style={{ width: 140, backgroundColor: subtleBg, color: textSub, borderColor: cardBorder }}>Activity</th>
+                      <th style={{ backgroundColor: subtleBg, color: textSub, borderColor: cardBorder }}>Subject / With</th>
+                      <th style={{ backgroundColor: subtleBg, color: textSub, borderColor: cardBorder }}>Related To</th>
+                      <th style={{ width: 130, backgroundColor: subtleBg, color: textSub, borderColor: cardBorder }}>Owner</th>
+                      <th style={{ width: 140, backgroundColor: subtleBg, color: textSub, borderColor: cardBorder }}>Date & Time</th>
+                      <th style={{ width: 100, backgroundColor: subtleBg, color: textSub, borderColor: cardBorder }}>Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {listLoading ? (
                       <tr>
-                        <td colSpan="7" className="text-center py-5">
-                          <Spinner size="sm" style={{ color: THEME.primary }} />
-                          <span className="ms-2 small text-muted">Loading activities...</span>
+                        <td colSpan="7" className="text-center py-5" style={{ borderColor: subtleBorder }}>
+                          <Spinner size="sm" style={{ color: primaryColor }} />
+                          <span className="ms-2 small" style={{ color: textSub }}>Loading activities...</span>
                         </td>
                       </tr>
                     ) : activities.length === 0 ? (
                       <tr>
-                        <td colSpan="7" className="text-center py-5 text-muted small">
+                        <td colSpan="7" className="text-center py-5 small" style={{ borderColor: subtleBorder, color: textSub }}>
                           <div className="mb-2">
-                            <i className="ri-calendar-line fs-1" style={{ color: THEME.grayBorder }} />
+                            <i className="ri-calendar-line fs-1" style={{ color: subtleBorder }} />
                           </div>
                           No activities found matching criteria.
                           <div className="mt-2">
@@ -1089,7 +1157,7 @@ const Activities = () => {
                       </tr>
                     ) : (
                       activities.map((act) => {
-                        const typeCfg = TYPE_CONFIG[act.actType?.toUpperCase()] || TYPE_CONFIG.CALL;
+                        const typeCfg = getTypeConfig(act.actType, isDark);
                         const isCompleted = (act.activityStatus || "").toUpperCase() === "COMPLETED";
                         const isScheduled = (act.activityStatus || "").toUpperCase() === "SCHEDULED";
                         const parsed = parseCallNotes(act.callNotes);
@@ -1098,16 +1166,17 @@ const Activities = () => {
                         const rowRelated = act.relatedTo || parsed.related || "Client Account";
 
                         return (
-                          <tr key={act.activityId} style={{ borderColor: THEME.grayBorder }}>
+                          <tr key={act.activityId} style={{ borderColor: subtleBorder }}>
                             {/* 1. Actions */}
-                            <td className="text-center" style={{ width: 105 }}>
+                            <td className="text-center" style={{ width: 105, borderColor: subtleBorder }}>
                               <div className="d-flex align-items-center justify-content-center gap-1">
                                 {!isCompleted && (
                                   <button
                                     type="button"
                                     className="btn btn-sm btn-light border rounded-0 text-success"
                                     style={{
-                                      borderColor: THEME.grayBorder,
+                                      borderColor: subtleBorder,
+                                      backgroundColor: isDark ? "#21262d" : undefined,
                                       width: 28,
                                       height: 28,
                                       display: "inline-flex",
@@ -1123,9 +1192,11 @@ const Activities = () => {
                                 )}
                                 <button
                                   type="button"
-                                  className="btn btn-sm btn-light border rounded-0 text-muted"
+                                  className="btn btn-sm btn-light border rounded-0"
                                   style={{
-                                    borderColor: THEME.grayBorder,
+                                    borderColor: subtleBorder,
+                                    backgroundColor: isDark ? "#21262d" : undefined,
+                                    color: textSub,
                                     width: 28,
                                     height: 28,
                                     display: "inline-flex",
@@ -1142,7 +1213,8 @@ const Activities = () => {
                                   type="button"
                                   className="btn btn-sm btn-light border rounded-0 text-danger"
                                   style={{
-                                    borderColor: THEME.grayBorder,
+                                    borderColor: subtleBorder,
+                                    backgroundColor: isDark ? "#21262d" : undefined,
                                     width: 28,
                                     height: 28,
                                     display: "inline-flex",
@@ -1158,7 +1230,7 @@ const Activities = () => {
                               </div>
                             </td>
                             {/* 1. Activity Type Icon + Name */}
-                            <td>
+                            <td style={{ borderColor: subtleBorder }}>
                               <div className="d-flex align-items-center gap-2">
                                 <div
                                   className="d-flex align-items-center justify-content-center rounded-0"
@@ -1173,10 +1245,10 @@ const Activities = () => {
                                   <i className={typeCfg.icon} />
                                 </div>
                                 <div>
-                                  <div className="fw-semibold small" style={{ color: THEME.textHeading }}>
+                                  <div className="fw-semibold small" style={{ color: textTitle }}>
                                     {typeCfg.label}
                                   </div>
-                                  <div className="text-muted" style={{ fontSize: 10 }}>
+                                  <div style={{ fontSize: 10, color: textSub }}>
                                     {rowSubtype}
                                   </div>
                                 </div>
@@ -1184,17 +1256,17 @@ const Activities = () => {
                             </td>
 
                             {/* 2. Subject / With */}
-                            <td>
-                              <div className="fw-semibold small" style={{ color: THEME.textHeading }}>
+                            <td style={{ borderColor: subtleBorder }}>
+                              <div className="fw-semibold small" style={{ color: textTitle }}>
                                 {act.subject}
                               </div>
-                              <div className="text-muted small" style={{ fontSize: 11 }}>
+                              <div className="small" style={{ fontSize: 11, color: textSub }}>
                                 with {rowWith}
                               </div>
                             </td>
 
                             {/* 3. Related To */}
-                            <td>
+                            <td style={{ borderColor: subtleBorder }}>
                               {(() => {
                                 const matchedAcc = accountOptions.find(
                                   (a) =>
@@ -1209,60 +1281,76 @@ const Activities = () => {
                                   <Link
                                     to={`/crm/customers/${matchedAcc.accountId}`}
                                     className="fw-medium small text-decoration-none"
-                                    style={{ color: "#7f1d1d" }}
+                                    style={{ color: primaryColor }}
                                     title="View Customer Details"
                                   >
                                     {rowRelated}
                                   </Link>
                                 ) : (
-                                  <div className="fw-medium small" style={{ color: THEME.textHeading }}>
+                                  <div className="fw-medium small" style={{ color: textTitle }}>
                                     {rowRelated}
                                   </div>
                                 );
                               })()}
-                              <div className="text-muted" style={{ fontSize: 11 }}>
+                              <div className="small" style={{ fontSize: 11, color: textSub }}>
                                 {rowWith}
                               </div>
                             </td>
 
                             {/* 4. Owner */}
-                            <td>
+                            <td style={{ borderColor: subtleBorder }}>
                               <div className="d-flex align-items-center gap-2">
                                 <div
                                   className="d-flex align-items-center justify-content-center rounded-0 small fw-bold"
                                   style={{
                                     width: 26,
                                     height: 26,
-                                    backgroundColor: "#f1f5f9",
-                                    color: THEME.textHeading,
+                                    backgroundColor: isDark ? "rgba(255, 255, 255, 0.08)" : "#f1f5f9",
+                                    color: textTitle,
+                                    border: `1px solid ${subtleBorder}`,
                                     fontSize: 10,
                                   }}
                                 >
                                   {act.ownerAvatar || "AK"}
                                 </div>
-                                <span className="small text-truncate" style={{ maxWidth: 90 }}>
+                                <span className="small text-truncate" style={{ maxWidth: 90, color: textTitle }}>
                                   {act.ownerName || "Sales Rep"}
                                 </span>
                               </div>
                             </td>
 
                             {/* 5. Date & Time */}
-                            <td>
-                              <div className="small fw-medium" style={{ color: THEME.textHeading }}>
+                            <td style={{ borderColor: subtleBorder }}>
+                              <div className="small fw-medium" style={{ color: textTitle }}>
                                 {formatDateStr(act.startTime)}
                               </div>
-                              <div className="text-muted" style={{ fontSize: 11 }}>
+                              <div className="small" style={{ fontSize: 11, color: textSub }}>
                                 {formatTimeStr(act.startTime)}
                               </div>
                             </td>
 
                             {/* 6. Status Badge */}
-                            <td>
+                            <td style={{ borderColor: subtleBorder }}>
                               <span
                                 className="badge rounded-0 fw-semibold px-2 py-1"
                                 style={{
-                                  backgroundColor: isCompleted ? "#dcfce7" : isScheduled ? "#ede9fe" : "#fef3c7",
-                                  color: isCompleted ? "#166534" : isScheduled ? "#6b21a8" : "#92400e",
+                                  backgroundColor: isCompleted
+                                    ? (isDark ? "rgba(16, 185, 129, 0.2)" : "#dcfce7")
+                                    : isScheduled
+                                    ? (isDark ? "rgba(139, 92, 246, 0.2)" : "#ede9fe")
+                                    : (isDark ? "rgba(245, 158, 11, 0.2)" : "#fef3c7"),
+                                  color: isCompleted
+                                    ? (isDark ? "#6ee7b7" : "#166534")
+                                    : isScheduled
+                                    ? (isDark ? "#c084fc" : "#6b21a8")
+                                    : (isDark ? "#fcd34d" : "#92400e"),
+                                  border: `1px solid ${
+                                    isCompleted
+                                      ? (isDark ? "rgba(16, 185, 129, 0.3)" : "#bbf7d0")
+                                      : isScheduled
+                                      ? (isDark ? "rgba(139, 92, 246, 0.3)" : "#ddd6fe")
+                                      : (isDark ? "rgba(245, 158, 11, 0.3)" : "#fde68a")
+                                  }`,
                                   fontSize: 11,
                                 }}
                               >
@@ -1280,9 +1368,9 @@ const Activities = () => {
               {/* Table Pagination */}
               <div
                 className="d-flex flex-wrap justify-content-between align-items-center p-3 border-top"
-                style={{ borderColor: THEME.grayBorder }}
+                style={{ borderColor: cardBorder, backgroundColor: cardBg }}
               >
-                <div className="text-muted small">
+                <div className="small" style={{ color: textSub }}>
                   Showing {activities.length > 0 ? page * pageSize + 1 : 0} to{" "}
                   {Math.min((page + 1) * pageSize, totalCount)} of {totalCount} entries
                 </div>
@@ -1335,22 +1423,23 @@ const Activities = () => {
           {/* Right Column: 3 Sidebar Cards (Col 4) */}
           <Col xl={4} lg={4}>
             {/* Sidebar Card 1: My Calendar */}
-            <Card className="rounded-0 border shadow-none mb-3" style={{ borderColor: THEME.grayBorder }}>
+            <Card className="rounded-0 border shadow-none mb-3" style={{ borderColor: cardBorder, backgroundColor: cardBg }}>
               <div
                 className="px-3 py-2 border-bottom d-flex align-items-center justify-content-between"
-                style={{ backgroundColor: "#f8fafc", borderColor: THEME.grayBorder }}
+                style={{ backgroundColor: subtleBg, borderColor: cardBorder }}
               >
-                <h6 className="mb-0 fw-bold" style={{ color: THEME.textHeading }}>
+                <h6 className="mb-0 fw-bold" style={{ color: textTitle }}>
                   My Calendar
                 </h6>
                 <div className="d-flex align-items-center gap-2">
-                  <span className="small fw-semibold" style={{ color: THEME.textHeading }}>
+                  <span className="small fw-semibold" style={{ color: textTitle }}>
                     {monthNames[calendarMonth]} {calendarYear}
                   </span>
                   <div className="btn-group btn-group-sm">
                     <button
                       type="button"
                       className="btn btn-sm btn-light border py-0 px-2 rounded-0"
+                      style={{ borderColor: subtleBorder, backgroundColor: isDark ? "#21262d" : undefined, color: textTitle }}
                       onClick={handlePrevMonth}
                       title="Previous Month"
                     >
@@ -1359,6 +1448,7 @@ const Activities = () => {
                     <button
                       type="button"
                       className="btn btn-sm btn-light border py-0 px-2 rounded-0"
+                      style={{ borderColor: subtleBorder, backgroundColor: isDark ? "#21262d" : undefined, color: textTitle }}
                       onClick={handleNextMonth}
                       title="Next Month"
                     >
@@ -1370,7 +1460,7 @@ const Activities = () => {
 
               <CardBody className="p-3">
                 {/* Calendar Days Header */}
-                <div className="d-flex text-center mb-2 text-uppercase fw-bold" style={{ color: "#94a3b8", fontSize: 10, letterSpacing: 0.5 }}>
+                <div className="d-flex text-center mb-2 text-uppercase fw-bold" style={{ color: isDark ? "#64748b" : "#94a3b8", fontSize: 10, letterSpacing: 0.5 }}>
                   {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                     <div key={day} style={{ flex: 1 }}>
                       {day}
@@ -1405,20 +1495,22 @@ const Activities = () => {
                             height: 30,
                             borderRadius: 0,
                             backgroundColor: isSelected
-                              ? THEME.primary
+                              ? primaryColor
                               : isToday
-                              ? "#fef2f2"
+                              ? (isDark ? "rgba(239, 68, 68, 0.2)" : "#fef2f2")
                               : "transparent",
                             color: isSelected
-                              ? "#ffffff"
+                              ? (isDark ? "#121212" : "#ffffff")
                               : cell.isOtherMonth
-                              ? "#cbd5e1"
+                              ? (isDark ? "#484f58" : "#cbd5e1")
                               : isToday
-                              ? THEME.primary
-                              : THEME.textHeading,
+                              ? primaryColor
+                              : textTitle,
                             fontWeight: isSelected || isToday ? 700 : 500,
                             fontSize: 12,
-                            border: isToday && !isSelected ? `1.5px solid #fecaca` : "none",
+                            border: isToday && !isSelected
+                              ? (isDark ? "1.5px solid rgba(239, 68, 68, 0.5)" : "1.5px solid #fecaca")
+                              : "none",
                             boxShadow: isSelected ? "0 2px 4px rgba(127, 29, 29, 0.25)" : "none",
                             transition: "all 0.15s ease",
                           }}
@@ -1450,8 +1542,8 @@ const Activities = () => {
 
                 {/* Calendar Legend */}
                 <div
-                  className="d-flex justify-content-around align-items-center pt-2 mt-2 border-top text-muted"
-                  style={{ fontSize: 11, borderColor: THEME.grayBorder }}
+                  className="d-flex justify-content-around align-items-center pt-2 mt-2 border-top"
+                  style={{ fontSize: 11, borderColor: subtleBorder, color: textSub }}
                 >
                   <span className="d-flex align-items-center gap-1">
                     <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#8b5cf6" }} /> Meeting
@@ -1470,18 +1562,18 @@ const Activities = () => {
             </Card>
 
             {/* Sidebar Card 2: Today's Schedule */}
-            <Card className="rounded-0 border shadow-none mb-3" style={{ borderColor: THEME.grayBorder }}>
+            <Card className="rounded-0 border shadow-none mb-3" style={{ borderColor: cardBorder, backgroundColor: cardBg }}>
               <div
                 className="px-3 py-2 border-bottom d-flex align-items-center justify-content-between"
-                style={{ backgroundColor: "#f8fafc", borderColor: THEME.grayBorder }}
+                style={{ backgroundColor: subtleBg, borderColor: cardBorder }}
               >
-                <h6 className="mb-0 fw-bold" style={{ color: THEME.textHeading }}>
+                <h6 className="mb-0 fw-bold" style={{ color: textTitle }}>
                   Today's Schedule
                 </h6>
                 <button
                   type="button"
                   className="btn btn-link p-0 small text-decoration-none fw-semibold"
-                  style={{ color: THEME.primary }}
+                  style={{ color: primaryColor }}
                   onClick={() => {
                     const today = new Date().toISOString().slice(0, 10);
                     setSelectedCalendarDate(today);
@@ -1496,15 +1588,16 @@ const Activities = () => {
                   <div className="d-flex flex-column gap-2">
                     {stats.today_schedule.map((item, i) => {
                       const typeKey = (item.act_type || item.actType || "CALL").toUpperCase();
-                      const cfg = TYPE_CONFIG[typeKey] || TYPE_CONFIG.CALL;
+                      const cfg = getTypeConfig(typeKey, isDark);
                       const isCompleted = (item.activity_status || "").toUpperCase() === "COMPLETED";
 
                       return (
                         <div
                           key={item.activity_id || item.activityId || i}
-                          className="d-flex align-items-center justify-content-between p-2 bg-white border"
+                          className="d-flex align-items-center justify-content-between p-2 border"
                           style={{
-                            borderColor: THEME.grayBorder,
+                            borderColor: subtleBorder,
+                            backgroundColor: subtleBg,
                             transition: "background-color 0.15s ease",
                           }}
                         >
@@ -1527,7 +1620,7 @@ const Activities = () => {
                               <div
                                 className="fw-semibold small text-truncate"
                                 style={{
-                                  color: THEME.textHeading,
+                                  color: textTitle,
                                   fontSize: 12.5,
                                   opacity: isCompleted ? 0.8 : 1,
                                 }}
@@ -1535,7 +1628,7 @@ const Activities = () => {
                               >
                                 {item.subject}
                               </div>
-                              <div className="text-muted text-truncate" style={{ fontSize: 11 }}>
+                              <div className="small text-truncate" style={{ fontSize: 11, color: textSub }}>
                                 {item.related_to || item.relatedTo || "Direct Client"}
                               </div>
                             </div>
@@ -1543,10 +1636,11 @@ const Activities = () => {
 
                           {/* Right: Time Badge */}
                           <span
-                            className="badge rounded-0 px-2 py-1 text-dark border flex-shrink-0"
+                            className="badge rounded-0 px-2 py-1 border flex-shrink-0"
                             style={{
-                              backgroundColor: "#f8fafc",
-                              borderColor: THEME.grayBorder,
+                              backgroundColor: isDark ? "#21262d" : "#f8fafc",
+                              borderColor: subtleBorder,
+                              color: textTitle,
                               fontSize: 11,
                               fontWeight: 600,
                             }}
@@ -1558,8 +1652,8 @@ const Activities = () => {
                     })}
                   </div>
                 ) : (
-                  <div className="text-center py-3 text-muted small">
-                    <i className="ri-calendar-check-line fs-3 d-block mb-1 text-muted opacity-50" />
+                  <div className="text-center py-3 small" style={{ color: textSub }}>
+                    <i className="ri-calendar-check-line fs-3 d-block mb-1 opacity-50" style={{ color: textSub }} />
                     No activities scheduled for today.
                     <div className="mt-2">
                       <Button
@@ -1567,6 +1661,7 @@ const Activities = () => {
                         size="sm"
                         color="light"
                         className="rounded-0 border py-0 px-2 small"
+                        style={{ borderColor: subtleBorder, backgroundColor: isDark ? "#21262d" : undefined, color: textTitle }}
                         onClick={() => openModal("schedule")}
                       >
                         + Schedule Activity
@@ -1578,15 +1673,22 @@ const Activities = () => {
             </Card>
 
             {/* Sidebar Card 3: Activity Summary (Donut & Breakdown side-by-side) */}
-            <Card className="rounded-0 border shadow-none mb-3" style={{ borderColor: THEME.grayBorder }}>
+            <Card className="rounded-0 border shadow-none mb-3" style={{ borderColor: cardBorder, backgroundColor: cardBg }}>
               <div
                 className="px-3 py-2 border-bottom d-flex align-items-center justify-content-between"
-                style={{ backgroundColor: "#f8fafc", borderColor: THEME.grayBorder }}
+                style={{ backgroundColor: subtleBg, borderColor: cardBorder }}
               >
-                <h6 className="mb-0 fw-bold" style={{ color: THEME.textHeading }}>
+                <h6 className="mb-0 fw-bold" style={{ color: textTitle }}>
                   Activity Summary
                 </h6>
-                <span className="badge rounded-0 bg-light text-muted border small fw-normal px-2 py-1">
+                <span
+                  className="badge rounded-0 border small fw-normal px-2 py-1"
+                  style={{
+                    backgroundColor: isDark ? "#21262d" : "#f8fafc",
+                    borderColor: subtleBorder,
+                    color: textSub,
+                  }}
+                >
                   This Month
                 </span>
               </div>
@@ -1601,7 +1703,7 @@ const Activities = () => {
                       <path
                         d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                         fill="none"
-                        stroke="#f1f5f9"
+                        stroke={isDark ? "#262a2f" : "#f1f5f9"}
                         strokeWidth="3.6"
                       />
                       {/* Meetings segment (purple #8b5cf6) */}
@@ -1654,10 +1756,10 @@ const Activities = () => {
                       className="position-absolute top-50 start-50 translate-middle text-center"
                       style={{ pointerEvents: "none" }}
                     >
-                      <h4 className="fw-bold mb-0" style={{ color: THEME.textHeading, fontSize: 20 }}>
+                      <h4 className="fw-bold mb-0" style={{ color: textTitle, fontSize: 20 }}>
                         {stats.total_activities}
                       </h4>
-                      <span className="text-muted text-uppercase" style={{ fontSize: 9, letterSpacing: 0.5 }}>
+                      <span className="text-uppercase" style={{ fontSize: 9, letterSpacing: 0.5, color: textSub }}>
                         Total
                       </span>
                     </div>
@@ -1666,54 +1768,54 @@ const Activities = () => {
                   {/* Right: Legend Breakdown List */}
                   <div className="flex-grow-1 d-flex flex-column gap-2">
                     <div className="d-flex justify-content-between align-items-center">
-                      <span className="d-flex align-items-center gap-2 small text-muted">
+                      <span className="d-flex align-items-center gap-2 small" style={{ color: textSub }}>
                         <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#8b5cf6" }} />
                         Meetings
                       </span>
-                      <span className="small fw-semibold" style={{ color: THEME.textHeading }}>
+                      <span className="small fw-semibold" style={{ color: textTitle }}>
                         {stats.meetings_count}{" "}
-                        <span className="text-muted fw-normal" style={{ fontSize: 11 }}>({stats.summary.meetings_pct}%)</span>
+                        <span className="fw-normal" style={{ fontSize: 11, color: textSub }}>({stats.summary.meetings_pct}%)</span>
                       </span>
                     </div>
 
                     <div className="d-flex justify-content-between align-items-center">
-                      <span className="d-flex align-items-center gap-2 small text-muted">
+                      <span className="d-flex align-items-center gap-2 small" style={{ color: textSub }}>
                         <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#16a34a" }} />
                         Calls
                       </span>
-                      <span className="small fw-semibold" style={{ color: THEME.textHeading }}>
+                      <span className="small fw-semibold" style={{ color: textTitle }}>
                         {stats.calls_count}{" "}
-                        <span className="text-muted fw-normal" style={{ fontSize: 11 }}>({stats.summary.calls_pct}%)</span>
+                        <span className="fw-normal" style={{ fontSize: 11, color: textSub }}>({stats.summary.calls_pct}%)</span>
                       </span>
                     </div>
 
                     <div className="d-flex justify-content-between align-items-center">
-                      <span className="d-flex align-items-center gap-2 small text-muted">
+                      <span className="d-flex align-items-center gap-2 small" style={{ color: textSub }}>
                         <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#0284c7" }} />
                         Emails
                       </span>
-                      <span className="small fw-semibold" style={{ color: THEME.textHeading }}>
+                      <span className="small fw-semibold" style={{ color: textTitle }}>
                         {stats.emails_count}{" "}
-                        <span className="text-muted fw-normal" style={{ fontSize: 11 }}>({stats.summary.emails_pct}%)</span>
+                        <span className="fw-normal" style={{ fontSize: 11, color: textSub }}>({stats.summary.emails_pct}%)</span>
                       </span>
                     </div>
 
                     <div className="d-flex justify-content-between align-items-center">
-                      <span className="d-flex align-items-center gap-2 small text-muted">
+                      <span className="d-flex align-items-center gap-2 small" style={{ color: textSub }}>
                         <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#d97706" }} />
                         Tasks
                       </span>
-                      <span className="small fw-semibold" style={{ color: THEME.textHeading }}>
+                      <span className="small fw-semibold" style={{ color: textTitle }}>
                         {stats.tasks_count}{" "}
-                        <span className="text-muted fw-normal" style={{ fontSize: 11 }}>({stats.summary.tasks_pct}%)</span>
+                        <span className="fw-normal" style={{ fontSize: 11, color: textSub }}>({stats.summary.tasks_pct}%)</span>
                       </span>
                     </div>
                   </div>
                 </div>
 
                 <div
-                  className="text-muted mt-3 pt-2 border-top text-center"
-                  style={{ fontSize: 10, borderColor: THEME.grayBorder }}
+                  className="mt-3 pt-2 border-top text-center"
+                  style={{ fontSize: 10, borderColor: subtleBorder, color: textSub }}
                 >
                   * Multiple activities may overlap across team schedules
                 </div>
@@ -1732,7 +1834,8 @@ const Activities = () => {
         >
           <ModalHeader
             toggle={() => setModalOpen(false)}
-            className="rounded-0 bg-light border-bottom"
+            className="rounded-0 border-bottom"
+            style={{ backgroundColor: subtleBg, borderColor: cardBorder }}
           >
             <div className="d-flex align-items-center gap-2">
               <i
@@ -1743,9 +1846,9 @@ const Activities = () => {
                     ? "ri-edit-line"
                     : "ri-calendar-line"
                 }
-                style={{ color: THEME.primary }}
+                style={{ color: primaryColor }}
               />
-              <span className="fw-bold" style={{ color: THEME.textHeading }}>
+              <span className="fw-bold" style={{ color: textTitle }}>
                 {modalMode === "log"
                   ? "Log Activity"
                   : modalMode === "edit"
@@ -1759,12 +1862,12 @@ const Activities = () => {
             <ModalBody className="p-3">
               {/* Activity Type Selection Tabs */}
               <div className="mb-3">
-                <Label className="form-label small fw-semibold mb-1">
+                <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>
                   Activity Type <span className="text-danger">*</span>
                 </Label>
                 <div className="d-flex flex-wrap gap-2">
                   {Object.keys(TYPE_CONFIG).map((k) => {
-                    const cfg = TYPE_CONFIG[k];
+                    const cfg = getTypeConfig(k, isDark);
                     const isSelected = formData.actType === k;
                     return (
                       <button
@@ -1772,9 +1875,9 @@ const Activities = () => {
                         type="button"
                         className="btn btn-sm rounded-0 d-flex align-items-center gap-1 px-3 py-1 fw-medium"
                         style={{
-                          backgroundColor: isSelected ? cfg.bgColor : "#f8fafc",
-                          color: isSelected ? cfg.textColor : THEME.textMuted,
-                          border: `1px solid ${isSelected ? cfg.textColor : THEME.grayBorder}`,
+                          backgroundColor: isSelected ? cfg.bgColor : (isDark ? "#21262d" : "#f8fafc"),
+                          color: isSelected ? cfg.textColor : textSub,
+                          border: `1px solid ${isSelected ? cfg.textColor : subtleBorder}`,
                         }}
                         onClick={() => {
                           setFormData({
@@ -1795,7 +1898,7 @@ const Activities = () => {
               {/* Subtype & Subject Row */}
               <Row className="g-2 mb-2">
                 <Col md={4}>
-                  <Label className="form-label small fw-semibold mb-1">Subtype</Label>
+                  <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>Subtype</Label>
                   <Input
                     type="select"
                     className="rounded-0 form-control-sm"
@@ -1810,7 +1913,7 @@ const Activities = () => {
                   </Input>
                 </Col>
                 <Col md={8}>
-                  <Label className="form-label small fw-semibold mb-1">
+                  <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>
                     Subject / Title <span className="text-danger">*</span>
                   </Label>
                   <Input
@@ -1827,7 +1930,7 @@ const Activities = () => {
               {/* Related Customer & Contact */}
               <Row className="g-2 mb-2">
                 <Col md={6}>
-                  <Label className="form-label small fw-semibold mb-1">Related Customer / Account</Label>
+                  <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>Related Customer / Account</Label>
                   <Input
                     type="select"
                     className="rounded-0 form-control-sm"
@@ -1843,7 +1946,7 @@ const Activities = () => {
                   </Input>
                 </Col>
                 <Col md={6}>
-                  <Label className="form-label small fw-semibold mb-1">Contact Person</Label>
+                  <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>Contact Person</Label>
                   <Input
                     type="select"
                     className="rounded-0 form-control-sm"
@@ -1871,7 +1974,7 @@ const Activities = () => {
               {/* Start Time & End Time */}
               <Row className="g-2 mb-2">
                 <Col md={6}>
-                  <Label className="form-label small fw-semibold mb-1">
+                  <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>
                     Start Date & Time <span className="text-danger">*</span>
                   </Label>
                   <Input
@@ -1883,7 +1986,7 @@ const Activities = () => {
                   />
                 </Col>
                 <Col md={6}>
-                  <Label className="form-label small fw-semibold mb-1">End Date & Time</Label>
+                  <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>End Date & Time</Label>
                   <Input
                     type="datetime-local"
                     className="rounded-0 form-control-sm"
@@ -1903,7 +2006,7 @@ const Activities = () => {
               {/* Owner & Phone Number */}
               <Row className="g-2 mb-2">
                 <Col md={6}>
-                  <Label className="form-label small fw-semibold mb-1">Owner (Sales Rep)</Label>
+                  <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>Owner (Sales Rep)</Label>
                   <Input
                     type="select"
                     className="rounded-0 form-control-sm"
@@ -1919,7 +2022,7 @@ const Activities = () => {
                   </Input>
                 </Col>
                 <Col md={6}>
-                  <Label className="form-label small fw-semibold mb-1">Phone Number (Optional)</Label>
+                  <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>Phone Number (Optional)</Label>
                   <Input
                     type="text"
                     className="rounded-0 form-control-sm"
@@ -1932,7 +2035,7 @@ const Activities = () => {
 
               {/* Call Notes / Description */}
               <div className="mb-2">
-                <Label className="form-label small fw-semibold mb-1">Notes / Description</Label>
+                <Label className="form-label small fw-semibold mb-1" style={{ color: textTitle }}>Notes / Description</Label>
                 <Input
                   type="textarea"
                   rows="3"
@@ -1960,17 +2063,18 @@ const Activities = () => {
                   }}
                   style={{ accentColor: THEME.primary }}
                 />
-                <label className="form-check-label small" htmlFor="markCompletedCheck">
+                <label className="form-check-label small" htmlFor="markCompletedCheck" style={{ color: textTitle }}>
                   Mark as Completed (Activity already taken place)
                 </label>
               </div>
             </ModalBody>
 
-            <ModalFooter className="border-top p-2">
+            <ModalFooter className="border-top p-2" style={{ backgroundColor: subtleBg, borderColor: cardBorder }}>
               <Button
                 type="button"
                 color="light"
                 className="rounded-0 small border"
+                style={{ borderColor: subtleBorder, backgroundColor: isDark ? "#21262d" : undefined, color: textTitle }}
                 onClick={() => setModalOpen(false)}
                 disabled={modalSubmitting}
               >

@@ -407,13 +407,13 @@ const LeadSourcesChart = ({ data = [] }) => {
                 onMouseEnter={() => setHoveredId(item.id)}
                 onMouseLeave={() => setHoveredId(null)}
               >
-                {/* Neumorphic Circular Icon Button */}
+                {/* Neumorphic Square Icon Button */}
                 <div
                   className="crm-lead-source-icon-btn"
                   style={{
                     width: "42px",
                     height: "42px",
-                    borderRadius: "50%",
+                    borderRadius: 0,
                     backgroundColor: "var(--vz-card-bg-fill, #ffffff)",
                     border: `1.5px solid ${isHovered ? item.color : "var(--vz-border-color, rgba(226, 232, 240, 0.9))"}`,
                     boxShadow: isHovered

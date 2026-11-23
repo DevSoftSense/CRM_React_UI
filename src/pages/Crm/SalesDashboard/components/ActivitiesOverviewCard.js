@@ -49,11 +49,11 @@ const ActivitiesOverviewCard = ({ activities = {} }) => {
 
   return (
     <Card
-      className="border shadow-none h-100 mb-0 bg-white"
+      className="border shadow-none h-100 mb-0"
       style={{
         borderRadius: 0,
-        borderColor: isDark ? "#262626" : "#e2e8f0",
-        backgroundColor: isDark ? "#121212" : "#ffffff",
+        borderColor: isDark ? "#21262d" : "#e2e8f0",
+        backgroundColor: isDark ? "#161b22" : "#ffffff",
       }}
     >
       {/* Top Header: Title + Period Filter */}

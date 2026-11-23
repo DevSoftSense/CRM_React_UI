@@ -99,7 +99,7 @@ const SalesDashboard = () => {
 
         {/* Loading Spinner Overlay when switching filters */}
         {loading && !dashboardData ? (
-          <div className="text-center py-5 border bg-white" style={{ borderRadius: 0 }}>
+          <div className="text-center py-5 border" style={{ borderRadius: 0, backgroundColor: "var(--vz-card-bg-fill, #ffffff)" }}>
             <Spinner color="primary" />
             <div className="mt-2 text-muted fs-13">Loading Sales Performance Analytics…</div>
           </div>

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import {
   Alert,
   Button,
@@ -107,6 +108,22 @@ const getInitials = (name) => {
 const OpportunityDetail = () => {
   const { opportunityId } = useParams();
   const navigate = useNavigate();
+
+  const layoutModeType = useSelector((state) => state.Layout?.layoutModeType);
+  const isDark = layoutModeType === "dark" || (
+    typeof document !== "undefined" && (
+      document.documentElement.getAttribute("data-bs-theme") === "dark" ||
+      document.documentElement.getAttribute("data-layout-mode") === "dark"
+    )
+  );
+
+  const primaryColor = isDark ? "#fca5a5" : THEME.primary;
+  const cardBg = isDark ? "#121212" : "#ffffff";
+  const cardBorder = isDark ? "#262626" : THEME.cardBorder;
+  const subtleBg = isDark ? "#161b22" : "#f8fafc";
+  const subtleBorder = isDark ? "#2d3748" : "#e2e8f0";
+  const textTitle = isDark ? "#f1f5f9" : "#0f172a";
+  const textSub = isDark ? "#94a3b8" : "#64748b";
 
   // Opportunity Record State (100% from PostgreSQL database)
   const [opp, setOpp] = useState(null);
@@ -754,9 +771,9 @@ const OpportunityDetail = () => {
 
   if (loading) {
     return (
-      <div className="page-content" style={{ backgroundColor: "#f8fafc", minHeight: "100vh" }}>
+      <div className="page-content" style={{ backgroundColor: isDark ? "transparent" : "#f8fafc", minHeight: "100vh" }}>
         <Container fluid className="text-center py-5">
-          <Spinner style={{ color: THEME.primary }} />
+          <Spinner style={{ color: primaryColor }} />
           <div className="mt-2 text-muted fs-13">Loading dynamic 360° opportunity profile from database…</div>
         </Container>
       </div>
@@ -765,7 +782,7 @@ const OpportunityDetail = () => {
 
   if (error || !opp) {
     return (
-      <div className="page-content">
+      <div className="page-content" style={{ backgroundColor: isDark ? "transparent" : "#f8fafc", minHeight: "100vh" }}>
         <Container fluid className="py-4">
           <Alert color="danger">{error || "Opportunity not found."}</Alert>
           <Button color="light" onClick={() => navigate("/crm/pipeline")}>
@@ -780,7 +797,7 @@ const OpportunityDetail = () => {
   const isClosedLost = String(opp.stageCode).toUpperCase() === "CLOSED_LOST";
 
   return (
-    <div className="page-content" style={{ backgroundColor: "#f8fafc", minHeight: "100vh" }}>
+    <div className="page-content" style={{ backgroundColor: isDark ? "transparent" : "#f8fafc", minHeight: "100vh" }}>
       <Container fluid className="px-4">
         {/* ======================================================== */}
         {/* Top Header Breadcrumb & Actions Bar                      */}
@@ -791,12 +808,12 @@ const OpportunityDetail = () => {
               <Link
                 to="/crm/pipeline"
                 className="text-decoration-none fs-13 fw-semibold d-flex align-items-center gap-1"
-                style={{ color: THEME.primary }}
+                style={{ color: primaryColor }}
               >
                 <i className="ri-arrow-left-line" /> Back to Pipeline
               </Link>
             </div>
-            <h4 className="fw-bold text-dark mb-0 fs-20 mt-1">Opportunity Details</h4>
+            <h4 className="fw-bold mb-0 fs-20 mt-1" style={{ color: textTitle }}>Opportunity Details</h4>
             <div className="text-muted fs-12 mt-1">
               CRM &gt; Opportunities &gt; {opp.name}
             </div>
@@ -807,9 +824,15 @@ const OpportunityDetail = () => {
             <Button
               color="light"
               size="sm"
-              className="border bg-white fw-semibold text-dark px-3 d-inline-flex align-items-center"
+              className="border fw-semibold px-3 d-inline-flex align-items-center"
               onClick={openEditModal}
-              style={{ borderRadius: 0, borderColor: "#cbd5e1", height: "32px" }}
+              style={{
+                borderRadius: 0,
+                borderColor: isDark ? "#3d444d" : "#cbd5e1",
+                backgroundColor: isDark ? "#21262d" : "#ffffff",
+                color: textTitle,
+                height: "32px",
+              }}
             >
               <i className="ri-pencil-line me-1 text-muted" /> Edit
             </Button>
@@ -821,8 +844,13 @@ const OpportunityDetail = () => {
             >
               <DropdownToggle
                 tag="button"
-                className="btn btn-sm btn-light border bg-white d-flex align-items-center gap-1 fw-semibold text-dark"
-                style={{ borderRadius: 0, borderColor: "#cbd5e1" }}
+                className="btn btn-sm btn-light border d-flex align-items-center gap-1 fw-semibold"
+                style={{
+                  borderRadius: 0,
+                  borderColor: isDark ? "#3d444d" : "#cbd5e1",
+                  backgroundColor: isDark ? "#21262d" : "#ffffff",
+                  color: textTitle,
+                }}
               >
                 Actions <i className="ri-arrow-down-s-line fs-14" />
               </DropdownToggle>
@@ -849,9 +877,14 @@ const OpportunityDetail = () => {
             <Button
               color="light"
               size="sm"
-              className="border bg-white fw-semibold text-dark"
+              className="border fw-semibold"
               onClick={() => setActivityModalOpen(true)}
-              style={{ borderRadius: 0, borderColor: "#cbd5e1" }}
+              style={{
+                borderRadius: 0,
+                borderColor: isDark ? "#3d444d" : "#cbd5e1",
+                backgroundColor: isDark ? "#21262d" : "#ffffff",
+                color: textTitle,
+              }}
             >
               + Add Activity
             </Button>
@@ -859,9 +892,14 @@ const OpportunityDetail = () => {
             <Button
               color="light"
               size="sm"
-              className="border bg-white fw-semibold text-dark"
+              className="border fw-semibold"
               onClick={openCreateQuote}
-              style={{ borderRadius: 0, borderColor: "#cbd5e1" }}
+              style={{
+                borderRadius: 0,
+                borderColor: isDark ? "#3d444d" : "#cbd5e1",
+                backgroundColor: isDark ? "#21262d" : "#ffffff",
+                color: textTitle,
+              }}
             >
               Create Quote
             </Button>
@@ -890,8 +928,12 @@ const OpportunityDetail = () => {
             >
               <DropdownToggle
                 tag="button"
-                className="btn btn-sm btn-light border bg-white text-muted px-2"
-                style={{ borderRadius: 0 }}
+                className="btn btn-sm btn-light border text-muted px-2"
+                style={{
+                  borderRadius: 0,
+                  borderColor: isDark ? "#3d444d" : "#cbd5e1",
+                  backgroundColor: isDark ? "#21262d" : "#ffffff",
+                }}
               >
                 <i className="ri-more-fill" />
               </DropdownToggle>
@@ -930,7 +972,7 @@ const OpportunityDetail = () => {
         {/* ======================================================== */}
         {/* Header Hero Card with Stage Stepper Tracker              */}
         {/* ======================================================== */}
-        <Card className="border shadow-sm mb-4" style={{ borderRadius: 0, backgroundColor: "#ffffff", borderColor: THEME.cardBorder }}>
+        <Card className="border shadow-sm mb-4 rounded-0" style={{ borderRadius: 0, backgroundColor: cardBg, borderColor: cardBorder }}>
           <CardBody className="p-4">
             <Row className="g-4 align-items-start">
               {/* Left Title & Company Info */}
@@ -941,9 +983,9 @@ const OpportunityDetail = () => {
                     style={{
                       width: 54,
                       height: 54,
-                      backgroundColor: "#fef3c7",
-                      border: "1px solid #fde68a",
-                      color: "#d97706",
+                      backgroundColor: isDark ? "rgba(245, 158, 11, 0.15)" : "#fef3c7",
+                      border: isDark ? "1px solid rgba(245, 158, 11, 0.3)" : "1px solid #fde68a",
+                      color: isDark ? "#fbbf24" : "#d97706",
                       fontSize: "26px",
                     }}
                   >
@@ -951,23 +993,33 @@ const OpportunityDetail = () => {
                   </div>
                   <div className="flex-grow-1">
                     <div className="d-flex flex-wrap align-items-center gap-2 mb-1">
-                      <h4 className="fw-bold text-dark mb-0 fs-18">{opp.name}</h4>
+                      <h4 className="fw-bold mb-0 fs-18" style={{ color: textTitle }}>{opp.name}</h4>
                       {/* Clean tinted badge matching reference mockup */}
                       {(() => {
                         const s = String(opp.stageName || "").toLowerCase();
-                        let bg = "#f8fafc";
-                        let color = "#475569";
-                        let border = "#cbd5e1";
+                        let bg = isDark ? "rgba(100, 116, 139, 0.2)" : "#f8fafc";
+                        let color = isDark ? "#cbd5e1" : "#475569";
+                        let border = isDark ? "rgba(100, 116, 139, 0.4)" : "#cbd5e1";
                         if (s.includes("won")) {
-                          bg = "#dcfce7"; color = "#15803d"; border = "#bbf7d0";
+                          bg = isDark ? "rgba(16, 185, 129, 0.2)" : "#dcfce7";
+                          color = isDark ? "#6ee7b7" : "#15803d";
+                          border = isDark ? "rgba(16, 185, 129, 0.4)" : "#bbf7d0";
                         } else if (s.includes("lost")) {
-                          bg = "#fee2e2"; color = "#b91c1c"; border = "#fecaca";
+                          bg = isDark ? "rgba(239, 68, 68, 0.2)" : "#fee2e2";
+                          color = isDark ? "#fca5a5" : "#b91c1c";
+                          border = isDark ? "rgba(239, 68, 68, 0.4)" : "#fecaca";
                         } else if (s.includes("negot")) {
-                          bg = "#fef3c7"; color = "#b45309"; border = "#fde68a";
+                          bg = isDark ? "rgba(245, 158, 11, 0.2)" : "#fef3c7";
+                          color = isDark ? "#fcd34d" : "#b45309";
+                          border = isDark ? "rgba(245, 158, 11, 0.4)" : "#fde68a";
                         } else if (s.includes("propos")) {
-                          bg = "#faf5ff"; color = "#7e22ce"; border = "#e9d5ff";
+                          bg = isDark ? "rgba(168, 85, 247, 0.2)" : "#faf5ff";
+                          color = isDark ? "#d8b4fe" : "#7e22ce";
+                          border = isDark ? "rgba(168, 85, 247, 0.4)" : "#e9d5ff";
                         } else if (s.includes("qualif")) {
-                          bg = "#fef2f2"; color = "#7f1d1d"; border = "#fecaca";
+                          bg = isDark ? "rgba(239, 68, 68, 0.2)" : "#fef2f2";
+                          color = isDark ? "#fca5a5" : "#7f1d1d";
+                          border = isDark ? "rgba(239, 68, 68, 0.4)" : "#fecaca";
                         }
                         return (
                           <span
@@ -991,7 +1043,7 @@ const OpportunityDetail = () => {
                       <Link
                         to={`/crm/customers/${opp.accountId}`}
                         className="fw-semibold text-decoration-none fs-13"
-                        style={{ color: THEME.primary }}
+                        style={{ color: primaryColor }}
                       >
                         {opp.accountName || "Customer Account"}
                       </Link>
@@ -1010,25 +1062,25 @@ const OpportunityDetail = () => {
                   <div className="d-flex flex-wrap justify-content-lg-end gap-3 text-muted fs-11 mb-3">
                     <div>
                       Opportunity ID:{" "}
-                      <span className="fw-bold text-dark">
+                      <span className="fw-bold" style={{ color: textTitle }}>
                         {opp.opportunityCode || `OPP-2026-${String(opp.opportunityId).padStart(5, "0")}`}
                       </span>
                     </div>
                     <div>
                       Created On:{" "}
-                      <span className="fw-semibold text-dark">{formatDate(opp.createdAt)}</span>
+                      <span className="fw-semibold" style={{ color: textTitle }}>{formatDate(opp.createdAt)}</span>
                     </div>
                     <div>
                       Last Updated:{" "}
-                      <span className="fw-semibold text-dark">{formatDateTime(opp.updatedAt)}</span>
+                      <span className="fw-semibold" style={{ color: textTitle }}>{formatDateTime(opp.updatedAt)}</span>
                     </div>
                   </div>
 
                   {/* Current Stage Indicator */}
                   <div className="d-flex align-items-center justify-content-between mb-3">
-                    <div className="fs-13 text-dark">
+                    <div className="fs-13" style={{ color: textTitle }}>
                       <span className="text-muted">Current Stage :</span>{" "}
-                      <span className="fw-bold" style={{ color: isClosedWon ? "#16a34a" : isClosedLost ? "#dc2626" : "#047857" }}>
+                      <span className="fw-bold" style={{ color: isClosedWon ? "#16a34a" : isClosedLost ? "#dc2626" : (isDark ? "#34d399" : "#047857") }}>
                         {opp.stageName || "Prospecting"}
                       </span>
                     </div>
@@ -1044,7 +1096,7 @@ const OpportunityDetail = () => {
                         left: "5%",
                         right: "5%",
                         height: "3px",
-                        backgroundColor: "#e2e8f0",
+                        backgroundColor: isDark ? "#334155" : "#e2e8f0",
                         zIndex: 1,
                       }}
                     />
@@ -1092,13 +1144,17 @@ const OpportunityDetail = () => {
                                   ? "#d97706"
                                   : isPassed
                                   ? "#16a34a"
+                                  : isDark
+                                  ? "#21262d"
                                   : "#ffffff",
                                 border: isCurrent
-                                  ? "3px solid #fef3c7"
+                                  ? (isDark ? "3px solid #fef3c7" : "3px solid #fef3c7")
                                   : isPassed
                                   ? "2px solid #16a34a"
+                                  : isDark
+                                  ? "2px solid #3d444d"
                                   : "2px solid #cbd5e1",
-                                color: isPassed ? "#ffffff" : isCurrent ? "#ffffff" : "#94a3b8",
+                                color: isPassed ? "#ffffff" : isCurrent ? "#ffffff" : (isDark ? "#94a3b8" : "#94a3b8"),
                                 fontSize: "12px",
                                 fontWeight: "bold",
                                 transition: "all 0.2s ease",
@@ -1109,7 +1165,7 @@ const OpportunityDetail = () => {
                               ) : isCurrent ? (
                                 <span style={{ width: 8, height: 8, backgroundColor: "#ffffff", borderRadius: 0 }} />
                               ) : (
-                                <span style={{ width: 6, height: 6, backgroundColor: "#cbd5e1", borderRadius: 0 }} />
+                                <span style={{ width: 6, height: 6, backgroundColor: isDark ? "#484f58" : "#cbd5e1", borderRadius: 0 }} />
                               )}
                             </div>
                             <span
@@ -1118,7 +1174,7 @@ const OpportunityDetail = () => {
                                 fontSize: "11px",
                                 whiteSpace: "nowrap",
                                 fontWeight: isCurrent ? 700 : isPassed ? 600 : 500,
-                                color: isCurrent ? "#0f172a" : isPassed ? "#1e293b" : "#94a3b8",
+                                color: isCurrent ? (isDark ? "#f8fafc" : "#0f172a") : isPassed ? (isDark ? "#cbd5e1" : "#1e293b") : (isDark ? "#64748b" : "#94a3b8"),
                               }}
                             >
                               {st.stageName}
@@ -1133,7 +1189,7 @@ const OpportunityDetail = () => {
                   <div className="d-flex align-items-center justify-content-between text-muted fs-11 pt-1">
                     <div>
                       In this stage since{" "}
-                      <span className="fw-semibold text-dark">
+                      <span className="fw-semibold" style={{ color: textTitle }}>
                         {formatDate(opp.updatedAt || opp.createdAt)} ({opp.daysInStage != null ? `${opp.daysInStage} Days` : "0 Days"})
                       </span>
                     </div>
@@ -1144,8 +1200,13 @@ const OpportunityDetail = () => {
                     >
                       <DropdownToggle
                         tag="button"
-                        className="btn btn-sm btn-light border d-flex align-items-center gap-1 py-1 px-2 fs-11 fw-semibold text-dark bg-white"
-                        style={{ borderRadius: 0, borderColor: "#cbd5e1" }}
+                        className="btn btn-sm btn-light border d-flex align-items-center gap-1 py-1 px-2 fs-11 fw-semibold"
+                        style={{
+                          borderRadius: 0,
+                          borderColor: isDark ? "#3d444d" : "#cbd5e1",
+                          backgroundColor: isDark ? "#21262d" : "#ffffff",
+                          color: textTitle,
+                        }}
                       >
                         Move Stage <i className="ri-arrow-down-s-line" />
                       </DropdownToggle>
@@ -1170,16 +1231,16 @@ const OpportunityDetail = () => {
             {/* 6 Middle Metrics Bar matching Mockup                     */}
             {/* ======================================================== */}
             <div
-              className="mt-4 p-3 rounded-0"
+              className="mt-4 p-3 rounded-0 crm-opp-metrics-bar"
               style={{
-                backgroundColor: "#f8fafc",
-                border: `1px solid ${THEME.cardBorder}`,
+                backgroundColor: subtleBg,
+                border: `1px solid ${subtleBorder}`,
               }}
             >
               <Row className="g-3 align-items-center">
                 {/* 1. Opportunity Owner */}
                 <Col lg={2} md={4} sm={6}>
-                  <div className="text-muted text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>
+                  <div className="text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px", color: textSub }}>
                     OPPORTUNITY OWNER
                   </div>
                   <div className="d-flex align-items-center gap-2 mt-1">
@@ -1189,7 +1250,7 @@ const OpportunityDetail = () => {
                     >
                       {getInitials(opp.ownerName)}
                     </div>
-                    <span className="fw-semibold text-dark fs-13 text-truncate" title={opp.ownerName || "Unassigned"}>
+                    <span className="fw-semibold fs-13 text-truncate" style={{ color: textTitle }} title={opp.ownerName || "Unassigned"}>
                       {opp.ownerName || "Unassigned"}
                     </span>
                   </div>
@@ -1197,17 +1258,23 @@ const OpportunityDetail = () => {
 
                 {/* 2. Primary Contact */}
                 <Col lg={2} md={4} sm={6}>
-                  <div className="text-muted text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>
+                  <div className="text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px", color: textSub }}>
                     PRIMARY CONTACT
                   </div>
                   <div className="d-flex align-items-center gap-2 mt-1">
                     <div
                       className="rounded-0 d-flex align-items-center justify-content-center flex-shrink-0"
-                      style={{ width: 28, height: 28, backgroundColor: "#ecfdf5", color: "#059669", fontSize: "13px" }}
+                      style={{
+                        width: 28,
+                        height: 28,
+                        backgroundColor: isDark ? "rgba(16, 185, 129, 0.15)" : "#ecfdf5",
+                        color: isDark ? "#34d399" : "#059669",
+                        fontSize: "13px",
+                      }}
                     >
                       <i className="ri-user-line" />
                     </div>
-                    <span className="fw-semibold text-dark fs-13 text-truncate" title={opp.primaryContactName || "No contact"}>
+                    <span className="fw-semibold fs-13 text-truncate" style={{ color: textTitle }} title={opp.primaryContactName || "No contact"}>
                       {opp.primaryContactName || "No contact"}
                     </span>
                   </div>
@@ -1215,10 +1282,10 @@ const OpportunityDetail = () => {
 
                 {/* 3. Expected Close Date */}
                 <Col lg={2} md={4} sm={6}>
-                  <div className="text-muted text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>
+                  <div className="text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px", color: textSub }}>
                     EXPECTED CLOSE DATE
                   </div>
-                  <div className="d-flex align-items-center gap-1 mt-1 text-dark fw-semibold fs-13">
+                  <div className="d-flex align-items-center gap-1 mt-1 fw-semibold fs-13" style={{ color: textTitle }}>
                     <i className="ri-calendar-line text-muted fs-14" />
                     {formatDate(opp.expectedCloseDate)}
                   </div>
@@ -1226,30 +1293,30 @@ const OpportunityDetail = () => {
 
                 {/* 4. Probability */}
                 <Col lg={2} md={4} sm={6}>
-                  <div className="text-muted text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>
+                  <div className="text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px", color: textSub }}>
                     PROBABILITY
                   </div>
-                  <div className="fw-bold text-dark fs-15 mt-1">
+                  <div className="fw-bold fs-15 mt-1" style={{ color: textTitle }}>
                     {opp.probability != null ? `${opp.probability}%` : "10%"}
                   </div>
                 </Col>
 
                 {/* 5. Pipeline Value */}
                 <Col lg={2} md={4} sm={6}>
-                  <div className="text-muted text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>
+                  <div className="text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px", color: textSub }}>
                     PIPELINE VALUE
                   </div>
-                  <div className="fw-bold fs-15 mt-1" style={{ color: "#0f172a" }}>
+                  <div className="fw-bold fs-15 mt-1" style={{ color: textTitle }}>
                     {formatInr(opp.amount)}
                   </div>
                 </Col>
 
                 {/* 6. Weighted Value */}
                 <Col lg={2} md={4} sm={6}>
-                  <div className="text-muted text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>
+                  <div className="text-uppercase fw-semibold" style={{ fontSize: "11px", letterSpacing: "0.5px", color: textSub }}>
                     WEIGHTED VALUE
                   </div>
-                  <div className="fw-bold fs-15 mt-1" style={{ color: "#0f172a" }}>
+                  <div className="fw-bold fs-15 mt-1" style={{ color: textTitle }}>
                     {formatInr(opp.weightedAmount || (opp.amount * (opp.probability || 0)) / 100)}
                   </div>
                 </Col>
@@ -1263,7 +1330,7 @@ const OpportunityDetail = () => {
         {/* ======================================================== */}
         <div
           className="border-bottom mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2"
-          style={{ borderColor: THEME.cardBorder }}
+          style={{ borderColor: cardBorder }}
         >
           <div className="d-flex align-items-center gap-4 overflow-auto py-1">
             {[
@@ -1285,10 +1352,10 @@ const OpportunityDetail = () => {
                   onClick={() => setActiveTab(tab.id)}
                   className="btn btn-link p-0 text-decoration-none position-relative pb-2"
                   style={{
-                    color: isActive ? THEME.primary : "#64748b",
+                    color: isActive ? primaryColor : (isDark ? "#94a3b8" : "#64748b"),
                     fontWeight: isActive ? 600 : 500,
                     fontSize: "14px",
-                    borderBottom: isActive ? `2.5px solid ${THEME.primary}` : "2.5px solid transparent",
+                    borderBottom: isActive ? `2.5px solid ${primaryColor}` : "2.5px solid transparent",
                     borderRadius: 0,
                     transition: "all 0.15s ease",
                   }}
@@ -1314,54 +1381,54 @@ const OpportunityDetail = () => {
               {/* ---------------------------------------------------- */}
               <Col lg={4} md={12} className="d-flex flex-column">
                 {/* Opportunity Information Card */}
-                <Card className="border shadow-sm mb-3 d-flex flex-column" style={{ borderRadius: 0, borderColor: THEME.cardBorder, backgroundColor: "#ffffff" }}>
+                <Card className="border shadow-sm mb-3 d-flex flex-column" style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}>
                   <CardBody className="p-3 d-flex flex-column">
-                    <div className="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                      <h6 className="fw-bold text-dark fs-14 mb-0 d-flex align-items-center gap-2">
+                    <div className="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2" style={{ borderColor: cardBorder }}>
+                      <h6 className="fw-bold fs-14 mb-0 d-flex align-items-center gap-2" style={{ color: textTitle }}>
                         <i className="ri-information-line text-muted" /> Opportunity Information
                       </h6>
-                      <Button color="link" size="sm" className="p-0 text-decoration-none fs-12 fw-semibold" onClick={openEditModal} style={{ color: THEME.primary }}>
+                      <Button color="link" size="sm" className="p-0 text-decoration-none fs-12 fw-semibold" onClick={openEditModal} style={{ color: primaryColor }}>
                         Edit
                       </Button>
                     </div>
                     <div className="d-flex flex-column gap-2 fs-12 flex-grow-1">
-                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom border-light">
+                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom" style={{ borderColor: subtleBorder }}>
                         <span className="text-muted">Opportunity Name</span>
-                        <span className="fw-semibold text-dark text-end">{opp.name}</span>
+                        <span className="fw-semibold text-end" style={{ color: textTitle }}>{opp.name}</span>
                       </div>
-                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom border-light">
+                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom" style={{ borderColor: subtleBorder }}>
                         <span className="text-muted">Customer</span>
                         <Link
                           to={`/crm/customers/${opp.accountId}`}
                           className="fw-semibold text-decoration-none"
-                          style={{ color: THEME.primary }}
+                          style={{ color: primaryColor }}
                         >
                           {opp.accountName || "Customer Account"}
                         </Link>
                       </div>
-                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom border-light">
+                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom" style={{ borderColor: subtleBorder }}>
                         <span className="text-muted">Opportunity Type</span>
-                        <span className="fw-semibold text-dark">{opp.opportunityTypeName || "Standard Deal"}</span>
+                        <span className="fw-semibold" style={{ color: textTitle }}>{opp.opportunityTypeName || "Standard Deal"}</span>
                       </div>
-                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom border-light">
+                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom" style={{ borderColor: subtleBorder }}>
                         <span className="text-muted">Source</span>
-                        <span className="fw-semibold text-dark">{opp.sourceName || "Direct / Inbound"}</span>
+                        <span className="fw-semibold" style={{ color: textTitle }}>{opp.sourceName || "Direct / Inbound"}</span>
                       </div>
-                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom border-light">
+                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom" style={{ borderColor: subtleBorder }}>
                         <span className="text-muted">Industry</span>
-                        <span className="fw-semibold text-dark">{opp.industry || "General Business"}</span>
+                        <span className="fw-semibold" style={{ color: textTitle }}>{opp.industry || "General Business"}</span>
                       </div>
-                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom border-light">
+                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom" style={{ borderColor: subtleBorder }}>
                         <span className="text-muted">Territory</span>
-                        <span className="fw-semibold text-dark">{opp.territory || "Head Office"}</span>
+                        <span className="fw-semibold" style={{ color: textTitle }}>{opp.territory || "Head Office"}</span>
                       </div>
-                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom border-light">
+                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom" style={{ borderColor: subtleBorder }}>
                         <span className="text-muted">Campaign</span>
-                        <span className="fw-semibold text-dark">{opp.campaignName || "Direct / Organic"}</span>
+                        <span className="fw-semibold" style={{ color: textTitle }}>{opp.campaignName || "Direct / Organic"}</span>
                       </div>
                       <div className="pt-2">
                         <span className="text-muted d-block mb-1 fw-medium">Description</span>
-                        <p className="text-dark mb-0 fs-12" style={{ lineHeight: 1.5 }}>
+                        <p className="mb-0 fs-12" style={{ color: textTitle, lineHeight: 1.5 }}>
                           {opp.closedReason || opp.nextStep || "No description provided."}
                         </p>
                       </div>
@@ -1370,47 +1437,47 @@ const OpportunityDetail = () => {
                 </Card>
 
                 {/* Financial Information Card (flex-grow-1 ensures bottom alignment) */}
-                <Card className="border shadow-sm mb-3 flex-grow-1 d-flex flex-column" style={{ borderRadius: 0, borderColor: THEME.cardBorder, backgroundColor: "#ffffff" }}>
+                <Card className="border shadow-sm mb-3 flex-grow-1 d-flex flex-column" style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}>
                   <CardBody className="p-3 d-flex flex-column">
-                    <div className="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                      <h6 className="fw-bold text-dark fs-14 mb-0 d-flex align-items-center gap-2">
+                    <div className="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2" style={{ borderColor: cardBorder }}>
+                      <h6 className="fw-bold fs-14 mb-0 d-flex align-items-center gap-2" style={{ color: textTitle }}>
                         <i className="ri-money-dollar-circle-line text-muted" /> Financial Information
                       </h6>
                     </div>
                     <div className="d-flex flex-column gap-2 fs-12 flex-grow-1">
-                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom border-light">
+                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom" style={{ borderColor: subtleBorder }}>
                         <span className="text-muted">Currency</span>
-                        <span className="fw-semibold text-dark">{opp.currencyCode || "INR"} - Indian Rupee ({"\u20B9"})</span>
+                        <span className="fw-semibold" style={{ color: textTitle }}>{opp.currencyCode || "INR"} - Indian Rupee ({"\u20B9"})</span>
                       </div>
-                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom border-light">
+                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom" style={{ borderColor: subtleBorder }}>
                         <span className="text-muted">Total Amount</span>
-                        <span className="fw-bold text-dark fs-13">{formatInr(opp.amount)}</span>
+                        <span className="fw-bold fs-13" style={{ color: textTitle }}>{formatInr(opp.amount)}</span>
                       </div>
-                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom border-light">
+                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom" style={{ borderColor: subtleBorder }}>
                         <span className="text-muted">Expected Revenue</span>
-                        <span className="fw-semibold text-dark">{formatInr(opp.amount)}</span>
+                        <span className="fw-semibold" style={{ color: textTitle }}>{formatInr(opp.amount)}</span>
                       </div>
-                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom border-light">
+                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom" style={{ borderColor: subtleBorder }}>
                         <span className="text-muted d-flex align-items-center">
                           Weighted Value <i className="ri-information-line ms-1 text-muted" title="Calculated as Amount × Probability" />
                         </span>
-                        <span className="fw-bold fs-13" style={{ color: THEME.primary }}>
+                        <span className="fw-bold fs-13" style={{ color: primaryColor }}>
                           {formatInr(opp.weightedAmount || (opp.amount * (opp.probability || 0)) / 100)}
                         </span>
                       </div>
-                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom border-light">
+                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom" style={{ borderColor: subtleBorder }}>
                         <span className="text-muted">Probability</span>
-                        <span className="fw-semibold text-dark">{opp.probability || 0}%</span>
+                        <span className="fw-semibold" style={{ color: textTitle }}>{opp.probability || 0}%</span>
                       </div>
-                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom border-light">
+                      <div className="d-flex justify-content-between align-items-center py-1 border-bottom" style={{ borderColor: subtleBorder }}>
                         <span className="text-muted">Budget Range</span>
-                        <span className="fw-semibold text-dark">
+                        <span className="fw-semibold" style={{ color: textTitle }}>
                           {formatInr(opp.amount * 0.85)} - {formatInr(opp.amount * 1.15)}
                         </span>
                       </div>
                       <div className="d-flex justify-content-between align-items-center py-1">
                         <span className="text-muted">Payment Terms</span>
-                        <span className="fw-semibold text-dark">{opp.paymentTerms || "Standard Terms"}</span>
+                        <span className="fw-semibold" style={{ color: textTitle }}>{opp.paymentTerms || "Standard Terms"}</span>
                       </div>
                     </div>
                   </CardBody>
@@ -1422,11 +1489,11 @@ const OpportunityDetail = () => {
               {/* ---------------------------------------------------- */}
               <Col lg={4} md={12} className="d-flex flex-column">
                 {/* Products / Services Table Card */}
-                <Card className="border shadow-sm mb-3 d-flex flex-column" style={{ borderRadius: 0, borderColor: THEME.cardBorder, backgroundColor: "#ffffff", minHeight: "185px" }}>
+                <Card className="border shadow-sm mb-3 d-flex flex-column" style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg, minHeight: "185px" }}>
                   <CardBody className="p-3 d-flex flex-column justify-content-between">
                     <div>
-                      <div className="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
-                        <h6 className="fw-bold text-dark fs-14 mb-0">
+                      <div className="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom" style={{ borderColor: cardBorder }}>
+                        <h6 className="fw-bold fs-14 mb-0" style={{ color: textTitle }}>
                           Products / Services ({productsList.length})
                         </h6>
                         <Button
@@ -1434,7 +1501,7 @@ const OpportunityDetail = () => {
                           size="sm"
                           className="p-0 text-decoration-none fs-12 fw-semibold"
                           onClick={() => setActiveTab("products")}
-                          style={{ color: THEME.primary }}
+                          style={{ color: primaryColor }}
                         >
                           View All
                         </Button>
@@ -1442,7 +1509,7 @@ const OpportunityDetail = () => {
                       {productsList.length > 0 ? (
                         <div className="table-responsive">
                           <Table className="table-sm table-borderless align-middle mb-0 fs-12">
-                            <thead className="table-light text-muted fs-11">
+                            <thead className="text-muted fs-11" style={{ backgroundColor: subtleBg }}>
                               <tr>
                                 <th>Product / Service</th>
                                 <th className="text-center">Qty</th>
@@ -1452,11 +1519,11 @@ const OpportunityDetail = () => {
                             </thead>
                             <tbody>
                               {productsList.map((p) => (
-                                <tr key={p.id} className="border-bottom">
-                                  <td className="fw-semibold text-dark">{p.name}</td>
-                                  <td className="text-center">{p.qty}</td>
+                                <tr key={p.id} className="border-bottom" style={{ borderColor: subtleBorder }}>
+                                  <td className="fw-semibold" style={{ color: textTitle }}>{p.name}</td>
+                                  <td className="text-center" style={{ color: textTitle }}>{p.qty}</td>
                                   <td className="text-end text-muted">{formatInr(p.unitPrice)}</td>
-                                  <td className="text-end fw-bold text-dark">{formatInr(p.total)}</td>
+                                  <td className="text-end fw-bold" style={{ color: textTitle }}>{formatInr(p.total)}</td>
                                 </tr>
                               ))}
                             </tbody>
@@ -1469,25 +1536,25 @@ const OpportunityDetail = () => {
                       )}
                     </div>
 
-                    <div className="d-flex justify-content-between align-items-center pt-2 border-top fs-12">
+                    <div className="d-flex justify-content-between align-items-center pt-2 border-top fs-12" style={{ borderColor: cardBorder }}>
                       <span className="text-muted">Total Proposed Value</span>
-                      <span className="fw-bold text-dark fs-13">{formatInr(opp.amount)}</span>
+                      <span className="fw-bold fs-13" style={{ color: textTitle }}>{formatInr(opp.amount)}</span>
                     </div>
                   </CardBody>
                 </Card>
 
                 {/* Quotes Card */}
-                <Card className="border shadow-sm mb-3 d-flex flex-column" style={{ borderRadius: 0, borderColor: THEME.cardBorder, backgroundColor: "#ffffff", minHeight: "185px" }}>
+                <Card className="border shadow-sm mb-3 d-flex flex-column" style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg, minHeight: "185px" }}>
                   <CardBody className="p-3 d-flex flex-column justify-content-between">
                     <div>
-                      <div className="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
-                        <h6 className="fw-bold text-dark fs-14 mb-0">Quotes ({quotesList.length})</h6>
+                      <div className="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom" style={{ borderColor: cardBorder }}>
+                        <h6 className="fw-bold fs-14 mb-0" style={{ color: textTitle }}>Quotes ({quotesList.length})</h6>
                         <Button
                           color="link"
                           size="sm"
                           className="p-0 text-decoration-none fs-12 fw-semibold"
                           onClick={openCreateQuote}
-                          style={{ color: THEME.primary }}
+                          style={{ color: primaryColor }}
                         >
                           + Create Quote
                         </Button>
@@ -1495,7 +1562,7 @@ const OpportunityDetail = () => {
                       {quotesList.length > 0 ? (
                         <div className="table-responsive">
                           <Table className="table-sm table-borderless align-middle mb-0 fs-12">
-                            <thead className="table-light text-muted fs-11">
+                            <thead className="text-muted fs-11" style={{ backgroundColor: subtleBg }}>
                               <tr>
                                 <th>Quote No.</th>
                                 <th>Expiry Date</th>
@@ -1505,12 +1572,20 @@ const OpportunityDetail = () => {
                             </thead>
                             <tbody>
                               {quotesList.map((q) => (
-                                <tr key={q.id} className="border-bottom">
-                                  <td className="fw-semibold" style={{ color: THEME.primary }}>{q.quoteNo}</td>
+                                <tr key={q.id} className="border-bottom" style={{ borderColor: subtleBorder }}>
+                                  <td className="fw-semibold" style={{ color: primaryColor }}>{q.quoteNo}</td>
                                   <td className="text-muted">{formatDate(q.expiryDate)}</td>
-                                  <td className="text-end fw-bold text-dark">{formatInr(q.amount)}</td>
+                                  <td className="text-end fw-bold" style={{ color: textTitle }}>{formatInr(q.amount)}</td>
                                   <td className="text-center">
-                                    <span style={{ backgroundColor: "#fef2f2", color: THEME.primary, border: "1px solid #fee2e2", padding: "2px 8px", borderRadius: 0, fontSize: "11px", fontWeight: 600 }}>
+                                    <span style={{
+                                      backgroundColor: isDark ? "rgba(239, 68, 68, 0.2)" : "#fef2f2",
+                                      color: isDark ? "#fca5a5" : THEME.primary,
+                                      border: `1px solid ${isDark ? "rgba(239, 68, 68, 0.4)" : "#fee2e2"}`,
+                                      padding: "2px 8px",
+                                      borderRadius: 0,
+                                      fontSize: "11px",
+                                      fontWeight: 600,
+                                    }}>
                                       {q.status}
                                     </span>
                                   </td>
@@ -1524,7 +1599,7 @@ const OpportunityDetail = () => {
                           <i className="ri-file-list-3-line fs-24 d-block mb-1 text-muted opacity-50" />
                           No quotes generated for this deal yet.
                           <div className="mt-1">
-                            <Button color="link" size="sm" className="p-0 fs-12 fw-semibold" onClick={openCreateQuote} style={{ color: THEME.primary }}>
+                            <Button color="link" size="sm" className="p-0 fs-12 fw-semibold" onClick={openCreateQuote} style={{ color: primaryColor }}>
                               Generate Proposal Quote
                             </Button>
                           </div>
@@ -1532,24 +1607,24 @@ const OpportunityDetail = () => {
                       )}
                     </div>
 
-                    <div className="pt-2 border-top fs-11 text-muted text-center">
+                    <div className="pt-2 border-top fs-11 text-muted text-center" style={{ borderColor: cardBorder }}>
                       Quotations archive linked to Opportunity
                     </div>
                   </CardBody>
                 </Card>
 
                 {/* Next Steps Checklist Card (flex-grow-1 ensures bottom alignment with Column 1) */}
-                <Card className="border shadow-sm mb-3 flex-grow-1 d-flex flex-column" style={{ borderRadius: 0, borderColor: THEME.cardBorder, backgroundColor: "#ffffff", minHeight: "185px" }}>
+                <Card className="border shadow-sm mb-3 flex-grow-1 d-flex flex-column" style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg, minHeight: "185px" }}>
                   <CardBody className="p-3 d-flex flex-column justify-content-between">
                     <div>
-                      <div className="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
-                        <h6 className="fw-bold text-dark fs-14 mb-0">Next Steps ({localTasks.length})</h6>
+                      <div className="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom" style={{ borderColor: cardBorder }}>
+                        <h6 className="fw-bold fs-14 mb-0" style={{ color: textTitle }}>Next Steps ({localTasks.length})</h6>
                         <Button
                           color="link"
                           size="sm"
                           className="p-0 text-decoration-none fs-12 fw-semibold"
                           onClick={() => setTaskModalOpen(true)}
-                          style={{ color: THEME.primary }}
+                          style={{ color: primaryColor }}
                         >
                           + Add Next Step
                         </Button>
@@ -1561,8 +1636,8 @@ const OpportunityDetail = () => {
                             return (
                               <div
                                 key={task.taskId || idx}
-                                className="d-flex align-items-center justify-content-between p-2 border rounded-0 bg-white"
-                                style={{ borderColor: THEME.cardBorder }}
+                                className="d-flex align-items-center justify-content-between p-2 border rounded-0"
+                                style={{ borderColor: subtleBorder, backgroundColor: subtleBg }}
                               >
                                 <div className="d-flex align-items-center gap-2">
                                   <input
@@ -1576,9 +1651,9 @@ const OpportunityDetail = () => {
                                   <span
                                     onClick={() => handleToggleTask(task)}
                                     className={`fs-12 cursor-pointer ${
-                                      isDone ? "text-decoration-line-through text-muted" : "text-dark fw-medium"
+                                      isDone ? "text-decoration-line-through text-muted" : "fw-medium"
                                     }`}
-                                    style={{ cursor: "pointer" }}
+                                    style={{ cursor: "pointer", color: isDone ? undefined : textTitle }}
                                   >
                                     {task.title}
                                   </span>
@@ -1604,7 +1679,7 @@ const OpportunityDetail = () => {
                           <i className="ri-checkbox-circle-line fs-24 d-block mb-1 text-muted opacity-50" />
                           No follow-up next steps scheduled.
                           <div className="mt-1">
-                            <Button color="link" size="sm" className="p-0 fs-12 fw-semibold" onClick={() => setTaskModalOpen(true)} style={{ color: THEME.primary }}>
+                            <Button color="link" size="sm" className="p-0 fs-12 fw-semibold" onClick={() => setTaskModalOpen(true)} style={{ color: primaryColor }}>
                               + Schedule Next Step
                             </Button>
                           </div>
@@ -1612,7 +1687,7 @@ const OpportunityDetail = () => {
                       )}
                     </div>
 
-                    <div className="pt-2 border-top fs-11 text-muted text-center mt-2">
+                    <div className="pt-2 border-top fs-11 text-muted text-center mt-2" style={{ borderColor: cardBorder }}>
                       Tasks saved in CRM tasks system
                     </div>
                   </CardBody>
@@ -1624,12 +1699,12 @@ const OpportunityDetail = () => {
               {/* ---------------------------------------------------- */}
               <Col lg={4} md={12} className="d-flex flex-column">
                 {/* Key Contacts Card */}
-                <Card className="border shadow-sm mb-3 d-flex flex-column" style={{ borderRadius: 0, borderColor: THEME.cardBorder, backgroundColor: "#ffffff", minHeight: "230px" }}>
+                <Card className="border shadow-sm mb-3 d-flex flex-column" style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg, minHeight: "230px" }}>
                   <CardBody className="p-3 d-flex flex-column justify-content-between">
                     <div>
-                      <div className="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
+                      <div className="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom" style={{ borderColor: cardBorder }}>
                         <div className="d-flex align-items-center gap-2">
-                          <h6 className="fw-bold text-dark fs-14 mb-0">
+                          <h6 className="fw-bold fs-14 mb-0" style={{ color: textTitle }}>
                             Key Contacts ({keyContactsList.length})
                           </h6>
                           <Button
@@ -1637,7 +1712,7 @@ const OpportunityDetail = () => {
                             size="sm"
                             className="p-0 text-decoration-none fs-12 fw-semibold"
                             onClick={() => setContactModalOpen(true)}
-                            style={{ color: THEME.primary }}
+                            style={{ color: primaryColor }}
                           >
                             + Add
                           </Button>
@@ -1647,7 +1722,7 @@ const OpportunityDetail = () => {
                           size="sm"
                           className="p-0 text-decoration-none fs-12 fw-semibold"
                           onClick={() => setActiveTab("contacts")}
-                          style={{ color: THEME.primary }}
+                          style={{ color: primaryColor }}
                         >
                           View All
                         </Button>
@@ -1658,8 +1733,8 @@ const OpportunityDetail = () => {
                           {keyContactsList.map((c) => (
                             <div
                               key={c.contactPersonId}
-                              className="border rounded-0 p-2 bg-white d-flex align-items-center justify-content-between"
-                              style={{ borderColor: THEME.cardBorder }}
+                              className="border rounded-0 p-2 d-flex align-items-center justify-content-between"
+                              style={{ borderColor: subtleBorder, backgroundColor: subtleBg }}
                             >
                               <div className="d-flex align-items-center gap-2">
                                 <div
@@ -1670,9 +1745,16 @@ const OpportunityDetail = () => {
                                 </div>
                                 <div>
                                   <div className="d-flex align-items-center gap-1">
-                                    <span className="fw-semibold text-dark fs-13">{c.fullName}</span>
+                                    <span className="fw-semibold fs-13" style={{ color: textTitle }}>{c.fullName}</span>
                                     {c.isPrimary && (
-                                      <span style={{ backgroundColor: "#ecfdf5", color: "#047857", padding: "1px 6px", borderRadius: 0, fontSize: "10px", fontWeight: 600 }}>
+                                      <span style={{
+                                        backgroundColor: isDark ? "rgba(16, 185, 129, 0.2)" : "#ecfdf5",
+                                        color: isDark ? "#34d399" : "#047857",
+                                        padding: "1px 6px",
+                                        borderRadius: 0,
+                                        fontSize: "10px",
+                                        fontWeight: 600,
+                                      }}>
                                         Primary
                                       </span>
                                     )}
@@ -1687,7 +1769,11 @@ const OpportunityDetail = () => {
                                     href={`tel:${c.mobile}`}
                                     className="btn btn-sm btn-light border text-muted px-2 py-1"
                                     title={`Call ${c.mobile}`}
-                                    style={{ borderRadius: 0 }}
+                                    style={{
+                                      borderRadius: 0,
+                                      borderColor: subtleBorder,
+                                      backgroundColor: isDark ? "#21262d" : "#ffffff",
+                                    }}
                                   >
                                     <i className="ri-phone-line fs-13" />
                                   </a>
@@ -1697,7 +1783,11 @@ const OpportunityDetail = () => {
                                     href={`mailto:${c.email}`}
                                     className="btn btn-sm btn-light border text-muted px-2 py-1"
                                     title={`Email ${c.email}`}
-                                    style={{ borderRadius: 0 }}
+                                    style={{
+                                      borderRadius: 0,
+                                      borderColor: subtleBorder,
+                                      backgroundColor: isDark ? "#21262d" : "#ffffff",
+                                    }}
                                   >
                                     <i className="ri-mail-line fs-13" />
                                   </a>
@@ -1725,24 +1815,24 @@ const OpportunityDetail = () => {
                       )}
                     </div>
 
-                    <div className="pt-2 border-top fs-11 text-muted text-center mt-2">
+                    <div className="pt-2 border-top fs-11 text-muted text-center mt-2" style={{ borderColor: cardBorder }}>
                       Linked to Customer: {opp.accountName || "Account"}
                     </div>
                   </CardBody>
                 </Card>
 
                 {/* Recent Activities Card (flex-grow-1 ensures bottom alignment with Column 1 & 2) */}
-                <Card className="border shadow-sm mb-3 flex-grow-1 d-flex flex-column" style={{ borderRadius: 0, borderColor: THEME.cardBorder, backgroundColor: "#ffffff", minHeight: "310px" }}>
+                <Card className="border shadow-sm mb-3 flex-grow-1 d-flex flex-column" style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg, minHeight: "310px" }}>
                   <CardBody className="p-3 d-flex flex-column justify-content-between">
                     <div>
-                      <div className="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
-                        <h6 className="fw-bold text-dark fs-14 mb-0">Recent Activities ({recentActivitiesList.length})</h6>
+                      <div className="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom" style={{ borderColor: cardBorder }}>
+                        <h6 className="fw-bold fs-14 mb-0" style={{ color: textTitle }}>Recent Activities ({recentActivitiesList.length})</h6>
                         <Button
                           color="link"
                           size="sm"
                           className="p-0 text-decoration-none fs-12 fw-semibold"
                           onClick={() => setActiveTab("activities")}
-                          style={{ color: THEME.primary }}
+                          style={{ color: primaryColor }}
                         >
                           View All
                         </Button>
@@ -1757,8 +1847,8 @@ const OpportunityDetail = () => {
                                 style={{
                                   width: 28,
                                   height: 28,
-                                  backgroundColor: act.bg,
-                                  color: act.color,
+                                  backgroundColor: isDark ? "rgba(255, 255, 255, 0.08)" : act.bg,
+                                  color: isDark ? "#93c5fd" : act.color,
                                   fontSize: "14px",
                                 }}
                               >
@@ -1766,7 +1856,7 @@ const OpportunityDetail = () => {
                               </div>
                               <div className="flex-grow-1">
                                 <div className="d-flex align-items-center justify-content-between">
-                                  <span className="fw-semibold text-dark fs-12">{act.title}</span>
+                                  <span className="fw-semibold fs-12" style={{ color: textTitle }}>{act.title}</span>
                                   <span className="text-muted fs-11">{act.timestamp}</span>
                                 </div>
                                 {act.description && (
@@ -1791,7 +1881,12 @@ const OpportunityDetail = () => {
                               size="sm"
                               className="border fw-semibold"
                               onClick={() => setActivityModalOpen(true)}
-                              style={{ borderColor: "#cbd5e1" }}
+                              style={{
+                                borderRadius: 0,
+                                borderColor: isDark ? "#3d444d" : "#cbd5e1",
+                                backgroundColor: isDark ? "#21262d" : "#ffffff",
+                                color: textTitle,
+                              }}
                             >
                               + Log First Activity
                             </Button>
@@ -1800,7 +1895,7 @@ const OpportunityDetail = () => {
                       )}
                     </div>
 
-                    <div className="pt-2 border-top fs-11 text-muted text-center mt-2">
+                    <div className="pt-2 border-top fs-11 text-muted text-center mt-2" style={{ borderColor: cardBorder }}>
                       Activity log syncs with Calendar & Tasks
                     </div>
                   </CardBody>
@@ -1814,17 +1909,17 @@ const OpportunityDetail = () => {
             <Row className="g-3 align-items-stretch mt-1">
               {/* Card 1: Team Members */}
               <Col lg={3} md={6} className="d-flex">
-                <Card className="border shadow-sm w-100 d-flex flex-column" style={{ borderRadius: 0, borderColor: THEME.cardBorder, backgroundColor: "#ffffff", minHeight: "220px" }}>
+                <Card className="border shadow-sm w-100 d-flex flex-column" style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg, minHeight: "220px" }}>
                   <CardBody className="p-3 d-flex flex-column justify-content-between">
                     <div>
-                      <div className="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                        <h6 className="fw-bold text-dark fs-13 mb-0">Team Members ({dealTeamMembers.length})</h6>
+                      <div className="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2" style={{ borderColor: cardBorder }}>
+                        <h6 className="fw-bold fs-13 mb-0" style={{ color: textTitle }}>Team Members ({dealTeamMembers.length})</h6>
                         <Button
                           color="link"
                           size="sm"
                           className="p-0 text-decoration-none fs-12 fw-semibold"
                           onClick={() => setTeamModalOpen(true)}
-                          style={{ color: THEME.primary }}
+                          style={{ color: primaryColor }}
                         >
                           + Add
                         </Button>
@@ -1841,9 +1936,18 @@ const OpportunityDetail = () => {
                                 >
                                   {getInitials(m.name)}
                                 </div>
-                                <span className="fw-semibold text-dark fs-12">{m.name}</span>
+                                <span className="fw-semibold fs-12" style={{ color: textTitle }}>{m.name}</span>
                               </div>
-                              <span className="badge bg-light text-muted border fs-10">{m.role}</span>
+                              <span
+                                className="badge border fs-10"
+                                style={{
+                                  backgroundColor: subtleBg,
+                                  color: textSub,
+                                  borderColor: subtleBorder,
+                                }}
+                              >
+                                {m.role}
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -1854,7 +1958,7 @@ const OpportunityDetail = () => {
                       )}
                     </div>
 
-                    <div className="pt-2 border-top text-center fs-11 text-muted mt-2">
+                    <div className="pt-2 border-top text-center fs-11 text-muted mt-2" style={{ borderColor: cardBorder }}>
                       Sales reps & contributors
                     </div>
                   </CardBody>
@@ -1863,17 +1967,17 @@ const OpportunityDetail = () => {
 
               {/* Card 2: Competitors */}
               <Col lg={3} md={6} className="d-flex">
-                <Card className="border shadow-sm w-100 d-flex flex-column" style={{ borderRadius: 0, borderColor: THEME.cardBorder, backgroundColor: "#ffffff", minHeight: "220px" }}>
+                <Card className="border shadow-sm w-100 d-flex flex-column" style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg, minHeight: "220px" }}>
                   <CardBody className="p-3 d-flex flex-column justify-content-between">
                     <div>
-                      <div className="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                        <h6 className="fw-bold text-dark fs-13 mb-0">Competitors ({competitors.length})</h6>
+                      <div className="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2" style={{ borderColor: cardBorder }}>
+                        <h6 className="fw-bold fs-13 mb-0" style={{ color: textTitle }}>Competitors ({competitors.length})</h6>
                         <Button
                           color="link"
                           size="sm"
                           className="p-0 text-decoration-none fs-12 fw-semibold"
                           onClick={() => setCompetitorModalOpen(true)}
-                          style={{ color: THEME.primary }}
+                          style={{ color: primaryColor }}
                         >
                           + Add
                         </Button>
@@ -1883,11 +1987,12 @@ const OpportunityDetail = () => {
                         <div className="d-flex flex-column gap-2">
                           {competitors.map((comp) => (
                             <div key={comp.id} className="d-flex align-items-center justify-content-between">
-                              <span className="fw-semibold text-dark fs-12">{comp.name}</span>
+                              <span className="fw-semibold fs-12" style={{ color: textTitle }}>{comp.name}</span>
                               <span
                                 style={{
-                                  backgroundColor: comp.badgeBg,
-                                  color: comp.badgeColor,
+                                  backgroundColor: isDark ? "rgba(100, 116, 139, 0.2)" : comp.badgeBg,
+                                  color: isDark ? "#cbd5e1" : comp.badgeColor,
+                                  border: `1px solid ${isDark ? "rgba(100, 116, 139, 0.4)" : "#e2e8f0"}`,
                                   padding: "2px 8px",
                                   borderRadius: 0,
                                   fontSize: "11px",
@@ -1904,7 +2009,7 @@ const OpportunityDetail = () => {
                           <i className="ri-shield-cross-line fs-24 d-block mb-1 text-muted opacity-50" />
                           No competitors tracked.
                           <div className="mt-1">
-                            <Button color="link" size="sm" className="p-0 fs-12 fw-semibold" onClick={() => setCompetitorModalOpen(true)} style={{ color: THEME.primary }}>
+                            <Button color="link" size="sm" className="p-0 fs-12 fw-semibold" onClick={() => setCompetitorModalOpen(true)} style={{ color: primaryColor }}>
                               + Add Competitor
                             </Button>
                           </div>
@@ -1912,7 +2017,7 @@ const OpportunityDetail = () => {
                       )}
                     </div>
 
-                    <div className="pt-2 border-top text-center fs-11 text-muted mt-2">
+                    <div className="pt-2 border-top text-center fs-11 text-muted mt-2" style={{ borderColor: cardBorder }}>
                       Competitor threat analysis
                     </div>
                   </CardBody>
@@ -1921,17 +2026,17 @@ const OpportunityDetail = () => {
 
               {/* Card 3: Internal Notes */}
               <Col lg={3} md={6} className="d-flex">
-                <Card className="border shadow-sm w-100 d-flex flex-column" style={{ borderRadius: 0, borderColor: THEME.cardBorder, backgroundColor: "#ffffff", minHeight: "220px" }}>
+                <Card className="border shadow-sm w-100 d-flex flex-column" style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg, minHeight: "220px" }}>
                   <CardBody className="p-3 d-flex flex-column justify-content-between">
                     <div>
-                      <div className="d-flex align-items-center justify-content-between mb-2 border-bottom pb-2">
-                        <h6 className="fw-bold text-dark fs-13 mb-0">Internal Notes</h6>
+                      <div className="d-flex align-items-center justify-content-between mb-2 border-bottom pb-2" style={{ borderColor: cardBorder }}>
+                        <h6 className="fw-bold fs-13 mb-0" style={{ color: textTitle }}>Internal Notes</h6>
                         <Button
                           color="link"
                           size="sm"
                           className="p-0 text-decoration-none fs-12 fw-semibold"
                           onClick={openEditModal}
-                          style={{ color: THEME.primary }}
+                          style={{ color: primaryColor }}
                         >
                           Edit
                         </Button>
@@ -1939,11 +2044,11 @@ const OpportunityDetail = () => {
 
                       {opp.closedReason ? (
                         <div
-                          className="p-2 rounded-0"
+                          className="p-2 rounded-0 crm-opp-notes-box"
                           style={{
-                            backgroundColor: "#fefce8",
-                            border: "1px solid #fef08a",
-                            color: "#713f12",
+                            backgroundColor: isDark ? "rgba(245, 158, 11, 0.12)" : "#fefce8",
+                            border: isDark ? "1px solid rgba(245, 158, 11, 0.3)" : "1px solid #fef08a",
+                            color: isDark ? "#fde68a" : "#713f12",
                             fontSize: "12px",
                             lineHeight: 1.4,
                             maxHeight: "105px",
@@ -1958,12 +2063,16 @@ const OpportunityDetail = () => {
                         </div>
                       ) : (
                         <div
-                          className="p-3 rounded-0 text-center text-muted fs-12 d-flex flex-column align-items-center justify-content-center"
-                          style={{ backgroundColor: "#fefce8", border: "1px dashed #fde68a" }}
+                          className="p-3 rounded-0 text-center fs-12 d-flex flex-column align-items-center justify-content-center crm-opp-notes-box"
+                          style={{
+                            backgroundColor: isDark ? "rgba(245, 158, 11, 0.12)" : "#fefce8",
+                            border: isDark ? "1px dashed rgba(245, 158, 11, 0.3)" : "1px dashed #fde68a",
+                            color: isDark ? "#fde68a" : "#713f12",
+                          }}
                         >
                           No notes recorded yet.
                           <div className="mt-1">
-                            <Button color="link" size="sm" className="p-0 fs-12 fw-semibold" onClick={openEditModal} style={{ color: THEME.primary }}>
+                            <Button color="link" size="sm" className="p-0 fs-12 fw-semibold" onClick={openEditModal} style={{ color: primaryColor }}>
                               + Add Note
                             </Button>
                           </div>
@@ -1971,13 +2080,13 @@ const OpportunityDetail = () => {
                       )}
                     </div>
 
-                    <div className="pt-2 border-top text-center mt-2">
+                    <div className="pt-2 border-top text-center mt-2" style={{ borderColor: cardBorder }}>
                       <Button
                         color="link"
                         size="sm"
                         className="p-0 text-decoration-none fs-11 fw-semibold"
                         onClick={() => setActiveTab("notes")}
-                        style={{ color: THEME.primary }}
+                        style={{ color: primaryColor }}
                       >
                         View All Notes
                       </Button>
@@ -1988,11 +2097,11 @@ const OpportunityDetail = () => {
 
               {/* Card 4: Attachments */}
               <Col lg={3} md={6} className="d-flex">
-                <Card className="border shadow-sm w-100 d-flex flex-column" style={{ borderRadius: 0, borderColor: THEME.cardBorder, backgroundColor: "#ffffff", minHeight: "220px" }}>
+                <Card className="border shadow-sm w-100 d-flex flex-column" style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg, minHeight: "220px" }}>
                   <CardBody className="p-3 d-flex flex-column justify-content-between">
                     <div>
-                      <div className="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                        <h6 className="fw-bold text-dark fs-13 mb-0">
+                      <div className="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2" style={{ borderColor: cardBorder }}>
+                        <h6 className="fw-bold fs-13 mb-0" style={{ color: textTitle }}>
                           Attachments ({attachmentsList.length})
                         </h6>
                         <Button
@@ -2000,7 +2109,7 @@ const OpportunityDetail = () => {
                           size="sm"
                           className="p-0 text-decoration-none fs-12 fw-semibold"
                           onClick={() => setActiveTab("documents")}
-                          style={{ color: THEME.primary }}
+                          style={{ color: primaryColor }}
                         >
                           View All
                         </Button>
@@ -2012,19 +2121,19 @@ const OpportunityDetail = () => {
                             <div
                               key={doc.id}
                               className="d-flex align-items-center justify-content-between p-2 border rounded-0"
-                              style={{ borderColor: "#f1f5f9" }}
+                              style={{ borderColor: subtleBorder, backgroundColor: subtleBg }}
                             >
                               <div className="d-flex align-items-center gap-2">
                                 <i className={`${doc.icon} fs-16`} style={{ color: doc.color }} />
                                 <div>
-                                  <span className="fw-semibold text-dark fs-12 d-block text-truncate" style={{ maxWidth: 140 }}>
+                                  <span className="fw-semibold fs-12 d-block text-truncate" style={{ color: textTitle, maxWidth: 140 }}>
                                     {doc.name}
                                   </span>
                                   <span className="text-muted fs-10">{doc.date}</span>
                                 </div>
                               </div>
                               {doc.fileUrl && (
-                                <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="btn btn-sm btn-light py-1 px-2">
+                                <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="btn btn-sm btn-light py-1 px-2" style={{ borderRadius: 0, borderColor: subtleBorder }}>
                                   <i className="ri-download-line" />
                                 </a>
                               )}
@@ -2052,70 +2161,70 @@ const OpportunityDetail = () => {
           {/* TAB 2: DETAILS TAB                                       */}
           {/* ======================================================== */}
           <TabPane tabId="details">
-            <Card className="border shadow-sm" style={{ borderRadius: 0, borderColor: THEME.cardBorder }}>
+            <Card className="border shadow-sm" style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}>
               <CardBody className="p-4">
-                <h5 className="fw-bold text-dark mb-3">Complete Opportunity Details</h5>
+                <h5 className="fw-bold mb-3" style={{ color: textTitle }}>Complete Opportunity Details</h5>
                 <Row className="g-4">
                   <Col md={6}>
-                    <Table responsive bordered className="fs-13">
+                    <Table responsive bordered className="fs-13" style={{ borderColor: cardBorder }}>
                       <tbody>
                         <tr>
-                          <th className="table-light" style={{ width: "35%" }}>Opportunity Code</th>
-                          <td>{opp.opportunityCode || `OPP-2026-${String(opp.opportunityId).padStart(5, "0")}`}</td>
+                          <th style={{ width: "35%", backgroundColor: subtleBg, color: textSub, borderColor: subtleBorder }}>Opportunity Code</th>
+                          <td style={{ color: textTitle, borderColor: subtleBorder }}>{opp.opportunityCode || `OPP-2026-${String(opp.opportunityId).padStart(5, "0")}`}</td>
                         </tr>
                         <tr>
-                          <th className="table-light">Opportunity Name</th>
-                          <td className="fw-semibold">{opp.name}</td>
+                          <th style={{ backgroundColor: subtleBg, color: textSub, borderColor: subtleBorder }}>Opportunity Name</th>
+                          <td className="fw-semibold" style={{ color: textTitle, borderColor: subtleBorder }}>{opp.name}</td>
                         </tr>
                         <tr>
-                          <th className="table-light">Customer Account</th>
-                          <td>
-                            <Link to={`/crm/customers/${opp.accountId}`} style={{ color: THEME.primary }}>
+                          <th style={{ backgroundColor: subtleBg, color: textSub, borderColor: subtleBorder }}>Customer Account</th>
+                          <td style={{ borderColor: subtleBorder }}>
+                            <Link to={`/crm/customers/${opp.accountId}`} style={{ color: primaryColor }}>
                               {opp.accountName}
                             </Link>
                           </td>
                         </tr>
                         <tr>
-                          <th className="table-light">Current Stage</th>
-                          <td>{opp.stageName}</td>
+                          <th style={{ backgroundColor: subtleBg, color: textSub, borderColor: subtleBorder }}>Current Stage</th>
+                          <td style={{ color: textTitle, borderColor: subtleBorder }}>{opp.stageName}</td>
                         </tr>
                         <tr>
-                          <th className="table-light">Opportunity Type</th>
-                          <td>{opp.opportunityTypeName || "Standard Deal"}</td>
+                          <th style={{ backgroundColor: subtleBg, color: textSub, borderColor: subtleBorder }}>Opportunity Type</th>
+                          <td style={{ color: textTitle, borderColor: subtleBorder }}>{opp.opportunityTypeName || "Standard Deal"}</td>
                         </tr>
                         <tr>
-                          <th className="table-light">Lead Source</th>
-                          <td>{opp.sourceName || "Direct / Inbound"}</td>
+                          <th style={{ backgroundColor: subtleBg, color: textSub, borderColor: subtleBorder }}>Lead Source</th>
+                          <td style={{ color: textTitle, borderColor: subtleBorder }}>{opp.sourceName || "Direct / Inbound"}</td>
                         </tr>
                       </tbody>
                     </Table>
                   </Col>
                   <Col md={6}>
-                    <Table responsive bordered className="fs-13">
+                    <Table responsive bordered className="fs-13" style={{ borderColor: cardBorder }}>
                       <tbody>
                         <tr>
-                          <th className="table-light" style={{ width: "35%" }}>Deal Amount</th>
-                          <td className="fw-bold" style={{ color: THEME.primary }}>{formatInr(opp.amount)}</td>
+                          <th style={{ width: "35%", backgroundColor: subtleBg, color: textSub, borderColor: subtleBorder }}>Deal Amount</th>
+                          <td className="fw-bold" style={{ color: primaryColor, borderColor: subtleBorder }}>{formatInr(opp.amount)}</td>
                         </tr>
                         <tr>
-                          <th className="table-light">Win Probability</th>
-                          <td>{opp.probability}%</td>
+                          <th style={{ backgroundColor: subtleBg, color: textSub, borderColor: subtleBorder }}>Win Probability</th>
+                          <td style={{ color: textTitle, borderColor: subtleBorder }}>{opp.probability}%</td>
                         </tr>
                         <tr>
-                          <th className="table-light">Weighted Amount</th>
-                          <td>{formatInr(opp.weightedAmount || (opp.amount * opp.probability) / 100)}</td>
+                          <th style={{ backgroundColor: subtleBg, color: textSub, borderColor: subtleBorder }}>Weighted Amount</th>
+                          <td style={{ color: textTitle, borderColor: subtleBorder }}>{formatInr(opp.weightedAmount || (opp.amount * opp.probability) / 100)}</td>
                         </tr>
                         <tr>
-                          <th className="table-light">Expected Close Date</th>
-                          <td>{formatDate(opp.expectedCloseDate)}</td>
+                          <th style={{ backgroundColor: subtleBg, color: textSub, borderColor: subtleBorder }}>Expected Close Date</th>
+                          <td style={{ color: textTitle, borderColor: subtleBorder }}>{formatDate(opp.expectedCloseDate)}</td>
                         </tr>
                         <tr>
-                          <th className="table-light">Sales Owner</th>
-                          <td>{opp.ownerName || "Unassigned"}</td>
+                          <th style={{ backgroundColor: subtleBg, color: textSub, borderColor: subtleBorder }}>Sales Owner</th>
+                          <td style={{ color: textTitle, borderColor: subtleBorder }}>{opp.ownerName || "Unassigned"}</td>
                         </tr>
                         <tr>
-                          <th className="table-light">Created / Updated</th>
-                          <td>{formatDate(opp.createdAt)} / {formatDate(opp.updatedAt)}</td>
+                          <th style={{ backgroundColor: subtleBg, color: textSub, borderColor: subtleBorder }}>Created / Updated</th>
+                          <td style={{ color: textTitle, borderColor: subtleBorder }}>{formatDate(opp.createdAt)} / {formatDate(opp.updatedAt)}</td>
                         </tr>
                       </tbody>
                     </Table>
@@ -2126,13 +2235,14 @@ const OpportunityDetail = () => {
           </TabPane>
 
           {/* ======================================================== */}
+          {/* ======================================================== */}
           {/* TAB 3: PRODUCTS TAB                                      */}
           {/* ======================================================== */}
           <TabPane tabId="products">
-            <Card className="border shadow-sm" style={{ borderRadius: 0, borderColor: THEME.cardBorder }}>
+            <Card className="border shadow-sm" style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}>
               <CardBody className="p-4">
                 <div className="d-flex align-items-center justify-content-between mb-3">
-                  <h5 className="fw-bold text-dark mb-0">Products & Services Breakdown</h5>
+                  <h5 className="fw-bold mb-0" style={{ color: textTitle }}>Products & Services Breakdown</h5>
                   <Button
                     color="danger"
                     size="sm"
@@ -2158,17 +2268,17 @@ const OpportunityDetail = () => {
                     <tbody>
                       {productsList.map((p, idx) => (
                         <tr key={p.id}>
-                          <td>{idx + 1}</td>
-                          <td className="fw-semibold text-dark">{p.name}</td>
+                          <td style={{ color: textSub }}>{idx + 1}</td>
+                          <td className="fw-semibold" style={{ color: textTitle }}>{p.name}</td>
                           <td className="text-muted">{p.type}</td>
-                          <td className="text-center">{p.qty}</td>
-                          <td className="text-end">{formatInr(p.unitPrice)}</td>
-                          <td className="text-end fw-bold text-dark">{formatInr(p.total)}</td>
+                          <td className="text-center" style={{ color: textTitle }}>{p.qty}</td>
+                          <td className="text-end" style={{ color: textTitle }}>{formatInr(p.unitPrice)}</td>
+                          <td className="text-end fw-bold" style={{ color: textTitle }}>{formatInr(p.total)}</td>
                         </tr>
                       ))}
-                      <tr className="table-light fw-bold fs-14">
-                        <td colSpan={5} className="text-end">Total Proposed Amount:</td>
-                        <td className="text-end" style={{ color: THEME.primary }}>{formatInr(opp.amount)}</td>
+                      <tr className="fw-bold fs-14" style={{ backgroundColor: subtleBg }}>
+                        <td colSpan={5} className="text-end" style={{ color: textTitle }}>Total Proposed Amount:</td>
+                        <td className="text-end" style={{ color: primaryColor }}>{formatInr(opp.amount)}</td>
                       </tr>
                     </tbody>
                   </Table>
@@ -2185,10 +2295,10 @@ const OpportunityDetail = () => {
           {/* TAB 4: QUOTES TAB                                        */}
           {/* ======================================================== */}
           <TabPane tabId="quotes">
-            <Card className="border shadow-sm" style={{ borderRadius: 0, borderColor: THEME.cardBorder }}>
+            <Card className="border shadow-sm" style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}>
               <CardBody className="p-4">
                 <div className="d-flex align-items-center justify-content-between mb-3">
-                  <h5 className="fw-bold text-dark mb-0">Quotations</h5>
+                  <h5 className="fw-bold mb-0" style={{ color: textTitle }}>Quotations</h5>
                   <Button
                     color="danger"
                     size="sm"
@@ -2214,17 +2324,25 @@ const OpportunityDetail = () => {
                     <tbody>
                       {quotesList.map((q) => (
                         <tr key={q.id}>
-                          <td className="fw-semibold" style={{ color: THEME.primary }}>{q.quoteNo}</td>
-                          <td>{formatDate(q.quoteDate)}</td>
-                          <td>{formatDate(q.expiryDate)}</td>
-                          <td className="text-end fw-bold">{formatInr(q.amount)}</td>
+                          <td className="fw-semibold" style={{ color: primaryColor }}>{q.quoteNo}</td>
+                          <td style={{ color: textTitle }}>{formatDate(q.quoteDate)}</td>
+                          <td style={{ color: textTitle }}>{formatDate(q.expiryDate)}</td>
+                          <td className="text-end fw-bold" style={{ color: textTitle }}>{formatInr(q.amount)}</td>
                           <td className="text-center">
-                            <span style={{ backgroundColor: "#fef2f2", color: THEME.primary, border: "1px solid #fee2e2", padding: "2px 8px", borderRadius: 0, fontSize: "11px", fontWeight: 600 }}>
+                            <span style={{
+                              backgroundColor: isDark ? "rgba(239, 68, 68, 0.2)" : "#fef2f2",
+                              color: isDark ? "#fca5a5" : THEME.primary,
+                              border: isDark ? "1px solid rgba(239, 68, 68, 0.4)" : "1px solid #fee2e2",
+                              padding: "2px 8px",
+                              borderRadius: 0,
+                              fontSize: "11px",
+                              fontWeight: 600
+                            }}>
                               {q.status}
                             </span>
                           </td>
                           <td className="text-center">
-                            <Button color="light" size="sm" onClick={() => window.print()}>
+                            <Button color="light" size="sm" onClick={() => window.print()} style={{ borderRadius: 0, borderColor: subtleBorder }}>
                               Print
                             </Button>
                           </td>
@@ -2250,10 +2368,10 @@ const OpportunityDetail = () => {
           {/* TAB 5: ACTIVITIES TAB (from tab_employee_activities)      */}
           {/* ======================================================== */}
           <TabPane tabId="activities">
-            <Card className="border shadow-sm" style={{ borderRadius: 0, borderColor: THEME.cardBorder }}>
+            <Card className="border shadow-sm" style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}>
               <CardBody className="p-4">
                 <div className="d-flex align-items-center justify-content-between mb-3">
-                  <h5 className="fw-bold text-dark mb-0">Activities & Communications ({recentActivitiesList.length})</h5>
+                  <h5 className="fw-bold mb-0" style={{ color: textTitle }}>Activities & Communications ({recentActivitiesList.length})</h5>
                   <Button
                     color="danger"
                     size="sm"
@@ -2269,25 +2387,31 @@ const OpportunityDetail = () => {
                     {recentActivitiesList.map((act) => (
                       <div
                         key={act.activityId}
-                        className="p-3 border rounded-0 bg-white d-flex align-items-start gap-3"
-                        style={{ borderColor: THEME.cardBorder }}
+                        className="p-3 border rounded-0 d-flex align-items-start gap-3"
+                        style={{ borderColor: subtleBorder, backgroundColor: subtleBg }}
                       >
                         <div
                           className="rounded-0 d-flex align-items-center justify-content-center flex-shrink-0"
-                          style={{ width: 36, height: 36, backgroundColor: act.bg, color: act.color, fontSize: "18px" }}
+                          style={{
+                            width: 36,
+                            height: 36,
+                            backgroundColor: isDark ? "rgba(255, 255, 255, 0.08)" : act.bg,
+                            color: isDark ? "#93c5fd" : act.color,
+                            fontSize: "18px"
+                          }}
                         >
                           <i className={act.icon} />
                         </div>
                         <div className="flex-grow-1">
                           <div className="d-flex align-items-center justify-content-between">
-                            <h6 className="fw-bold text-dark mb-0 fs-14">{act.title}</h6>
+                            <h6 className="fw-bold mb-0 fs-14" style={{ color: textTitle }}>{act.title}</h6>
                             <span className="text-muted fs-12">{act.timestamp}</span>
                           </div>
                           {act.description && (
-                            <p className="text-dark fs-13 mb-1 mt-1">{act.description}</p>
+                            <p className="fs-13 mb-1 mt-1" style={{ color: isDark ? "#cbd5e1" : "#1e293b" }}>{act.description}</p>
                           )}
                           {act.author && (
-                            <span className="text-muted fs-11">Handled by: <strong className="text-dark">{act.author}</strong></span>
+                            <span className="text-muted fs-11">Handled by: <strong style={{ color: textTitle }}>{act.author}</strong></span>
                           )}
                         </div>
                       </div>
@@ -2312,10 +2436,10 @@ const OpportunityDetail = () => {
           {/* TAB 6: DOCUMENTS TAB (from tab_task_files)               */}
           {/* ======================================================== */}
           <TabPane tabId="documents">
-            <Card className="border shadow-sm" style={{ borderRadius: 0, borderColor: THEME.cardBorder }}>
+            <Card className="border shadow-sm" style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}>
               <CardBody className="p-4">
                 <div className="d-flex align-items-center justify-content-between mb-3">
-                  <h5 className="fw-bold text-dark mb-0">Attached Documents ({attachmentsList.length})</h5>
+                  <h5 className="fw-bold mb-0" style={{ color: textTitle }}>Attached Documents ({attachmentsList.length})</h5>
                   <Button
                     color="danger"
                     size="sm"
@@ -2330,18 +2454,21 @@ const OpportunityDetail = () => {
                   <Row className="g-3">
                     {attachmentsList.map((doc) => (
                       <Col md={4} key={doc.id}>
-                        <div className="p-3 border rounded-0 bg-white d-flex align-items-center justify-content-between">
+                        <div
+                          className="p-3 border rounded-0 d-flex align-items-center justify-content-between"
+                          style={{ borderColor: subtleBorder, backgroundColor: subtleBg }}
+                        >
                           <div className="d-flex align-items-center gap-3">
                             <i className={`${doc.icon} fs-24`} style={{ color: doc.color }} />
                             <div>
-                              <span className="fw-semibold text-dark fs-13 d-block text-truncate" style={{ maxWidth: 180 }}>
+                              <span className="fw-semibold fs-13 d-block text-truncate" style={{ maxWidth: 180, color: textTitle }}>
                                 {doc.name}
                               </span>
                               <span className="text-muted fs-11">{doc.date}</span>
                             </div>
                           </div>
                           {doc.fileUrl && (
-                            <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="btn btn-sm btn-light">
+                            <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="btn btn-sm btn-light" style={{ borderRadius: 0, borderColor: subtleBorder }}>
                               <i className="ri-download-line" />
                             </a>
                           )}
@@ -2363,12 +2490,19 @@ const OpportunityDetail = () => {
           {/* TAB 7: NOTES TAB (strictly saves to tab_opportunity)      */}
           {/* ======================================================== */}
           <TabPane tabId="notes">
-            <Card className="border shadow-sm" style={{ borderRadius: 0, borderColor: THEME.cardBorder }}>
+            <Card className="border shadow-sm" style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}>
               <CardBody className="p-4">
-                <h5 className="fw-bold text-dark mb-3">Internal Deal Notes</h5>
+                <h5 className="fw-bold mb-3" style={{ color: textTitle }}>Internal Deal Notes</h5>
                 {opp.closedReason ? (
-                  <div className="p-3 rounded-0 mb-3" style={{ backgroundColor: "#fefce8", border: "1px solid #fef08a" }}>
-                    <p className="text-dark fs-13 mb-1" style={{ whiteSpace: "pre-wrap" }}>
+                  <div
+                    className="p-3 rounded-0 mb-3"
+                    style={{
+                      backgroundColor: isDark ? "rgba(245, 158, 11, 0.12)" : "#fefce8",
+                      border: isDark ? "1px solid rgba(245, 158, 11, 0.3)" : "1px solid #fef08a",
+                      color: isDark ? "#fde68a" : "#713f12"
+                    }}
+                  >
+                    <p className="fs-13 mb-1" style={{ whiteSpace: "pre-wrap", color: isDark ? "#fde68a" : "#713f12" }}>
                       {opp.closedReason}
                     </p>
                     <div className="text-end text-muted fs-11">
@@ -2376,14 +2510,21 @@ const OpportunityDetail = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-3 rounded-0 mb-3 text-center text-muted fs-13" style={{ backgroundColor: "#fefce8", border: "1px dashed #fde68a" }}>
+                  <div
+                    className="p-3 rounded-0 mb-3 text-center fs-13"
+                    style={{
+                      backgroundColor: isDark ? "rgba(245, 158, 11, 0.12)" : "#fefce8",
+                      border: isDark ? "1px dashed rgba(245, 158, 11, 0.3)" : "1px dashed #fde68a",
+                      color: isDark ? "#fde68a" : "#713f12"
+                    }}
+                  >
                     No notes recorded in database for this deal yet.
                   </div>
                 )}
 
                 <Form onSubmit={handlePostNoteSubmit}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Post new note to database</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Post new note to database</Label>
                     <Input
                       type="textarea"
                       rows={3}
@@ -2412,14 +2553,14 @@ const OpportunityDetail = () => {
           {/* TAB 8: TIMELINE TAB (100% built from database records)   */}
           {/* ======================================================== */}
           <TabPane tabId="timeline">
-            <Card className="border shadow-sm" style={{ borderRadius: 0, borderColor: THEME.cardBorder }}>
+            <Card className="border shadow-sm" style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}>
               <CardBody className="p-4">
-                <h5 className="fw-bold text-dark mb-3">Deal Audit Timeline</h5>
-                <div className="d-flex flex-column gap-3 ps-3 border-start" style={{ borderColor: THEME.primary }}>
+                <h5 className="fw-bold mb-3" style={{ color: textTitle }}>Deal Audit Timeline</h5>
+                <div className="d-flex flex-column gap-3 ps-3 border-start" style={{ borderColor: primaryColor }}>
                   {/* Current State */}
                   <div className="position-relative">
                     <span className="position-absolute rounded-0" style={{ left: -22, top: 2, width: 12, height: 12, backgroundColor: isClosedWon ? "#16a34a" : "#d97706" }} />
-                    <div className="fw-semibold text-dark fs-13">Current Stage: {opp.stageName}</div>
+                    <div className="fw-semibold fs-13" style={{ color: textTitle }}>Current Stage: {opp.stageName}</div>
                     <div className="text-muted fs-11">
                       In this stage for {opp.daysInStage != null ? `${opp.daysInStage} Days` : "0 Days"} • Owner: {opp.ownerName || "Unassigned"}
                     </div>
@@ -2428,16 +2569,16 @@ const OpportunityDetail = () => {
                   {/* Real activities from database */}
                   {recentActivitiesList.map((act) => (
                     <div key={act.activityId} className="position-relative">
-                      <span className="position-absolute rounded-0" style={{ left: -22, top: 2, width: 12, height: 12, backgroundColor: THEME.primary }} />
-                      <div className="fw-semibold text-dark fs-13">{act.title}</div>
+                      <span className="position-absolute rounded-0" style={{ left: -22, top: 2, width: 12, height: 12, backgroundColor: primaryColor }} />
+                      <div className="fw-semibold fs-13" style={{ color: textTitle }}>{act.title}</div>
                       <div className="text-muted fs-11">{act.timestamp} {act.author ? `• by ${act.author}` : ""}</div>
                     </div>
                   ))}
 
                   {/* Creation Event */}
                   <div className="position-relative">
-                    <span className="position-absolute rounded-0" style={{ left: -22, top: 2, width: 12, height: 12, backgroundColor: THEME.primary }} />
-                    <div className="fw-semibold text-dark fs-13">Opportunity Created: {opp.name}</div>
+                    <span className="position-absolute rounded-0" style={{ left: -22, top: 2, width: 12, height: 12, backgroundColor: primaryColor }} />
+                    <div className="fw-semibold fs-13" style={{ color: textTitle }}>Opportunity Created: {opp.name}</div>
                     <div className="text-muted fs-11">{formatDateTime(opp.createdAt)} • Deal Value: {formatInr(opp.amount)}</div>
                   </div>
                 </div>
@@ -2449,10 +2590,10 @@ const OpportunityDetail = () => {
           {/* TAB 9: CONTACTS TAB (from tab_party_contact_persons)      */}
           {/* ======================================================== */}
           <TabPane tabId="contacts">
-            <Card className="border shadow-sm" style={{ borderRadius: 0, borderColor: THEME.cardBorder }}>
+            <Card className="border shadow-sm" style={{ borderRadius: 0, borderColor: cardBorder, backgroundColor: cardBg }}>
               <CardBody className="p-4">
                 <div className="d-flex align-items-center justify-content-between mb-3">
-                  <h5 className="fw-bold text-dark mb-0">Customer Contact Persons ({keyContactsList.length})</h5>
+                  <h5 className="fw-bold mb-0" style={{ color: textTitle }}>Customer Contact Persons ({keyContactsList.length})</h5>
                   <Button
                     color="danger"
                     size="sm"
@@ -2482,27 +2623,35 @@ const OpportunityDetail = () => {
                             <div className="d-flex align-items-center gap-2">
                               <div
                                 className="rounded-0 d-flex align-items-center justify-content-center text-white fw-bold"
-                                style={{ width: 28, height: 28, fontSize: "11px", backgroundColor: THEME.primary }}
+                                style={{ width: 28, height: 28, fontSize: "11px", backgroundColor: primaryColor }}
                               >
                                 {getInitials(c.fullName)}
                               </div>
-                              <span className="fw-semibold text-dark">{c.fullName}</span>
+                              <span className="fw-semibold" style={{ color: textTitle }}>{c.fullName}</span>
                             </div>
                           </td>
                           <td className="text-muted">{c.title || "Contact Person"}</td>
                           <td>
                             {c.email ? (
-                              <a href={`mailto:${c.email}`} style={{ color: THEME.primary }}>{c.email}</a>
+                              <a href={`mailto:${c.email}`} style={{ color: primaryColor }}>{c.email}</a>
                             ) : "—"}
                           </td>
                           <td>
                             {c.mobile ? (
-                              <a href={`tel:${c.mobile}`} className="text-dark">{c.mobile}</a>
+                              <a href={`tel:${c.mobile}`} style={{ color: textTitle }}>{c.mobile}</a>
                             ) : "—"}
                           </td>
                           <td className="text-center">
                             {c.isPrimary && (
-                              <span style={{ backgroundColor: "#ecfdf5", color: "#047857", padding: "2px 8px", borderRadius: 0, fontSize: "11px", fontWeight: 600 }}>
+                              <span style={{
+                                backgroundColor: isDark ? "rgba(16, 185, 129, 0.2)" : "#ecfdf5",
+                                color: isDark ? "#6ee7b7" : "#047857",
+                                border: isDark ? "1px solid rgba(16, 185, 129, 0.4)" : "1px solid #a7f3d0",
+                                padding: "2px 8px",
+                                borderRadius: 0,
+                                fontSize: "11px",
+                                fontWeight: 600
+                              }}>
                                 Primary
                               </span>
                             )}
@@ -2510,12 +2659,12 @@ const OpportunityDetail = () => {
                           <td className="text-center">
                             <div className="d-flex justify-content-center gap-1">
                               {c.mobile && (
-                                <a href={`tel:${c.mobile}`} className="btn btn-sm btn-light border py-1 px-2" title="Call">
+                                <a href={`tel:${c.mobile}`} className="btn btn-sm btn-light border py-1 px-2" title="Call" style={{ borderRadius: 0, borderColor: subtleBorder }}>
                                   <i className="ri-phone-line" />
                                 </a>
                               )}
                               {c.email && (
-                                <a href={`mailto:${c.email}`} className="btn btn-sm btn-light border py-1 px-2" title="Email">
+                                <a href={`mailto:${c.email}`} className="btn btn-sm btn-light border py-1 px-2" title="Email" style={{ borderRadius: 0, borderColor: subtleBorder }}>
                                   <i className="ri-mail-line" />
                                 </a>
                               )}
@@ -2550,15 +2699,15 @@ const OpportunityDetail = () => {
           size="lg"
           centered
         >
-          <ModalHeader toggle={() => setEditModalOpen(false)}>
-            <span className="fw-bold text-dark">Edit Opportunity</span>
+          <ModalHeader toggle={() => setEditModalOpen(false)} style={{ borderColor: cardBorder }}>
+            <span className="fw-bold" style={{ color: textTitle }}>Edit Opportunity</span>
           </ModalHeader>
           <Form onSubmit={handleEditSubmit}>
             <ModalBody className="p-4">
               <Row className="g-3">
                 <Col md={12}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Opportunity Name <span className="text-danger">*</span></Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Opportunity Name <span className="text-danger">*</span></Label>
                     <Input
                       type="text"
                       required
@@ -2571,7 +2720,7 @@ const OpportunityDetail = () => {
 
                 <Col md={6}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Customer Account <span className="text-danger">*</span></Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Customer Account <span className="text-danger">*</span></Label>
                     <Input
                       type="select"
                       required
@@ -2590,7 +2739,7 @@ const OpportunityDetail = () => {
 
                 <Col md={6}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Deal Stage</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Deal Stage</Label>
                     <Input
                       type="select"
                       value={editForm.stageId}
@@ -2607,7 +2756,7 @@ const OpportunityDetail = () => {
 
                 <Col md={6}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Amount (INR)</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Amount (INR)</Label>
                     <Input
                       type="number"
                       step="any"
@@ -2620,7 +2769,7 @@ const OpportunityDetail = () => {
 
                 <Col md={6}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Probability (%)</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Probability (%)</Label>
                     <Input
                       type="number"
                       min={0}
@@ -2633,7 +2782,7 @@ const OpportunityDetail = () => {
 
                 <Col md={6}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Expected Close Date</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Expected Close Date</Label>
                     <Input
                       type="date"
                       value={editForm.expectedCloseDate}
@@ -2644,7 +2793,7 @@ const OpportunityDetail = () => {
 
                 <Col md={6}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Opportunity Owner</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Opportunity Owner</Label>
                     <Input
                       type="select"
                       value={editForm.ownerEmployeeId}
@@ -2662,7 +2811,7 @@ const OpportunityDetail = () => {
 
                 <Col md={4}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Opportunity Type</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Opportunity Type</Label>
                     <Input
                       type="select"
                       value={editForm.opportunityTypeId}
@@ -2680,7 +2829,7 @@ const OpportunityDetail = () => {
 
                 <Col md={4}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Lead Source</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Lead Source</Label>
                     <Input
                       type="select"
                       value={editForm.sourceId}
@@ -2698,7 +2847,7 @@ const OpportunityDetail = () => {
 
                 <Col md={4}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Priority</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Priority</Label>
                     <Input
                       type="select"
                       value={editForm.priorityId}
@@ -2716,7 +2865,7 @@ const OpportunityDetail = () => {
 
                 <Col md={12}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Next Step / Follow-up Action</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Next Step / Follow-up Action</Label>
                     <Input
                       type="text"
                       value={editForm.nextStep}
@@ -2728,7 +2877,7 @@ const OpportunityDetail = () => {
 
                 <Col md={12}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Scope & Notes / Closed Reason</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Scope & Notes / Closed Reason</Label>
                     <Input
                       type="textarea"
                       rows={2}
@@ -2740,13 +2889,14 @@ const OpportunityDetail = () => {
                 </Col>
               </Row>
             </ModalBody>
-            <ModalFooter className="bg-light">
+            <ModalFooter style={{ backgroundColor: subtleBg, borderColor: cardBorder }}>
               <Button
                 color="light"
                 size="sm"
                 className="px-3"
                 onClick={() => setEditModalOpen(false)}
                 disabled={editSubmitting}
+                style={{ borderRadius: 0, borderColor: subtleBorder }}
               >
                 Cancel
               </Button>
@@ -2754,7 +2904,7 @@ const OpportunityDetail = () => {
                 color="danger"
                 size="sm"
                 className="px-4 fw-semibold"
-                style={{ backgroundColor: THEME.primary, borderColor: THEME.primary }}
+                style={{ backgroundColor: THEME.primary, borderColor: THEME.primary, borderRadius: 0 }}
                 type="submit"
                 disabled={editSubmitting}
               >
@@ -2773,13 +2923,13 @@ const OpportunityDetail = () => {
           toggle={() => setTaskModalOpen((v) => !v)}
           centered
         >
-          <ModalHeader toggle={() => setTaskModalOpen(false)}>
-            <span className="fw-bold text-dark">Add Follow-up / Next Step</span>
+          <ModalHeader toggle={() => setTaskModalOpen(false)} style={{ borderColor: cardBorder }}>
+            <span className="fw-bold" style={{ color: textTitle }}>Add Follow-up / Next Step</span>
           </ModalHeader>
           <Form onSubmit={handleAddTaskSubmit}>
             <ModalBody className="p-4">
               <FormGroup>
-                <Label className="fw-semibold fs-13">Task Title <span className="text-danger">*</span></Label>
+                <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Task Title <span className="text-danger">*</span></Label>
                 <Input
                   type="text"
                   required
@@ -2791,7 +2941,7 @@ const OpportunityDetail = () => {
               <Row className="g-3">
                 <Col md={6}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Due Date</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Due Date</Label>
                     <Input
                       type="date"
                       value={taskForm.dueDate}
@@ -2801,7 +2951,7 @@ const OpportunityDetail = () => {
                 </Col>
                 <Col md={6}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Priority</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Priority</Label>
                     <Input
                       type="select"
                       value={taskForm.priority}
@@ -2815,13 +2965,14 @@ const OpportunityDetail = () => {
                 </Col>
               </Row>
             </ModalBody>
-            <ModalFooter className="bg-light">
+            <ModalFooter style={{ backgroundColor: subtleBg, borderColor: cardBorder }}>
               <Button
                 color="light"
                 size="sm"
                 className="px-3"
                 onClick={() => setTaskModalOpen(false)}
                 disabled={taskSubmitting}
+                style={{ borderRadius: 0, borderColor: subtleBorder }}
               >
                 Cancel
               </Button>
@@ -2829,7 +2980,7 @@ const OpportunityDetail = () => {
                 color="danger"
                 size="sm"
                 className="px-4 fw-semibold"
-                style={{ backgroundColor: THEME.primary, borderColor: THEME.primary }}
+                style={{ backgroundColor: THEME.primary, borderColor: THEME.primary, borderRadius: 0 }}
                 type="submit"
                 disabled={taskSubmitting}
               >
@@ -2848,15 +2999,15 @@ const OpportunityDetail = () => {
           toggle={() => setActivityModalOpen((v) => !v)}
           centered
         >
-          <ModalHeader toggle={() => setActivityModalOpen(false)}>
-            <span className="fw-bold text-dark">Log Activity for Opportunity</span>
+          <ModalHeader toggle={() => setActivityModalOpen(false)} style={{ borderColor: cardBorder }}>
+            <span className="fw-bold" style={{ color: textTitle }}>Log Activity for Opportunity</span>
           </ModalHeader>
           <Form onSubmit={handleAddActivitySubmit}>
             <ModalBody className="p-4">
               <Row className="g-3">
                 <Col md={6}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Activity Type <span className="text-danger">*</span></Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Activity Type <span className="text-danger">*</span></Label>
                     <Input
                       type="select"
                       value={activityForm.actType}
@@ -2872,7 +3023,7 @@ const OpportunityDetail = () => {
                 </Col>
                 <Col md={6}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Date & Time</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Date & Time</Label>
                     <Input
                       type="datetime-local"
                       value={activityForm.startTime}
@@ -2882,7 +3033,7 @@ const OpportunityDetail = () => {
                 </Col>
                 <Col md={12}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Subject <span className="text-danger">*</span></Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Subject <span className="text-danger">*</span></Label>
                     <Input
                       type="text"
                       required
@@ -2894,7 +3045,7 @@ const OpportunityDetail = () => {
                 </Col>
                 <Col md={12}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Phone Number (optional)</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Phone Number (optional)</Label>
                     <Input
                       type="text"
                       placeholder="+91 98765 43210"
@@ -2905,7 +3056,7 @@ const OpportunityDetail = () => {
                 </Col>
                 <Col md={12}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Notes & Discussion Summary</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Notes & Discussion Summary</Label>
                     <Input
                       type="textarea"
                       rows={3}
@@ -2917,13 +3068,14 @@ const OpportunityDetail = () => {
                 </Col>
               </Row>
             </ModalBody>
-            <ModalFooter className="bg-light">
+            <ModalFooter style={{ backgroundColor: subtleBg, borderColor: cardBorder }}>
               <Button
                 color="light"
                 size="sm"
                 className="px-3"
                 onClick={() => setActivityModalOpen(false)}
                 disabled={activitySubmitting}
+                style={{ borderRadius: 0, borderColor: subtleBorder }}
               >
                 Cancel
               </Button>
@@ -2931,7 +3083,7 @@ const OpportunityDetail = () => {
                 color="danger"
                 size="sm"
                 className="px-4 fw-semibold"
-                style={{ backgroundColor: THEME.primary, borderColor: THEME.primary }}
+                style={{ backgroundColor: THEME.primary, borderColor: THEME.primary, borderRadius: 0 }}
                 type="submit"
                 disabled={activitySubmitting}
               >
@@ -2950,15 +3102,15 @@ const OpportunityDetail = () => {
           toggle={() => setContactModalOpen((v) => !v)}
           centered
         >
-          <ModalHeader toggle={() => setContactModalOpen(false)}>
-            <span className="fw-bold text-dark">Add Customer Contact Person</span>
+          <ModalHeader toggle={() => setContactModalOpen(false)} style={{ borderColor: cardBorder }}>
+            <span className="fw-bold" style={{ color: textTitle }}>Add Customer Contact Person</span>
           </ModalHeader>
           <Form onSubmit={handleAddContactSubmit}>
             <ModalBody className="p-4">
               <Row className="g-3">
                 <Col md={6}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">First Name <span className="text-danger">*</span></Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>First Name <span className="text-danger">*</span></Label>
                     <Input
                       type="text"
                       required
@@ -2970,7 +3122,7 @@ const OpportunityDetail = () => {
                 </Col>
                 <Col md={6}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Last Name</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Last Name</Label>
                     <Input
                       type="text"
                       placeholder="e.g. Mehta"
@@ -2981,7 +3133,7 @@ const OpportunityDetail = () => {
                 </Col>
                 <Col md={6}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Mobile <span className="text-danger">*</span></Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Mobile <span className="text-danger">*</span></Label>
                     <Input
                       type="text"
                       required
@@ -2993,7 +3145,7 @@ const OpportunityDetail = () => {
                 </Col>
                 <Col md={6}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Email</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Email</Label>
                     <Input
                       type="email"
                       placeholder="rajesh@abcltd.com"
@@ -3011,20 +3163,21 @@ const OpportunityDetail = () => {
                       checked={contactForm.isPrimary}
                       onChange={(e) => setContactForm((f) => ({ ...f, isPrimary: e.target.checked }))}
                     />
-                    <label htmlFor="isPrimaryContact" className="form-check-label fs-13 text-dark">
+                    <label htmlFor="isPrimaryContact" className="form-check-label fs-13" style={{ color: textTitle }}>
                       Set as Primary Contact for this Account
                     </label>
                   </div>
                 </Col>
               </Row>
             </ModalBody>
-            <ModalFooter className="bg-light">
+            <ModalFooter style={{ backgroundColor: subtleBg, borderColor: cardBorder }}>
               <Button
                 color="light"
                 size="sm"
                 className="px-3"
                 onClick={() => setContactModalOpen(false)}
                 disabled={contactSubmitting}
+                style={{ borderRadius: 0, borderColor: subtleBorder }}
               >
                 Cancel
               </Button>
@@ -3032,7 +3185,7 @@ const OpportunityDetail = () => {
                 color="danger"
                 size="sm"
                 className="px-4 fw-semibold"
-                style={{ backgroundColor: THEME.primary, borderColor: THEME.primary }}
+                style={{ backgroundColor: THEME.primary, borderColor: THEME.primary, borderRadius: 0 }}
                 type="submit"
                 disabled={contactSubmitting}
               >
@@ -3052,15 +3205,15 @@ const OpportunityDetail = () => {
           size="lg"
           centered
         >
-          <ModalHeader toggle={() => setQuoteModalOpen(false)}>
-            <span className="fw-bold text-dark">Generate Quotation • {quoteForm.quoteNo}</span>
+          <ModalHeader toggle={() => setQuoteModalOpen(false)} style={{ borderColor: cardBorder }}>
+            <span className="fw-bold" style={{ color: textTitle }}>Generate Quotation • {quoteForm.quoteNo}</span>
           </ModalHeader>
           <Form onSubmit={handleSaveQuote}>
             <ModalBody className="p-4">
               <Row className="g-3 mb-3">
                 <Col md={6}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Quotation Number</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Quotation Number</Label>
                     <Input
                       type="text"
                       value={quoteForm.quoteNo}
@@ -3071,7 +3224,7 @@ const OpportunityDetail = () => {
                 </Col>
                 <Col md={6}>
                   <FormGroup>
-                    <Label className="fw-semibold fs-13">Valid Until</Label>
+                    <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Valid Until</Label>
                     <Input
                       type="date"
                       value={quoteForm.expiryDate}
@@ -3082,9 +3235,9 @@ const OpportunityDetail = () => {
                 </Col>
               </Row>
 
-              <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+              <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom" style={{ borderColor: cardBorder }}>
                 <div>
-                  <h6 className="fw-bold text-dark mb-0 fs-15">{opp.name}</h6>
+                  <h6 className="fw-bold mb-0 fs-15" style={{ color: textTitle }}>{opp.name}</h6>
                   <span className="text-muted fs-12">Customer: {opp.accountName}</span>
                 </div>
                 <div className="text-end">
@@ -3104,21 +3257,21 @@ const OpportunityDetail = () => {
                 <tbody>
                   {productsList.map((p) => (
                     <tr key={p.id}>
-                      <td className="fw-semibold text-dark">{p.name}</td>
-                      <td className="text-center">{p.qty}</td>
-                      <td className="text-end">{formatInr(p.unitPrice)}</td>
-                      <td className="text-end fw-bold">{formatInr(p.total)}</td>
+                      <td className="fw-semibold" style={{ color: textTitle }}>{p.name}</td>
+                      <td className="text-center" style={{ color: textTitle }}>{p.qty}</td>
+                      <td className="text-end" style={{ color: textTitle }}>{formatInr(p.unitPrice)}</td>
+                      <td className="text-end fw-bold" style={{ color: textTitle }}>{formatInr(p.total)}</td>
                     </tr>
                   ))}
-                  <tr className="table-light fw-bold fs-14">
-                    <td colSpan={3} className="text-end">Total Proposed Amount:</td>
-                    <td className="text-end" style={{ color: THEME.primary }}>{formatInr(opp.amount)}</td>
+                  <tr className="fw-bold fs-14" style={{ backgroundColor: subtleBg }}>
+                    <td colSpan={3} className="text-end" style={{ color: textTitle }}>Total Proposed Amount:</td>
+                    <td className="text-end" style={{ color: primaryColor }}>{formatInr(opp.amount)}</td>
                   </tr>
                 </tbody>
               </Table>
             </ModalBody>
-            <ModalFooter className="bg-light">
-              <Button color="light" size="sm" onClick={() => setQuoteModalOpen(false)}>
+            <ModalFooter style={{ backgroundColor: subtleBg, borderColor: cardBorder }}>
+              <Button color="light" size="sm" onClick={() => setQuoteModalOpen(false)} style={{ borderRadius: 0, borderColor: subtleBorder }}>
                 Cancel
               </Button>
               <Button
@@ -3126,7 +3279,7 @@ const OpportunityDetail = () => {
                 size="sm"
                 type="submit"
                 className="fw-semibold px-3"
-                style={{ backgroundColor: THEME.primary, borderColor: THEME.primary }}
+                style={{ backgroundColor: THEME.primary, borderColor: THEME.primary, borderRadius: 0 }}
               >
                 <i className="ri-save-line me-1" /> Save Quotation
               </Button>
@@ -3142,13 +3295,13 @@ const OpportunityDetail = () => {
           toggle={() => setTeamModalOpen((v) => !v)}
           centered
         >
-          <ModalHeader toggle={() => setTeamModalOpen(false)}>
-            <span className="fw-bold text-dark">Add Team Member to Opportunity</span>
+          <ModalHeader toggle={() => setTeamModalOpen(false)} style={{ borderColor: cardBorder }}>
+            <span className="fw-bold" style={{ color: textTitle }}>Add Team Member to Opportunity</span>
           </ModalHeader>
           <Form onSubmit={handleAddTeamMember}>
             <ModalBody className="p-4">
               <FormGroup>
-                <Label className="fw-semibold fs-13">Employee / Staff Member <span className="text-danger">*</span></Label>
+                <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Employee / Staff Member <span className="text-danger">*</span></Label>
                 <Input
                   type="select"
                   value={newMemberId}
@@ -3164,7 +3317,7 @@ const OpportunityDetail = () => {
                 </Input>
               </FormGroup>
               <FormGroup>
-                <Label className="fw-semibold fs-13">Role in Deal</Label>
+                <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Role in Deal</Label>
                 <Input
                   type="select"
                   value={newMemberRole}
@@ -3177,8 +3330,8 @@ const OpportunityDetail = () => {
                 </Input>
               </FormGroup>
             </ModalBody>
-            <ModalFooter className="bg-light">
-              <Button color="light" size="sm" onClick={() => setTeamModalOpen(false)}>
+            <ModalFooter style={{ backgroundColor: subtleBg, borderColor: cardBorder }}>
+              <Button color="light" size="sm" onClick={() => setTeamModalOpen(false)} style={{ borderRadius: 0, borderColor: subtleBorder }}>
                 Cancel
               </Button>
               <Button
@@ -3186,7 +3339,7 @@ const OpportunityDetail = () => {
                 size="sm"
                 type="submit"
                 className="fw-semibold px-3"
-                style={{ backgroundColor: THEME.primary, borderColor: THEME.primary }}
+                style={{ backgroundColor: THEME.primary, borderColor: THEME.primary, borderRadius: 0 }}
               >
                 Add Member
               </Button>
@@ -3202,13 +3355,13 @@ const OpportunityDetail = () => {
           toggle={() => setCompetitorModalOpen((v) => !v)}
           centered
         >
-          <ModalHeader toggle={() => setCompetitorModalOpen(false)}>
-            <span className="fw-bold text-dark">Track Competitor</span>
+          <ModalHeader toggle={() => setCompetitorModalOpen(false)} style={{ borderColor: cardBorder }}>
+            <span className="fw-bold" style={{ color: textTitle }}>Track Competitor</span>
           </ModalHeader>
           <Form onSubmit={handleAddCompetitor}>
             <ModalBody className="p-4">
               <FormGroup>
-                <Label className="fw-semibold fs-13">Competitor Product / Company <span className="text-danger">*</span></Label>
+                <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Competitor Product / Company <span className="text-danger">*</span></Label>
                 <Input
                   type="text"
                   required
@@ -3218,7 +3371,7 @@ const OpportunityDetail = () => {
                 />
               </FormGroup>
               <FormGroup>
-                <Label className="fw-semibold fs-13">Threat Level</Label>
+                <Label className="fw-semibold fs-13" style={{ color: textTitle }}>Threat Level</Label>
                 <Input
                   type="select"
                   value={newCompetitorThreat}
@@ -3230,8 +3383,8 @@ const OpportunityDetail = () => {
                 </Input>
               </FormGroup>
             </ModalBody>
-            <ModalFooter className="bg-light">
-              <Button color="light" size="sm" onClick={() => setCompetitorModalOpen(false)}>
+            <ModalFooter style={{ backgroundColor: subtleBg, borderColor: cardBorder }}>
+              <Button color="light" size="sm" onClick={() => setCompetitorModalOpen(false)} style={{ borderRadius: 0, borderColor: subtleBorder }}>
                 Cancel
               </Button>
               <Button
@@ -3239,7 +3392,7 @@ const OpportunityDetail = () => {
                 size="sm"
                 type="submit"
                 className="fw-semibold px-3"
-                style={{ backgroundColor: THEME.primary, borderColor: THEME.primary }}
+                style={{ backgroundColor: THEME.primary, borderColor: THEME.primary, borderRadius: 0 }}
               >
                 Save Competitor
               </Button>
