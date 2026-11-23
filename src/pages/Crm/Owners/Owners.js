@@ -293,16 +293,20 @@ const Owners = () => {
           pageTitle="CRM"
           description="Sales owners used on Leads and Opportunities Owner dropdown."
           actions={
-            <Button color="primary" onClick={openCreate}>
+            <Button
+              className="rounded-0 text-white"
+              style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d" }}
+              onClick={openCreate}
+            >
               <i className="ri-add-line align-bottom me-1" />
               New Owner
             </Button>
           }
         />
 
-        {listError ? <Alert color="danger" className="mb-3">{listError}</Alert> : null}
+        {listError ? <Alert color="danger" className="mb-3 rounded-0">{listError}</Alert> : null}
 
-        <Card className="apt-list-card mb-0">
+        <Card className="apt-list-card rounded-0 mb-0">
           <CardBody className="p-0">
             <div className="apt-list-toolbar">
               <div className="apt-list-toolbar__left">
@@ -312,7 +316,7 @@ const Owners = () => {
                   <Input
                     type="select"
                     bsSize="sm"
-                    className="apt-list-pagesize__select"
+                    className="apt-list-pagesize__select rounded-0"
                     value={pageSizeChoice}
                     onChange={(e) => {
                       const raw = e.target.value;
@@ -331,6 +335,7 @@ const Owners = () => {
                 <Input
                   type="select"
                   bsSize="sm"
+                  className="rounded-0"
                   style={{ width: 120 }}
                   value={statusFilter}
                   onChange={(e) => {
@@ -346,7 +351,7 @@ const Owners = () => {
               <div className="apt-list-toolbar__search search-box">
                 <Input
                   type="text"
-                  className="form-control"
+                  className="form-control rounded-0"
                   placeholder="Search name, code, mobile, email…"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
@@ -395,6 +400,7 @@ const Owners = () => {
                             <Button
                               color="soft-primary"
                               size="sm"
+                              className="rounded-0"
                               onClick={() => openEdit(e.ownerId)}
                               title="Edit"
                             >
@@ -403,6 +409,7 @@ const Owners = () => {
                             <Button
                               color="soft-danger"
                               size="sm"
+                              className="rounded-0"
                               onClick={() => {
                                 setDeleteTarget(e);
                                 setDeleteModal(true);
@@ -421,7 +428,7 @@ const Owners = () => {
                         <td className="fs-13">{e.phone || "—"}</td>
                         <td className="fs-13">{e.email || "—"}</td>
                         <td>
-                          <Badge className={statusBadge(e.status)}>{e.status || "—"}</Badge>
+                          <Badge className={`rounded-0 px-2 py-1 text-capitalize border ${statusBadge(e.status)}`}>{e.status || "—"}</Badge>
                         </td>
                       </tr>
                     ))
@@ -439,19 +446,20 @@ const Owners = () => {
           </CardBody>
         </Card>
 
-        <Modal isOpen={modal} toggle={() => !saving && setModal(false)} size="lg" centered>
-          <ModalHeader toggle={() => !saving && setModal(false)}>
+        <Modal isOpen={modal} toggle={() => !saving && setModal(false)} size="lg" centered contentClassName="rounded-0 border-0 shadow-lg">
+          <ModalHeader className="rounded-0 bg-light border-bottom py-3" toggle={() => !saving && setModal(false)}>
             {editMode ? "Edit Owner" : "New Owner"}
           </ModalHeader>
           <Form onSubmit={saveOwner}>
             <ModalBody>
-              {formError ? <Alert color="danger">{formError}</Alert> : null}
+              {formError ? <Alert color="danger" className="rounded-0">{formError}</Alert> : null}
               <Row className="g-3">
                 <Col md={6}>
                   <Label className="form-label">
                     Full name <span className="text-danger">*</span>
                   </Label>
                   <Input
+                    className="rounded-0"
                     value={form.fullName}
                     onChange={(e) => onFormChange("fullName", e.target.value)}
                     required
@@ -463,6 +471,7 @@ const Owners = () => {
                     Mobile <span className="text-danger">*</span>
                   </Label>
                   <Input
+                    className="rounded-0"
                     value={form.phone}
                     onChange={(e) => onFormChange("phone", e.target.value)}
                     required
@@ -472,6 +481,7 @@ const Owners = () => {
                 <Col md={6}>
                   <Label className="form-label">Email</Label>
                   <Input
+                    className="rounded-0"
                     type="email"
                     value={form.email}
                     onChange={(e) => onFormChange("email", e.target.value)}
@@ -480,6 +490,7 @@ const Owners = () => {
                 <Col md={6}>
                   <Label className="form-label">Owner code</Label>
                   <Input
+                    className="rounded-0"
                     value={form.ownerCode}
                     onChange={(e) => onFormChange("ownerCode", e.target.value)}
                     placeholder="Auto if empty (OWN-CRM-00x)"
@@ -489,6 +500,7 @@ const Owners = () => {
                   <Col md={6}>
                     <Label className="form-label">Status</Label>
                     <Input
+                      className="rounded-0"
                       type="select"
                       value={form.status}
                       onChange={(e) => onFormChange("status", e.target.value)}
@@ -500,11 +512,16 @@ const Owners = () => {
                 ) : null}
               </Row>
             </ModalBody>
-            <ModalFooter>
-              <Button color="light" type="button" disabled={saving} onClick={() => setModal(false)}>
+            <ModalFooter className="rounded-0 border-top py-2">
+              <Button color="light" type="button" className="rounded-0 px-3" disabled={saving} onClick={() => setModal(false)}>
                 Cancel
               </Button>
-              <Button color="primary" type="submit" disabled={saving}>
+              <Button
+                type="submit"
+                className="rounded-0 text-white px-4"
+                style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d" }}
+                disabled={saving}
+              >
                 {saving ? <Spinner size="sm" className="me-1" /> : null}
                 {editMode ? "Update" : "Create"}
               </Button>

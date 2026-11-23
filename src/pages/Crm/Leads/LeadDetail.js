@@ -2144,28 +2144,32 @@ const LeadDetail = () => {
                   <CardBody className="p-3">
                     <Row className="g-3">
                       <Col md={6}>
-                        <table className="table table-sm table-borderless">
-                          <tbody>
-                            <tr><td className="text-muted" style={{ width: "40%" }}>Lead Name</td><td className="fw-bold text-dark">{lead.leadName}</td></tr>
-                            <tr><td className="text-muted">Company Name</td><td className="fw-bold text-dark">{lead.companyName || "—"}</td></tr>
-                            <tr><td className="text-muted">Designation</td><td className="fw-bold text-dark">{lead.designation || "—"}</td></tr>
-                            <tr><td className="text-muted">Industry</td><td className="fw-bold text-dark">{lead.industry || "—"}</td></tr>
-                            <tr><td className="text-muted">Lead Source</td><td className="fw-bold text-dark">{lead.sourceName || "—"}</td></tr>
-                            <tr><td className="text-muted">Rating / Urgency</td><td className="fw-bold text-dark">{lead.ratingName || "—"}</td></tr>
-                          </tbody>
-                        </table>
+                        <div className="table-responsive">
+                          <table className="table table-sm table-borderless">
+                            <tbody>
+                              <tr><td className="text-muted" style={{ width: "40%" }}>Lead Name</td><td className="fw-bold text-dark">{lead.leadName}</td></tr>
+                              <tr><td className="text-muted">Company Name</td><td className="fw-bold text-dark">{lead.companyName || "—"}</td></tr>
+                              <tr><td className="text-muted">Designation</td><td className="fw-bold text-dark">{lead.designation || "—"}</td></tr>
+                              <tr><td className="text-muted">Industry</td><td className="fw-bold text-dark">{lead.industry || "—"}</td></tr>
+                              <tr><td className="text-muted">Lead Source</td><td className="fw-bold text-dark">{lead.sourceName || "—"}</td></tr>
+                              <tr><td className="text-muted">Rating / Urgency</td><td className="fw-bold text-dark">{lead.ratingName || "—"}</td></tr>
+                            </tbody>
+                          </table>
+                        </div>
                       </Col>
                       <Col md={6}>
-                        <table className="table table-sm table-borderless">
-                          <tbody>
-                            <tr><td className="text-muted" style={{ width: "40%" }}>Mobile Phone</td><td className="fw-bold text-dark">{lead.mobile}</td></tr>
-                            <tr><td className="text-muted">Work Email</td><td className="fw-bold text-dark">{lead.email || "—"}</td></tr>
-                            <tr><td className="text-muted">Website</td><td className="fw-bold text-dark">{lead.website || "—"}</td></tr>
-                            <tr><td className="text-muted">Estimated Value</td><td className="fw-bold text-dark">{lead.estimatedValue != null ? `₹${Number(lead.estimatedValue).toLocaleString("en-IN")}` : "—"}</td></tr>
-                            <tr><td className="text-muted">Target Close Date</td><td className="fw-bold text-dark">{formatDate(lead.expectedCloseDate)}</td></tr>
-                            <tr><td className="text-muted">Owner</td><td className="fw-bold text-dark">{lead.ownerName || "Unassigned"}</td></tr>
-                          </tbody>
-                        </table>
+                        <div className="table-responsive">
+                          <table className="table table-sm table-borderless">
+                            <tbody>
+                              <tr><td className="text-muted" style={{ width: "40%" }}>Mobile Phone</td><td className="fw-bold text-dark">{lead.mobile}</td></tr>
+                              <tr><td className="text-muted">Work Email</td><td className="fw-bold text-dark">{lead.email || "—"}</td></tr>
+                              <tr><td className="text-muted">Website</td><td className="fw-bold text-dark">{lead.website || "—"}</td></tr>
+                              <tr><td className="text-muted">Estimated Value</td><td className="fw-bold text-dark">{lead.estimatedValue != null ? `₹${Number(lead.estimatedValue).toLocaleString("en-IN")}` : "—"}</td></tr>
+                              <tr><td className="text-muted">Target Close Date</td><td className="fw-bold text-dark">{formatDate(lead.expectedCloseDate)}</td></tr>
+                              <tr><td className="text-muted">Owner</td><td className="fw-bold text-dark">{lead.ownerName || "Unassigned"}</td></tr>
+                            </tbody>
+                          </table>
+                        </div>
                       </Col>
                     </Row>
                   </CardBody>

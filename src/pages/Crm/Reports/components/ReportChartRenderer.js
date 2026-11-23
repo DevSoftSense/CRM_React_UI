@@ -717,7 +717,7 @@ const ReportChartRenderer = ({ chartType, chartData, title, summary }) => {
     return [...data]
       .map((d) => {
         const name = d.sales_rep || d.rep_name || d.name || "Sales Rep";
-        const target = Number(d.target_amount ?? 500000);
+        const target = Number(d.target_amount ?? 0);
         const won = Number(
           d.won_revenue ?? d.achieved_amount ?? d.won_amount ?? 0
         );

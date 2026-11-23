@@ -39,8 +39,8 @@ const DocumentStorageAuditView = ({
     return Array.isArray(reportResult?.chart_data) ? reportResult.chart_data : [];
   }, [reportResult]);
 
-  const totalDocuments = summary.total_documents ?? rows.length ?? 0;
-  const totalStorageMb = summary.total_storage_mb ?? 3.6;
+  const totalDocuments = Number(summary.total_documents ?? rows.length ?? 0);
+  const totalStorageMb = Number(summary.total_storage_mb ?? 0);
 
   // Compute average size
   const avgSizeBytes = useMemo(() => {
@@ -747,15 +747,14 @@ const DocumentStorageAuditView = ({
         }}
       >
         <div
-          className="p-3 text-white d-flex flex-wrap align-items-center justify-content-between gap-2"
+          className="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2 bg-white"
           style={{
-            backgroundColor: "#7f1d1d",
             borderRadius: "4px 4px 0 0",
           }}
         >
           <div className="d-flex align-items-center gap-2">
-            <i className="ri-file-list-3-line fs-18"></i>
-            <span className="fw-bold" style={{ fontSize: "14px" }}>
+            <i className="ri-file-list-3-line" style={{ color: "#7f1d1d", fontSize: "16px" }}></i>
+            <span className="fw-bold text-dark" style={{ fontSize: "13.5px" }}>
               Repository Ledger
             </span>
           </div>
@@ -770,8 +769,9 @@ const DocumentStorageAuditView = ({
                 style={{
                   borderRadius: "4px",
                   fontSize: "12px",
-                  borderColor: "transparent",
+                  borderColor: "#cbd5e1",
                   backgroundColor: "#ffffff",
+                  color: "#0f172a",
                 }}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -790,7 +790,8 @@ const DocumentStorageAuditView = ({
                 borderRadius: "4px",
                 fontSize: "12px",
                 backgroundColor: "#ffffff",
-                border: "none",
+                borderColor: "#cbd5e1",
+                color: "#0f172a",
               }}
               value={selectedTypeFilter}
               onChange={(e) => setSelectedTypeFilter(e.target.value)}
@@ -805,19 +806,19 @@ const DocumentStorageAuditView = ({
 
             {/* List / Grid Toggle */}
             <div
-              className="btn-group btn-group-sm"
+              className="btn-group btn-group-sm border"
               style={{ borderRadius: "4px", overflow: "hidden" }}
             >
               <button
                 type="button"
                 className="btn btn-sm d-flex align-items-center gap-1"
                 style={{
-                  backgroundColor:
-                    viewMode === "list" ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.1)",
-                  color: "#ffffff",
+                  backgroundColor: viewMode === "list" ? "#f1f5f9" : "#ffffff",
+                  color: viewMode === "list" ? "#0f172a" : "#64748b",
                   border: "none",
+                  borderRight: "1px solid #e2e8f0",
                   fontSize: "11px",
-                  fontWeight: 600,
+                  fontWeight: viewMode === "list" ? 600 : 500,
                   padding: "4px 8px",
                 }}
                 onClick={() => setViewMode("list")}
@@ -828,12 +829,11 @@ const DocumentStorageAuditView = ({
                 type="button"
                 className="btn btn-sm d-flex align-items-center gap-1"
                 style={{
-                  backgroundColor:
-                    viewMode === "grid" ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.1)",
-                  color: "#ffffff",
+                  backgroundColor: viewMode === "grid" ? "#f1f5f9" : "#ffffff",
+                  color: viewMode === "grid" ? "#0f172a" : "#64748b",
                   border: "none",
                   fontSize: "11px",
-                  fontWeight: 600,
+                  fontWeight: viewMode === "grid" ? 600 : 500,
                   padding: "4px 8px",
                 }}
                 onClick={() => setViewMode("grid")}

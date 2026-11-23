@@ -66,9 +66,9 @@ const UpcomingFollowupsTable = ({ followups = [] }) => {
     <Card
       className="border shadow-none h-100 mb-0 bg-white"
       style={{
-        borderRadius: "12px",
-        borderColor: isDark ? "#334155" : "#e2e8f0",
-        backgroundColor: isDark ? "#1e293b" : "#ffffff",
+        borderRadius: 0,
+        borderColor: isDark ? "#262626" : "#e2e8f0",
+        backgroundColor: isDark ? "#121212" : "#ffffff",
       }}
     >
       {/* Top Header: Indicator + Title */}
@@ -134,7 +134,7 @@ const UpcomingFollowupsTable = ({ followups = [] }) => {
                         height: "44px",
                         borderRadius: "50%",
                         background: isDark
-                          ? "radial-gradient(circle at 35% 35%, rgba(244, 63, 94, 0.25), #1e293b)"
+                          ? "radial-gradient(circle at 35% 35%, rgba(244, 63, 94, 0.25), #141414)"
                           : "radial-gradient(circle at 35% 35%, #fff1f2 0%, #ffe4e6 70%, #fecdd3 100%)",
                         border: `1.5px solid ${isDark ? "#881337" : "#fecdd3"}`,
                         boxShadow: isDark
@@ -202,7 +202,7 @@ const UpcomingFollowupsTable = ({ followups = [] }) => {
                         fontSize: "11px",
                         backgroundColor: prioStyle.bg,
                         color: prioStyle.color,
-                        borderRadius: "14px",
+                        borderRadius: 0,
                         padding: "3px 12px",
                         minWidth: "48px",
                         lineHeight: "1.4",

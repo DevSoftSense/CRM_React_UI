@@ -36,9 +36,19 @@ const SalesEffortTouchpointView = ({
   }, [reportResult]);
 
   // Executive KPI Metrics
-  const totalActivities = Number(summary.total_activities ?? (rawRows.length > 0 ? rawRows.length : 12));
-  const totalCalls = Number(summary.total_calls ?? 2);
-  const totalMeetings = Number(summary.total_meetings ?? 1);
+  const totalActivities = Number(
+    summary.total_activities ?? rawRows.length ?? 0
+  );
+  const totalCalls = Number(
+    summary.total_calls ??
+      rawRows.filter((r) => String(r.type || "").toUpperCase().includes("CALL")).length ??
+      0
+  );
+  const totalMeetings = Number(
+    summary.total_meetings ??
+      rawRows.filter((r) => String(r.type || "").toUpperCase().includes("MEET")).length ??
+      0
+  );
 
   // Group activities by type dynamically from rows
   const typeCounts = useMemo(() => {
@@ -51,24 +61,33 @@ const SalesEffortTouchpointView = ({
       else if (t.includes("TASK")) counts.TASK += 1;
       else counts.OTHER += 1;
     });
-
-    // If rows are few or empty in summary, fallback to default representative numbers
-    if (counts.DOCUMENT === 0 && counts.CALL === 0 && counts.MEETING === 0 && counts.TASK === 0) {
-      counts.DOCUMENT = 8;
-      counts.CALL = 2;
-      counts.MEETING = 1;
-      counts.TASK = 1;
-    }
     return counts;
   }, [rawRows]);
 
-  const totalCalculated = typeCounts.DOCUMENT + typeCounts.CALL + typeCounts.MEETING + typeCounts.TASK + typeCounts.OTHER;
-  const effectiveTotal = totalCalculated > 0 ? totalCalculated : 12;
+  const totalCalculated =
+    typeCounts.DOCUMENT +
+    typeCounts.CALL +
+    typeCounts.MEETING +
+    typeCounts.TASK +
+    typeCounts.OTHER;
+  const effectiveTotal = totalCalculated;
 
-  const docPct = ((typeCounts.DOCUMENT / effectiveTotal) * 100).toFixed(1);
-  const callPct = ((typeCounts.CALL / effectiveTotal) * 100).toFixed(1);
-  const meetPct = ((typeCounts.MEETING / effectiveTotal) * 100).toFixed(1);
-  const taskPct = ((typeCounts.TASK / effectiveTotal) * 100).toFixed(1);
+  const docPct =
+    effectiveTotal > 0
+      ? ((typeCounts.DOCUMENT / effectiveTotal) * 100).toFixed(1)
+      : "0.0";
+  const callPct =
+    effectiveTotal > 0
+      ? ((typeCounts.CALL / effectiveTotal) * 100).toFixed(1)
+      : "0.0";
+  const meetPct =
+    effectiveTotal > 0
+      ? ((typeCounts.MEETING / effectiveTotal) * 100).toFixed(1)
+      : "0.0";
+  const taskPct =
+    effectiveTotal > 0
+      ? ((typeCounts.TASK / effectiveTotal) * 100).toFixed(1)
+      : "0.0";
 
   // Filtered rows for client search & type filter
   const filteredRows = useMemo(() => {

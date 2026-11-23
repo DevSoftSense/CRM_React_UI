@@ -937,7 +937,7 @@ const OpportunityDetail = () => {
               <Col lg={5} md={12}>
                 <div className="d-flex align-items-start gap-3">
                   <div
-                    className="rounded-0-0 d-flex align-items-center justify-content-center flex-shrink-0"
+                    className="rounded-0 d-flex align-items-center justify-content-center flex-shrink-0"
                     style={{
                       width: 54,
                       height: 54,
@@ -1084,7 +1084,7 @@ const OpportunityDetail = () => {
                             style={{ flex: 1, textAlign: "center" }}
                           >
                             <div
-                              className="rounded-0-0 d-flex align-items-center justify-content-center text-white"
+                              className="rounded-0 d-flex align-items-center justify-content-center text-white"
                               style={{
                                 width: 28,
                                 height: 28,
@@ -1170,7 +1170,7 @@ const OpportunityDetail = () => {
             {/* 6 Middle Metrics Bar matching Mockup                     */}
             {/* ======================================================== */}
             <div
-              className="mt-4 p-3 rounded-0-0"
+              className="mt-4 p-3 rounded-0"
               style={{
                 backgroundColor: "#f8fafc",
                 border: `1px solid ${THEME.cardBorder}`,
@@ -1184,7 +1184,7 @@ const OpportunityDetail = () => {
                   </div>
                   <div className="d-flex align-items-center gap-2 mt-1">
                     <div
-                      className="rounded-0-0 d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
+                      className="rounded-0 d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
                       style={{ width: 28, height: 28, fontSize: "11px", backgroundColor: THEME.primary }}
                     >
                       {getInitials(opp.ownerName)}
@@ -1202,7 +1202,7 @@ const OpportunityDetail = () => {
                   </div>
                   <div className="d-flex align-items-center gap-2 mt-1">
                     <div
-                      className="rounded-0-0 d-flex align-items-center justify-content-center flex-shrink-0"
+                      className="rounded-0 d-flex align-items-center justify-content-center flex-shrink-0"
                       style={{ width: 28, height: 28, backgroundColor: "#ecfdf5", color: "#059669", fontSize: "13px" }}
                     >
                       <i className="ri-user-line" />
@@ -1561,7 +1561,7 @@ const OpportunityDetail = () => {
                             return (
                               <div
                                 key={task.taskId || idx}
-                                className="d-flex align-items-center justify-content-between p-2 border rounded-0-0 bg-white"
+                                className="d-flex align-items-center justify-content-between p-2 border rounded-0 bg-white"
                                 style={{ borderColor: THEME.cardBorder }}
                               >
                                 <div className="d-flex align-items-center gap-2">
@@ -1588,7 +1588,7 @@ const OpportunityDetail = () => {
                                     {formatDate(task.finishDate)}
                                   </span>
                                   <div
-                                    className="rounded-0-0 d-flex align-items-center justify-content-center text-white fw-bold"
+                                    className="rounded-0 d-flex align-items-center justify-content-center text-white fw-bold"
                                     style={{ width: 22, height: 22, fontSize: "10px", backgroundColor: "#64748b" }}
                                     title={task.assigneeName || opp.ownerName}
                                   >
@@ -1658,12 +1658,12 @@ const OpportunityDetail = () => {
                           {keyContactsList.map((c) => (
                             <div
                               key={c.contactPersonId}
-                              className="border rounded-0-0 p-2 bg-white d-flex align-items-center justify-content-between"
+                              className="border rounded-0 p-2 bg-white d-flex align-items-center justify-content-between"
                               style={{ borderColor: THEME.cardBorder }}
                             >
                               <div className="d-flex align-items-center gap-2">
                                 <div
-                                  className="rounded-0-0 d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
+                                  className="rounded-0 d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
                                   style={{ width: 32, height: 32, fontSize: "12px", backgroundColor: THEME.primary }}
                                 >
                                   {getInitials(c.fullName)}
@@ -1753,7 +1753,7 @@ const OpportunityDetail = () => {
                           {recentActivitiesList.map((act) => (
                             <div key={act.activityId} className="d-flex align-items-start gap-2">
                               <div
-                                className="rounded-0-0 d-flex align-items-center justify-content-center flex-shrink-0 mt-1"
+                                className="rounded-0 d-flex align-items-center justify-content-center flex-shrink-0 mt-1"
                                 style={{
                                   width: 28,
                                   height: 28,
@@ -1836,7 +1836,7 @@ const OpportunityDetail = () => {
                             <div key={m.id} className="d-flex align-items-center justify-content-between">
                               <div className="d-flex align-items-center gap-2">
                                 <div
-                                  className="rounded-0-0 d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
+                                  className="rounded-0 d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
                                   style={{ width: 26, height: 26, fontSize: "10px", backgroundColor: THEME.primary }}
                                 >
                                   {getInitials(m.name)}
@@ -1939,7 +1939,7 @@ const OpportunityDetail = () => {
 
                       {opp.closedReason ? (
                         <div
-                          className="p-2 rounded-0-0"
+                          className="p-2 rounded-0"
                           style={{
                             backgroundColor: "#fefce8",
                             border: "1px solid #fef08a",
@@ -1958,7 +1958,7 @@ const OpportunityDetail = () => {
                         </div>
                       ) : (
                         <div
-                          className="p-3 rounded-0-0 text-center text-muted fs-12 d-flex flex-column align-items-center justify-content-center"
+                          className="p-3 rounded-0 text-center text-muted fs-12 d-flex flex-column align-items-center justify-content-center"
                           style={{ backgroundColor: "#fefce8", border: "1px dashed #fde68a" }}
                         >
                           No notes recorded yet.
@@ -2011,7 +2011,7 @@ const OpportunityDetail = () => {
                           {attachmentsList.map((doc) => (
                             <div
                               key={doc.id}
-                              className="d-flex align-items-center justify-content-between p-2 border rounded-0-0"
+                              className="d-flex align-items-center justify-content-between p-2 border rounded-0"
                               style={{ borderColor: "#f1f5f9" }}
                             >
                               <div className="d-flex align-items-center gap-2">
@@ -2057,7 +2057,7 @@ const OpportunityDetail = () => {
                 <h5 className="fw-bold text-dark mb-3">Complete Opportunity Details</h5>
                 <Row className="g-4">
                   <Col md={6}>
-                    <Table bordered className="fs-13">
+                    <Table responsive bordered className="fs-13">
                       <tbody>
                         <tr>
                           <th className="table-light" style={{ width: "35%" }}>Opportunity Code</th>
@@ -2091,7 +2091,7 @@ const OpportunityDetail = () => {
                     </Table>
                   </Col>
                   <Col md={6}>
-                    <Table bordered className="fs-13">
+                    <Table responsive bordered className="fs-13">
                       <tbody>
                         <tr>
                           <th className="table-light" style={{ width: "35%" }}>Deal Amount</th>
@@ -2269,11 +2269,11 @@ const OpportunityDetail = () => {
                     {recentActivitiesList.map((act) => (
                       <div
                         key={act.activityId}
-                        className="p-3 border rounded-0-0 bg-white d-flex align-items-start gap-3"
+                        className="p-3 border rounded-0 bg-white d-flex align-items-start gap-3"
                         style={{ borderColor: THEME.cardBorder }}
                       >
                         <div
-                          className="rounded-0-0 d-flex align-items-center justify-content-center flex-shrink-0"
+                          className="rounded-0 d-flex align-items-center justify-content-center flex-shrink-0"
                           style={{ width: 36, height: 36, backgroundColor: act.bg, color: act.color, fontSize: "18px" }}
                         >
                           <i className={act.icon} />
@@ -2330,7 +2330,7 @@ const OpportunityDetail = () => {
                   <Row className="g-3">
                     {attachmentsList.map((doc) => (
                       <Col md={4} key={doc.id}>
-                        <div className="p-3 border rounded-0-0 bg-white d-flex align-items-center justify-content-between">
+                        <div className="p-3 border rounded-0 bg-white d-flex align-items-center justify-content-between">
                           <div className="d-flex align-items-center gap-3">
                             <i className={`${doc.icon} fs-24`} style={{ color: doc.color }} />
                             <div>
@@ -2367,7 +2367,7 @@ const OpportunityDetail = () => {
               <CardBody className="p-4">
                 <h5 className="fw-bold text-dark mb-3">Internal Deal Notes</h5>
                 {opp.closedReason ? (
-                  <div className="p-3 rounded-0-0 mb-3" style={{ backgroundColor: "#fefce8", border: "1px solid #fef08a" }}>
+                  <div className="p-3 rounded-0 mb-3" style={{ backgroundColor: "#fefce8", border: "1px solid #fef08a" }}>
                     <p className="text-dark fs-13 mb-1" style={{ whiteSpace: "pre-wrap" }}>
                       {opp.closedReason}
                     </p>
@@ -2376,7 +2376,7 @@ const OpportunityDetail = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-3 rounded-0-0 mb-3 text-center text-muted fs-13" style={{ backgroundColor: "#fefce8", border: "1px dashed #fde68a" }}>
+                  <div className="p-3 rounded-0 mb-3 text-center text-muted fs-13" style={{ backgroundColor: "#fefce8", border: "1px dashed #fde68a" }}>
                     No notes recorded in database for this deal yet.
                   </div>
                 )}
@@ -2418,7 +2418,7 @@ const OpportunityDetail = () => {
                 <div className="d-flex flex-column gap-3 ps-3 border-start" style={{ borderColor: THEME.primary }}>
                   {/* Current State */}
                   <div className="position-relative">
-                    <span className="position-absolute rounded-0-0" style={{ left: -22, top: 2, width: 12, height: 12, backgroundColor: isClosedWon ? "#16a34a" : "#d97706" }} />
+                    <span className="position-absolute rounded-0" style={{ left: -22, top: 2, width: 12, height: 12, backgroundColor: isClosedWon ? "#16a34a" : "#d97706" }} />
                     <div className="fw-semibold text-dark fs-13">Current Stage: {opp.stageName}</div>
                     <div className="text-muted fs-11">
                       In this stage for {opp.daysInStage != null ? `${opp.daysInStage} Days` : "0 Days"} • Owner: {opp.ownerName || "Unassigned"}
@@ -2428,7 +2428,7 @@ const OpportunityDetail = () => {
                   {/* Real activities from database */}
                   {recentActivitiesList.map((act) => (
                     <div key={act.activityId} className="position-relative">
-                      <span className="position-absolute rounded-0-0" style={{ left: -22, top: 2, width: 12, height: 12, backgroundColor: THEME.primary }} />
+                      <span className="position-absolute rounded-0" style={{ left: -22, top: 2, width: 12, height: 12, backgroundColor: THEME.primary }} />
                       <div className="fw-semibold text-dark fs-13">{act.title}</div>
                       <div className="text-muted fs-11">{act.timestamp} {act.author ? `• by ${act.author}` : ""}</div>
                     </div>
@@ -2436,7 +2436,7 @@ const OpportunityDetail = () => {
 
                   {/* Creation Event */}
                   <div className="position-relative">
-                    <span className="position-absolute rounded-0-0" style={{ left: -22, top: 2, width: 12, height: 12, backgroundColor: THEME.primary }} />
+                    <span className="position-absolute rounded-0" style={{ left: -22, top: 2, width: 12, height: 12, backgroundColor: THEME.primary }} />
                     <div className="fw-semibold text-dark fs-13">Opportunity Created: {opp.name}</div>
                     <div className="text-muted fs-11">{formatDateTime(opp.createdAt)} • Deal Value: {formatInr(opp.amount)}</div>
                   </div>
@@ -2481,7 +2481,7 @@ const OpportunityDetail = () => {
                           <td>
                             <div className="d-flex align-items-center gap-2">
                               <div
-                                className="rounded-0-0 d-flex align-items-center justify-content-center text-white fw-bold"
+                                className="rounded-0 d-flex align-items-center justify-content-center text-white fw-bold"
                                 style={{ width: 28, height: 28, fontSize: "11px", backgroundColor: THEME.primary }}
                               >
                                 {getInitials(c.fullName)}

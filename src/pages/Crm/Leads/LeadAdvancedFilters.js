@@ -52,7 +52,7 @@ const LeadAdvancedFilters = ({
       isOpen={isOpen}
       toggle={onClose}
       className="apt-adv-filters"
-      style={{ width: "340px" }}
+      style={{ width: "min(340px, 100vw)", maxWidth: "100vw" }}
     >
       <OffcanvasHeader toggle={onClose} className="border-bottom py-3 px-3 bg-light">
         <span className="fs-15 fw-bold text-dark">

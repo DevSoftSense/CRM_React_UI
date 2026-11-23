@@ -29,6 +29,7 @@ const OpportunityAdvancedFilters = ({
             <Label className="apt-adv-filters__label">Stage</Label>
             <Input
               type="select"
+              className="rounded-0"
               value={draft.stageId || ""}
               onChange={(e) => setField("stageId", e.target.value)}
             >
@@ -44,6 +45,7 @@ const OpportunityAdvancedFilters = ({
             <Label className="apt-adv-filters__label">Type</Label>
             <Input
               type="select"
+              className="rounded-0"
               value={draft.opportunityTypeId || ""}
               onChange={(e) => setField("opportunityTypeId", e.target.value)}
             >
@@ -59,6 +61,7 @@ const OpportunityAdvancedFilters = ({
             <Label className="apt-adv-filters__label">Priority</Label>
             <Input
               type="select"
+              className="rounded-0"
               value={draft.priorityId || ""}
               onChange={(e) => setField("priorityId", e.target.value)}
             >
@@ -76,13 +79,17 @@ const OpportunityAdvancedFilters = ({
           </p>
         </div>
         <div className="apt-adv-filters__actions d-grid gap-2 mt-3">
-          <Button color="primary" onClick={onApply}>
+          <Button
+            className="rounded-0 text-white shadow-none"
+            style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d" }}
+            onClick={onApply}
+          >
             Apply filters
           </Button>
-          <Button color="light" onClick={onDisplayAll}>
+          <Button color="light" className="rounded-0 border" onClick={onDisplayAll}>
             Display all
           </Button>
-          <Button color="link" className="text-muted" onClick={onClearDraft}>
+          <Button color="link" className="text-muted rounded-0" onClick={onClearDraft}>
             Clear draft
           </Button>
         </div>

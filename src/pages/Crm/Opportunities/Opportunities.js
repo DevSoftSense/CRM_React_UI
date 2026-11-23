@@ -669,7 +669,18 @@ const Opportunities = () => {
                           </Link>
                         </td>
                         <td>
-                          {opp.accountName || opp.accountId || "—"}
+                          {opp.accountId ? (
+                            <Link
+                              to={`/crm/customers/${opp.accountId}`}
+                              className="fw-medium text-decoration-none"
+                              style={{ color: "#7f1d1d" }}
+                              title="View Customer Details"
+                            >
+                              {opp.accountName || `Customer #${opp.accountId}`}
+                            </Link>
+                          ) : (
+                            opp.accountName || "—"
+                          )}
                           {opp.accountName && opp.accountId ? (
                             <div className="text-muted fs-12">#{opp.accountId}</div>
                           ) : null}

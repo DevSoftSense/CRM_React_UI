@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { Link } from "react-router-dom";
 import {
   Container,
   Row,
@@ -61,6 +62,14 @@ const getFileTypeMeta = (ext) => {
       label: (norm || "FILE").toUpperCase(),
     }
   );
+};
+
+const formatStorageAmount = (usedGb, usedBytes) => {
+  if (usedBytes && usedBytes > 0 && Number(usedGb || 0) < 0.01) {
+    const mb = (usedBytes / (1024 * 1024)).toFixed(2);
+    return `${mb} MB`;
+  }
+  return `${Number(usedGb || 0).toFixed(2)} GB`;
 };
 
 const Documents = () => {
@@ -509,7 +518,7 @@ const Documents = () => {
                       </Button>
                     </div>
                   ) : (
-                    <Table hover className="align-middle mb-0 table-nowrap">
+                    <Table responsive hover className="align-middle mb-0 table-nowrap">
                       <thead className="table-light text-muted small text-uppercase">
                         <tr>
                           <th style={{ width: "40px" }} className="text-center">
@@ -643,16 +652,38 @@ const Documents = () => {
 
                               {/* Related To */}
                               <td>
-                                <span
-                                  className="small fw-semibold"
-                                  style={{ color: "#7f1d1d", cursor: "pointer" }}
-                                  onClick={() => {
-                                    setActiveDocForDetail(doc);
-                                    setDetailModalOpen(true);
-                                  }}
-                                >
-                                  {doc.related_to || "All Customers"}
-                                </span>
+                                {doc.entity_type === "OPPORTUNITY" && doc.entity_id ? (
+                                  <Link
+                                    to={`/crm/opportunities/${doc.entity_id}`}
+                                    className="small fw-semibold text-decoration-none"
+                                    style={{ color: "#7f1d1d" }}
+                                    title="View Opportunity"
+                                  >
+                                    {doc.related_to || "Opportunity"}
+                                  </Link>
+                                ) : doc.entity_type === "CUSTOMER" && doc.entity_id ? (
+                                  <Link
+                                    to={`/crm/customers/${doc.entity_id}`}
+                                    className="small fw-semibold text-decoration-none"
+                                    style={{ color: "#7f1d1d" }}
+                                    title="View Customer"
+                                  >
+                                    {doc.related_to || "Customer Account"}
+                                  </Link>
+                                ) : doc.entity_type === "LEAD" && doc.entity_id ? (
+                                  <Link
+                                    to={`/crm/leads/${doc.entity_id}`}
+                                    className="small fw-semibold text-decoration-none"
+                                    style={{ color: "#7f1d1d" }}
+                                    title="View Lead"
+                                  >
+                                    {doc.related_to || "Lead"}
+                                  </Link>
+                                ) : (
+                                  <span className="small text-muted">
+                                    {doc.related_to || "All Customers"}
+                                  </span>
+                                )}
                               </td>
 
                               {/* Type Badge (Square, no bootstrap blue) */}
@@ -680,7 +711,7 @@ const Documents = () => {
                               <td>
                                 <div className="d-flex align-items-center gap-2">
                                   <div
-                                    className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
+                                    className="rounded-0 d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
                                     style={{
                                       width: "26px",
                                       height: "26px",
@@ -811,7 +842,7 @@ const Documents = () => {
                   </div>
                   <div className="flex-grow-1 ps-3">
                     <div className="fw-bold text-dark" style={{ fontSize: "16px" }}>
-                      {Number(stats.used_gb || 0).toFixed(2)} GB Used
+                      {formatStorageAmount(stats.used_gb, stats.used_bytes)} Used
                     </div>
                     <div className="text-muted small">
                       of {Number(stats.quota_gb || 20).toFixed(0)} GB
@@ -835,20 +866,20 @@ const Documents = () => {
                   <div className="d-flex align-items-center justify-content-between py-1 small">
                     <span className="d-flex align-items-center gap-2 text-muted">
                       <span
-                        className="rounded-circle"
-                        style={{ width: "8px", height: "8px", backgroundColor: "#7f1d1d" }}
+                        className="rounded-0"
+                        style={{ width: "8px", height: "8px", backgroundColor: "#7f1d1d", display: "inline-block" }}
                       />
                       Documents
                     </span>
                     <span className="fw-semibold text-dark">
-                      {Number(stats.used_gb || 0).toFixed(2)} GB
+                      {formatStorageAmount(stats.used_gb, stats.used_bytes)}
                     </span>
                   </div>
                   <div className="d-flex align-items-center justify-content-between py-1 small">
                     <span className="d-flex align-items-center gap-2 text-muted">
                       <span
-                        className="rounded-circle"
-                        style={{ width: "8px", height: "8px", backgroundColor: "#cbd5e1" }}
+                        className="rounded-0"
+                        style={{ width: "8px", height: "8px", backgroundColor: "#cbd5e1", display: "inline-block" }}
                       />
                       Available
                     </span>

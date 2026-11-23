@@ -129,7 +129,7 @@ const DocumentDetailModal = ({ isOpen, toggle, document, onDelete }) => {
               </span>
               <div className="d-flex align-items-center gap-2 mt-1">
                 <div
-                  className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
+                  className="rounded-0 d-flex align-items-center justify-content-center text-white fw-bold"
                   style={{
                     width: "28px",
                     height: "28px",

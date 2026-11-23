@@ -70,3 +70,8 @@ export const getTimelineLookups = (params = {}) =>
 export const logTimelineActivity = (payload) =>
   api.create("/api/timeline/activity", payload);
 
+/** DELETE activity from timeline */
+export const deleteTimelineActivity = (activityId) =>
+  api.delete(`/api/activities/${activityId}`);
+
+

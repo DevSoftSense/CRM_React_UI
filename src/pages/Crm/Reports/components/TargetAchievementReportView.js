@@ -40,10 +40,35 @@ const TargetAchievementReportView = ({
   }, [reportResult]);
 
   // Executive KPI Calculations
-  const totalTargetAmount = Number(summary.total_target_amount ?? 1500000);
-  const totalWonAchieved = Number(summary.total_won_achieved ?? 250000);
-  const quotaGapAmount = Number(summary.quota_gap_amount ?? 1250000);
-  const teamAttainmentPct = Number(summary.team_attainment_pct ?? 16.7);
+  const totalTargetAmount = Number(
+    summary.total_target_amount ??
+      rawRows.reduce((a, b) => a + Number(b.target_amount || 0), 0) ??
+      0
+  );
+  const totalWonAchieved = Number(
+    summary.total_won_achieved ??
+      rawRows.reduce((a, b) => a + Number(b.won_revenue || 0), 0) ??
+      0
+  );
+  const quotaGapAmount = Number(
+    summary.quota_gap_amount ??
+      Math.max(0, totalTargetAmount - totalWonAchieved) ??
+      0
+  );
+  const teamAttainmentPct = Number(
+    summary.team_attainment_pct ??
+      (totalTargetAmount > 0
+        ? Math.round((totalWonAchieved / totalTargetAmount) * 100)
+        : 0)
+  );
+
+  // Top Attainment Rep
+  const topAttainmentRep = useMemo(() => {
+    if (rawRows.length === 0) return null;
+    return [...rawRows].sort(
+      (a, b) => Number(b.attainment_pct || 0) - Number(a.attainment_pct || 0)
+    )[0];
+  }, [rawRows]);
 
   // Filtered rows for client search & filter
   const filteredRows = useMemo(() => {
@@ -134,11 +159,7 @@ const TargetAchievementReportView = ({
         ? chartData
         : rawRows.length > 0
         ? rawRows
-        : [
-            { sales_rep: "Amit Kumar", target_amount: 500000, won_revenue: 250000 },
-            { sales_rep: "Neha Gupta", target_amount: 500000, won_revenue: 0 },
-            { sales_rep: "Vikram Singh", target_amount: 500000, won_revenue: 0 },
-          ];
+        : [];
 
     const categories = list.map((c) => c.sales_rep || "Sales Rep");
     const targetData = list.map((c) => Number(c.target_amount || 0));
@@ -1177,17 +1198,25 @@ const TargetAchievementReportView = ({
             >
               <div className="d-flex align-items-center gap-1.5">
                 <i className="ri-funds-box-fill" style={{ color: "#7f1d1d" }}></i>
-                <span>Team achieved ₹ 2,50,000 (16.7%) toward ₹ 15,00,000 target quota.</span>
+                <span>Team achieved {formatCurrency(totalWonAchieved)} ({teamAttainmentPct}%) toward {formatCurrency(totalTargetAmount)} target quota.</span>
               </div>
               <span className="d-none d-md-inline text-muted">|</span>
               <div className="d-flex align-items-center gap-1.5">
                 <i className="ri-vip-crown-fill" style={{ color: "#d97706" }}></i>
-                <span>Amit Kumar leads with 50.0% attainment and ₹ 2,50,000 won.</span>
+                <span>
+                  {topAttainmentRep
+                    ? `${topAttainmentRep.sales_rep} leads with ${topAttainmentRep.attainment_pct || 0}% attainment and ${formatCurrency(topAttainmentRep.won_revenue || 0)} won.`
+                    : "No team targets established for this period."}
+                </span>
               </div>
               <span className="d-none d-md-inline text-muted">|</span>
               <div className="d-flex align-items-center gap-1.5">
                 <i className="ri-alert-fill" style={{ color: "#d97706" }}></i>
-                <span>₹ 12,50,000 remaining gap requires pipeline acceleration for Neha Gupta and Vikram Singh.</span>
+                <span>
+                  {quotaGapAmount > 0
+                    ? `${formatCurrency(quotaGapAmount)} remaining quota gap requires pipeline acceleration.`
+                    : "Target quota successfully achieved."}
+                </span>
               </div>
             </div>
 

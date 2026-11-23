@@ -674,7 +674,7 @@ const CustomerDetail = () => {
                     Total Opportunities
                   </span>
                   <div
-                    className="d-flex align-items-center justify-content-center rounded-0-0"
+                    className="d-flex align-items-center justify-content-center rounded-0"
                     style={{ width: 32, height: 32, backgroundColor: THEME.lightBg, color: THEME.primary }}
                   >
                     <i className="ri-briefcase-line fs-16" />
@@ -695,7 +695,7 @@ const CustomerDetail = () => {
                     Pipeline Value
                   </span>
                   <div
-                    className="d-flex align-items-center justify-content-center rounded-0-0"
+                    className="d-flex align-items-center justify-content-center rounded-0"
                     style={{ width: 32, height: 32, backgroundColor: THEME.lightBg, color: THEME.primary }}
                   >
                     <i className="ri-money-dollar-circle-line fs-16" />
@@ -718,7 +718,7 @@ const CustomerDetail = () => {
                     Won Deals Revenue
                   </span>
                   <div
-                    className="d-flex align-items-center justify-content-center rounded-0-0"
+                    className="d-flex align-items-center justify-content-center rounded-0"
                     style={{ width: 32, height: 32, backgroundColor: "#ecfdf5", color: "#16a34a" }}
                   >
                     <i className="ri-trophy-line fs-16" />
@@ -739,7 +739,7 @@ const CustomerDetail = () => {
                     Key Contacts
                   </span>
                   <div
-                    className="d-flex align-items-center justify-content-center rounded-0-0"
+                    className="d-flex align-items-center justify-content-center rounded-0"
                     style={{ width: 32, height: 32, backgroundColor: THEME.lightBg, color: THEME.primary }}
                   >
                     <i className="ri-contacts-book-line fs-16" />
@@ -986,7 +986,7 @@ const CustomerDetail = () => {
                               <td>
                                 <div className="d-flex align-items-center gap-1">
                                   <div
-                                    className="rounded-0-0 d-flex align-items-center justify-content-center text-white fw-bold"
+                                    className="rounded-0 d-flex align-items-center justify-content-center text-white fw-bold"
                                     style={{ width: 22, height: 22, fontSize: "9px", backgroundColor: THEME.primary }}
                                   >
                                     {getInitials(opp.ownerName || "US")}
@@ -997,7 +997,7 @@ const CustomerDetail = () => {
                               <td className="text-end">
                                 <Link
                                   to={`/crm/opportunities/${opp.opportunityId}`}
-                                  className="btn btn-sm btn-light border py-1 px-2 fs-12 fw-semibold"
+                                  className="btn btn-sm btn-light border py-1 px-2 fs-12 fw-semibold rounded-0"
                                   style={{ color: THEME.primary }}
                                 >
                                   View 360° Profile →
@@ -1016,7 +1016,7 @@ const CustomerDetail = () => {
                     <div className="mt-2">
                       <Button
                         size="sm"
-                        className="text-white fw-semibold"
+                        className="text-white fw-semibold rounded-0"
                         onClick={() => navigate("/crm/pipeline")}
                         style={{ backgroundColor: THEME.primary, borderColor: THEME.primary }}
                       >
@@ -1040,7 +1040,7 @@ const CustomerDetail = () => {
                   </div>
                   <Button
                     size="sm"
-                    className="text-white fw-semibold px-3"
+                    className="text-white fw-semibold px-3 rounded-0"
                     onClick={() => setContactModalOpen(true)}
                     style={{ backgroundColor: THEME.primary, borderColor: THEME.primary }}
                   >
@@ -1052,12 +1052,12 @@ const CustomerDetail = () => {
                   <Row className="g-3">
                     {contacts.map((c) => (
                       <Col lg={4} md={6} key={c.contactPersonId}>
-                        <div className="p-3 border rounded-0-0 bg-white h-100 d-flex flex-column justify-content-between" style={{ borderColor: THEME.cardBorder }}>
+                        <div className="p-3 border rounded-0 bg-white h-100 d-flex flex-column justify-content-between" style={{ borderColor: THEME.cardBorder }}>
                           <div>
                             <div className="d-flex align-items-start justify-content-between mb-2">
                               <div className="d-flex align-items-center gap-2">
                                 <div
-                                  className="rounded-0-0 d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
+                                  className="rounded-0 d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
                                   style={{ width: 36, height: 36, fontSize: "12px", backgroundColor: THEME.primary }}
                                 >
                                   {getInitials(c.fullName || `${c.firstName || ""} ${c.lastName || ""}`)}
@@ -1164,11 +1164,11 @@ const CustomerDetail = () => {
                     {activities.map((act) => (
                       <div
                         key={act.activityId}
-                        className="p-3 border rounded-0-0 bg-white d-flex align-items-start gap-3"
+                        className="p-3 border rounded-0 bg-white d-flex align-items-start gap-3"
                         style={{ borderColor: THEME.cardBorder }}
                       >
                         <div
-                          className="rounded-0-0 d-flex align-items-center justify-content-center flex-shrink-0"
+                          className="rounded-0 d-flex align-items-center justify-content-center flex-shrink-0"
                           style={{ width: 36, height: 36, backgroundColor: THEME.lightBg, color: THEME.primary, fontSize: "16px" }}
                         >
                           <i className="ri-calendar-check-line" />

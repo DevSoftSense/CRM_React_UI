@@ -196,7 +196,7 @@ const RevenueTrendChart = ({ data = [] }) => {
               label: {
                 borderColor: "#ef4444",
                 borderWidth: 1.5,
-                borderRadius: 8,
+                borderRadius: 0,
                 text: [
                   formatCalloutInr(peakPoint.value),
                   `(${peakPoint.month})`,
@@ -204,7 +204,7 @@ const RevenueTrendChart = ({ data = [] }) => {
                 textAnchor: "middle",
                 offsetY: -16,
                 style: {
-                  background: isDark ? "#1e293b" : "#ffffff",
+                  background: isDark ? "#121212" : "#ffffff",
                   color: isDark ? "#f8fafc" : "#0f172a",
                   fontSize: "12px",
                   fontWeight: 700,
@@ -232,9 +232,9 @@ const RevenueTrendChart = ({ data = [] }) => {
 
         return `
           <div style="
-            background: ${isDark ? "#1e293b" : "#ffffff"};
+            background: ${isDark ? "#121212" : "#ffffff"};
             border: 1.5px solid #ef4444;
-            border-radius: 8px;
+            border-radius: 0px;
             padding: 7px 16px;
             box-shadow: 0 4px 14px rgba(239, 68, 68, 0.18);
             text-align: center;
@@ -272,9 +272,9 @@ const RevenueTrendChart = ({ data = [] }) => {
     <Card
       className="border shadow-none h-100 mb-0 bg-white"
       style={{
-        borderRadius: "12px",
-        borderColor: isDark ? "#334155" : "#e2e8f0",
-        backgroundColor: isDark ? "#1e293b" : "#ffffff",
+        borderRadius: 0,
+        borderColor: isDark ? "#262626" : "#e2e8f0",
+        backgroundColor: isDark ? "#121212" : "#ffffff",
       }}
     >
       {/* Top Header: Title + Dropdown */}
@@ -293,14 +293,14 @@ const RevenueTrendChart = ({ data = [] }) => {
             onChange={(e) => setFilterMode(e.target.value)}
             className="form-select form-select-sm border shadow-none"
             style={{
-              borderRadius: "6px",
+              borderRadius: 0,
               fontSize: "11px",
               fontWeight: 500,
               padding: "4px 8px",
               cursor: "pointer",
-              backgroundColor: isDark ? "#0f172a" : "#ffffff",
+              backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
               color: isDark ? "#cbd5e1" : "#334155",
-              borderColor: isDark ? "#334155" : "#e2e8f0",
+              borderColor: isDark ? "#262626" : "#e2e8f0",
             }}
           >
             <option value="month">By Month</option>

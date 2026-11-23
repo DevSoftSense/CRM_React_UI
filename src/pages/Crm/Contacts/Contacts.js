@@ -321,16 +321,16 @@ const Contacts = () => {
           pageTitle="CRM"
           description="Contact persons linked to a Customer — used as Opportunity Primary Contact."
           actions={
-            <Button color="primary" onClick={openCreate}>
+            <Button color="primary" className="rounded-0" onClick={openCreate}>
               <i className="ri-add-line align-bottom me-1" />
               New Contact
             </Button>
           }
         />
 
-        {listError ? <Alert color="danger" className="mb-3">{listError}</Alert> : null}
+        {listError ? <Alert color="danger" className="mb-3 rounded-0">{listError}</Alert> : null}
 
-        <Card className="apt-list-card mb-0">
+        <Card className="apt-list-card mb-0 rounded-0">
           <CardBody className="p-0">
             <div className="apt-list-toolbar">
               <div className="apt-list-toolbar__left">
@@ -340,7 +340,7 @@ const Contacts = () => {
                   <Input
                     type="select"
                     bsSize="sm"
-                    className="apt-list-pagesize__select"
+                    className="apt-list-pagesize__select rounded-0"
                     value={pageSizeChoice}
                     onChange={(e) => {
                       const raw = e.target.value;
@@ -359,6 +359,7 @@ const Contacts = () => {
                 <Input
                   type="select"
                   bsSize="sm"
+                  className="rounded-0"
                   style={{ width: 200 }}
                   value={accountFilter}
                   onChange={(e) => {
@@ -377,7 +378,7 @@ const Contacts = () => {
               <div className="apt-list-toolbar__search search-box">
                 <Input
                   type="text"
-                  className="form-control"
+                  className="form-control rounded-0"
                   placeholder="Search name, mobile, email, customer…"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
@@ -429,7 +430,7 @@ const Contacts = () => {
                           <div className="d-flex align-items-center justify-content-center gap-1">
                             <Link
                               to={`/crm/contacts/${c.contactPersonId}`}
-                              className="btn btn-sm btn-soft-primary"
+                              className="btn btn-sm btn-soft-primary rounded-0"
                               title="View"
                             >
                               <i className="ri-eye-line" />
@@ -437,6 +438,7 @@ const Contacts = () => {
                             <Button
                               color="soft-primary"
                               size="sm"
+                              className="rounded-0"
                               onClick={() => openEdit(c.contactPersonId)}
                               title="Edit"
                             >
@@ -445,6 +447,7 @@ const Contacts = () => {
                             <Button
                               color="soft-danger"
                               size="sm"
+                              className="rounded-0"
                               onClick={() => {
                                 setDeleteTarget(c);
                                 setDeleteModal(true);
@@ -465,8 +468,17 @@ const Contacts = () => {
                           <div className="text-muted fs-12">#{c.contactPersonId}</div>
                         </td>
                         <td>
-                          {c.accountName || c.accountId || "—"}
-                          {c.accountName && c.accountId ? (
+                          {c.accountId ? (
+                            <Link
+                              to={`/crm/customers/${c.accountId}`}
+                              className="fw-semibold text-primary"
+                            >
+                              {c.accountName || `Customer #${c.accountId}`}
+                            </Link>
+                          ) : (
+                            c.accountName || "—"
+                          )}
+                          {c.accountId ? (
                             <div className="text-muted fs-12">#{c.accountId}</div>
                           ) : null}
                         </td>
@@ -474,7 +486,7 @@ const Contacts = () => {
                         <td className="fs-13">{c.email || "—"}</td>
                         <td>
                           {c.isPrimary ? (
-                            <Badge className="bg-success-subtle text-success">Primary</Badge>
+                            <Badge className="bg-success-subtle text-success rounded-0">Primary</Badge>
                           ) : (
                             <span className="text-muted">—</span>
                           )}
@@ -495,13 +507,13 @@ const Contacts = () => {
           </CardBody>
         </Card>
 
-        <Modal isOpen={modal} toggle={() => !saving && setModal(false)} size="lg" centered>
-          <ModalHeader toggle={() => !saving && setModal(false)}>
+        <Modal isOpen={modal} toggle={() => !saving && setModal(false)} size="lg" centered contentClassName="rounded-0">
+          <ModalHeader toggle={() => !saving && setModal(false)} className="rounded-0">
             {editMode ? "Edit Contact" : "New Contact"}
           </ModalHeader>
           <Form onSubmit={saveContact}>
             <ModalBody>
-              {formError ? <Alert color="danger">{formError}</Alert> : null}
+              {formError ? <Alert color="danger" className="rounded-0">{formError}</Alert> : null}
               <Row className="g-3">
                 <Col md={6}>
                   <Label className="form-label">
@@ -509,6 +521,7 @@ const Contacts = () => {
                   </Label>
                   <Input
                     type="select"
+                    className="rounded-0"
                     value={form.accountId}
                     onChange={(e) => onFormChange("accountId", e.target.value)}
                     required
@@ -533,6 +546,7 @@ const Contacts = () => {
                 <Col md={3}>
                   <Label className="form-label">Salutation</Label>
                   <Input
+                    className="rounded-0"
                     value={form.salutation}
                     onChange={(e) => onFormChange("salutation", e.target.value)}
                     placeholder="Mr / Ms"
@@ -542,7 +556,7 @@ const Contacts = () => {
                   <div className="form-check mb-2">
                     <Input
                       type="checkbox"
-                      className="form-check-input"
+                      className="form-check-input rounded-0"
                       id="contactIsPrimary"
                       checked={!!form.isPrimary}
                       onChange={(e) => onFormChange("isPrimary", e.target.checked)}
@@ -557,6 +571,7 @@ const Contacts = () => {
                     First name <span className="text-danger">*</span>
                   </Label>
                   <Input
+                    className="rounded-0"
                     value={form.firstName}
                     onChange={(e) => onFormChange("firstName", e.target.value)}
                     required
@@ -565,6 +580,7 @@ const Contacts = () => {
                 <Col md={6}>
                   <Label className="form-label">Last name</Label>
                   <Input
+                    className="rounded-0"
                     value={form.lastName}
                     onChange={(e) => onFormChange("lastName", e.target.value)}
                   />
@@ -574,6 +590,7 @@ const Contacts = () => {
                     Mobile <span className="text-danger">*</span>
                   </Label>
                   <Input
+                    className="rounded-0"
                     value={form.mobile}
                     onChange={(e) => onFormChange("mobile", e.target.value)}
                     required
@@ -582,6 +599,7 @@ const Contacts = () => {
                 <Col md={6}>
                   <Label className="form-label">Work phone</Label>
                   <Input
+                    className="rounded-0"
                     value={form.workPhone}
                     onChange={(e) => onFormChange("workPhone", e.target.value)}
                   />
@@ -590,17 +608,18 @@ const Contacts = () => {
                   <Label className="form-label">Email</Label>
                   <Input
                     type="email"
+                    className="rounded-0"
                     value={form.email}
                     onChange={(e) => onFormChange("email", e.target.value)}
                   />
                 </Col>
               </Row>
             </ModalBody>
-            <ModalFooter>
-              <Button color="light" type="button" disabled={saving} onClick={() => setModal(false)}>
+            <ModalFooter className="rounded-0">
+              <Button color="light" type="button" className="rounded-0" disabled={saving} onClick={() => setModal(false)}>
                 Cancel
               </Button>
-              <Button color="primary" type="submit" disabled={saving}>
+              <Button color="primary" type="submit" className="rounded-0" disabled={saving}>
                 {saving ? <Spinner size="sm" className="me-1" /> : null}
                 {editMode ? "Update" : "Create"}
               </Button>

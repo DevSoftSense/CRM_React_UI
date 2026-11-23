@@ -51,9 +51,9 @@ const ActivitiesOverviewCard = ({ activities = {} }) => {
     <Card
       className="border shadow-none h-100 mb-0 bg-white"
       style={{
-        borderRadius: "12px",
-        borderColor: isDark ? "#334155" : "#e2e8f0",
-        backgroundColor: isDark ? "#1e293b" : "#ffffff",
+        borderRadius: 0,
+        borderColor: isDark ? "#262626" : "#e2e8f0",
+        backgroundColor: isDark ? "#121212" : "#ffffff",
       }}
     >
       {/* Top Header: Title + Period Filter */}
@@ -70,14 +70,14 @@ const ActivitiesOverviewCard = ({ activities = {} }) => {
             onChange={(e) => setPeriodFilter(e.target.value)}
             className="form-select form-select-sm border shadow-none"
             style={{
-              borderRadius: "6px",
+              borderRadius: 0,
               fontSize: "11px",
               fontWeight: 500,
               padding: "4px 8px",
               cursor: "pointer",
-              backgroundColor: isDark ? "#0f172a" : "#ffffff",
+              backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
               color: isDark ? "#cbd5e1" : "#334155",
-              borderColor: isDark ? "#334155" : "#e2e8f0",
+              borderColor: isDark ? "#262626" : "#e2e8f0",
             }}
           >
             <option value="month">This Month</option>
@@ -95,9 +95,9 @@ const ActivitiesOverviewCard = ({ activities = {} }) => {
               <div
                 className="d-flex flex-column align-items-center justify-content-center text-center p-2"
                 style={{
-                  borderRadius: "14px",
-                  backgroundColor: isDark ? "#0f172a" : "#fbf2f4",
-                  border: `1px solid ${isDark ? "#334155" : "#fecdd3"}`,
+                  borderRadius: 0,
+                  backgroundColor: isDark ? "#1a1a1a" : "#fbf2f4",
+                  border: `1px solid ${isDark ? "#262626" : "#fecdd3"}`,
                   minHeight: "88px",
                   transition: "transform 0.15s ease, box-shadow 0.15s ease",
                   cursor: "default",

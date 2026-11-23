@@ -98,14 +98,14 @@ const ActivityDetail = () => {
           pageTitle="CRM / Activities"
           actions={
             <div className="d-flex gap-2">
-              <Button color="light" onClick={() => navigate("/crm/activities")}>
+              <Button color="light" className="rounded-0 border" onClick={() => navigate("/crm/activities")}>
                 Back to list
               </Button>
-              <Button color="light" tag={Link} to="/crm/calendar">
+              <Button color="light" className="rounded-0 border" tag={Link} to="/crm/calendar">
                 Calendar
               </Button>
               {activity && !isComplete ? (
-                <Button color="success" onClick={markComplete} disabled={completing}>
+                <Button color="success" className="rounded-0" onClick={markComplete} disabled={completing}>
                   {completing ? <Spinner size="sm" className="me-1" /> : null}
                   Mark completed
                 </Button>
@@ -114,12 +114,12 @@ const ActivityDetail = () => {
           }
         />
 
-        {error ? <Alert color="danger">{error}</Alert> : null}
+        {error ? <Alert color="danger" className="rounded-0">{error}</Alert> : null}
 
         {activity ? (
           <Row>
             <Col lg={8}>
-              <Card>
+              <Card className="rounded-0 border">
                 <CardBody>
                   <h5 className="card-title mb-3">Overview</h5>
                   <Row className="g-3">
@@ -129,7 +129,7 @@ const ActivityDetail = () => {
                     </Col>
                     <Col md={6}>
                       <div className="text-muted fs-12">Status</div>
-                      <Badge className={statusBadge(activity.activityStatus)}>
+                      <Badge className={`${statusBadge(activity.activityStatus)} rounded-0`}>
                         {activity.activityStatusName || activity.activityStatus || "—"}
                       </Badge>
                     </Col>

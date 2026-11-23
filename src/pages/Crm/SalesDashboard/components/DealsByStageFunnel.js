@@ -102,9 +102,9 @@ const DealsByStageFunnel = ({ data = {} }) => {
     <Card
       className="border shadow-none h-100 mb-0 bg-white"
       style={{
-        borderRadius: "12px",
-        borderColor: isDark ? "#334155" : "#e2e8f0",
-        backgroundColor: isDark ? "#1e293b" : "#ffffff",
+        borderRadius: 0,
+        borderColor: isDark ? "#262626" : "#e2e8f0",
+        backgroundColor: isDark ? "#121212" : "#ffffff",
       }}
     >
       {/* Top Header: Title + Filter Pill */}
@@ -121,14 +121,14 @@ const DealsByStageFunnel = ({ data = {} }) => {
             onChange={(e) => setFilterMode(e.target.value)}
             className="form-select form-select-sm border shadow-none"
             style={{
-              borderRadius: "6px",
+              borderRadius: 0,
               fontSize: "11px",
               fontWeight: 500,
               padding: "4px 8px",
               cursor: "pointer",
-              backgroundColor: isDark ? "#0f172a" : "#ffffff",
+              backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
               color: isDark ? "#cbd5e1" : "#334155",
-              borderColor: isDark ? "#334155" : "#e2e8f0",
+              borderColor: isDark ? "#262626" : "#e2e8f0",
             }}
           >
             <option value="pipeline">Pipeline</option>
@@ -260,7 +260,7 @@ const DealsByStageFunnel = ({ data = {} }) => {
                   style={{
                     borderBottom: isLast
                       ? "none"
-                      : `1px solid ${isDark ? "#334155" : "#f1f5f9"}`,
+                      : `1px solid ${isDark ? "#262626" : "#f1f5f9"}`,
                     cursor: "pointer",
                     backgroundColor: isHovered
                       ? isDark
@@ -270,7 +270,7 @@ const DealsByStageFunnel = ({ data = {} }) => {
                     transition: "background-color 0.15s ease",
                     paddingLeft: "6px",
                     paddingRight: "6px",
-                    borderRadius: "4px",
+                    borderRadius: 0,
                   }}
                   onMouseEnter={() => setActiveStage(item.code)}
                   onMouseLeave={() => setActiveStage(null)}
@@ -322,9 +322,9 @@ const DealsByStageFunnel = ({ data = {} }) => {
         <div
           className="d-flex align-items-center justify-content-between px-3 py-2 mt-2"
           style={{
-            backgroundColor: isDark ? "#0f172a" : "#f8fafc",
-            borderRadius: "10px",
-            border: `1px solid ${isDark ? "#334155" : "#f1f5f9"}`,
+            backgroundColor: isDark ? "#1a1a1a" : "#f8fafc",
+            borderRadius: 0,
+            border: `1px solid ${isDark ? "#262626" : "#f1f5f9"}`,
           }}
         >
           <span

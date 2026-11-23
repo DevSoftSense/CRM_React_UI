@@ -43,25 +43,39 @@ const LeadConversionFunnelView = ({
   }, [reportResult]);
 
   // Executive KPI Calculations
-  const totalLeads = Number(summary.total_leads ?? (rawRows.length > 0 ? rawRows.length : 1));
+  const totalLeads = Number(summary.total_leads ?? rawRows.length ?? 0);
   const convertedLeads = Number(summary.converted_leads ?? 0);
   const conversionRate = Number(summary.conversion_rate ?? 0);
-  const openPipeline = Number(summary.estimated_pipeline_value ?? 250000);
+  const openPipeline = Number(
+    summary.estimated_pipeline_value ??
+      rawRows.reduce((acc, r) => acc + Number(r.estimated_value || r.amount || 0), 0)
+  );
   const weightedPipeline = Math.round(openPipeline * 0.1); // 10% probability for early stage
 
-  // Calculate Lead Age (difference between created_at / created_date and Nov 20, 2026)
+  // Calculate Lead Age (difference between created_date and current time)
   const calculateAgeDays = (createdDateStr) => {
-    if (!createdDateStr) return 23;
+    if (!createdDateStr) return 0;
     try {
       const created = new Date(createdDateStr);
-      const referenceDate = new Date("2026-11-20T00:00:00");
-      const diffTime = Math.abs(referenceDate - created);
+      const now = new Date();
+      const diffTime = Math.abs(now - created);
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return isNaN(diffDays) ? 23 : diffDays;
+      return isNaN(diffDays) ? 0 : diffDays;
     } catch {
-      return 23;
+      return 0;
     }
   };
+
+  // Find oldest idle lead requiring attention
+  const idleLead = useMemo(() => {
+    if (rawRows.length === 0) return null;
+    return (
+      rawRows.find((r) => {
+        const st = String(r.status || "").toUpperCase();
+        return st === "NEW" || st.includes("NEW");
+      }) || rawRows[0]
+    );
+  }, [rawRows]);
 
   // 6 Funnel Stages definition
   const funnelStages = useMemo(() => {
@@ -98,16 +112,43 @@ const LeadConversionFunnelView = ({
     });
   }, [chartData, totalLeads, openPipeline, metricView]);
 
-  // Lead Sources breakdown
+  // Lead Sources breakdown dynamically computed from data
   const leadSources = useMemo(() => {
-    const sources = [
-      { name: "Website", count: 1, wonRate: "0% won" },
-      { name: "Referral", count: 0, wonRate: "—" },
-      { name: "LinkedIn", count: 0, wonRate: "—" },
-      { name: "Cold call", count: 0, wonRate: "—" },
-    ];
-    return sources;
-  }, []);
+    if (rawRows.length === 0) return [];
+    const sourceMap = {};
+    rawRows.forEach((r) => {
+      const src = r.source || r.lead_source || "Other";
+      if (!sourceMap[src]) sourceMap[src] = { count: 0, won: 0 };
+      sourceMap[src].count += 1;
+      const st = String(r.status || "").toUpperCase();
+      if (st.includes("CONVERT") || st.includes("WON")) sourceMap[src].won += 1;
+    });
+    return Object.entries(sourceMap)
+      .map(([name, data]) => ({
+        name,
+        count: data.count,
+        wonRate: data.count > 0 ? `${Math.round((data.won / data.count) * 100)}% won` : "—",
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [rawRows]);
+
+  // Sales rep performance dynamically computed from data
+  const repPerformance = useMemo(() => {
+    const map = {};
+    rawRows.forEach((r) => {
+      const rep = r.sales_rep || "Unassigned";
+      if (!map[rep]) map[rep] = { name: rep, leads: 0, won: 0, totalAge: 0 };
+      map[rep].leads += 1;
+      const st = String(r.status || "").toUpperCase();
+      if (st.includes("CONVERT") || st.includes("WON")) map[rep].won += 1;
+      map[rep].totalAge += calculateAgeDays(r.created_date || r.created_at);
+    });
+    return Object.values(map).map((item) => ({
+      ...item,
+      convRate: item.leads > 0 ? `${Math.round((item.won / item.leads) * 100)}%` : "0%",
+      avgDays: item.leads > 0 ? `${Math.round(item.totalAge / item.leads)} d` : "—",
+    }));
+  }, [rawRows]);
 
   // Filtered rows for client search & filters
   const filteredRows = useMemo(() => {
@@ -195,19 +236,28 @@ const LeadConversionFunnelView = ({
     );
   };
 
-  // Weekly Leads & Won ApexChart configuration
+  // Weekly Leads & Won ApexChart configuration dynamically calculated
   const timelineChartConfig = useMemo(() => {
+    const leadsCount = rawRows.length;
+    const wonCount = rawRows.filter((r) => {
+      const st = String(r.status || "").toUpperCase();
+      return st.includes("CONVERT") || st.includes("WON");
+    }).length;
+
+    const newLeadsData = leadsCount > 0 ? [leadsCount, 0, 0, 0] : [0, 0, 0, 0];
+    const wonData = wonCount > 0 ? [wonCount, 0, 0, 0] : [0, 0, 0, 0];
+
     return {
       series: [
         {
           name: "New leads",
           type: "line",
-          data: [1, 0, 0, 0],
+          data: newLeadsData,
         },
         {
           name: "Won",
           type: "line",
-          data: [0, 0, 0, 0],
+          data: wonData,
         },
       ],
       options: {
@@ -835,122 +885,132 @@ const LeadConversionFunnelView = ({
                 <h6 className="fw-bold text-dark mb-0" style={{ fontSize: "14px" }}>
                   Needs attention
                 </h6>
-                <span
-                  className="badge"
-                  style={{
-                    backgroundColor: "#fee2e2",
-                    color: "#991b1b",
-                    border: "1px solid #fecaca",
-                    fontSize: "10.5px",
-                    padding: "2.5px 8px",
-                    borderRadius: "10px",
-                  }}
-                >
-                  1 lead
-                </span>
+                {idleLead && (
+                  <span
+                    className="badge"
+                    style={{
+                      backgroundColor: "#fee2e2",
+                      color: "#991b1b",
+                      border: "1px solid #fecaca",
+                      fontSize: "10.5px",
+                      padding: "2.5px 8px",
+                      borderRadius: "10px",
+                    }}
+                  >
+                    1 lead
+                  </span>
+                )}
               </div>
 
               <CardBody className="p-3">
-                {/* Lead Inset Box */}
-                <div
-                  className="p-2.5 border"
-                  style={{
-                    backgroundColor: "#ffffff",
-                    borderColor: "#e2e8f0",
-                    borderRadius: "4px",
-                  }}
-                >
-                  {/* Top: Avatar, Name & Value */}
-                  <div className="d-flex align-items-start justify-content-between">
-                    <div className="d-flex align-items-center gap-2">
-                      <span
-                        style={{
-                          width: "32px",
-                          height: "32px",
-                          borderRadius: "4px",
-                          backgroundColor: "#fef2f2",
-                          color: "#991b1b",
-                          border: "1px solid #fecaca",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "11.5px",
-                          fontWeight: 700,
-                          flexShrink: 0,
-                        }}
-                      >
-                        RM
-                      </span>
-                      <div>
-                        <span className="fw-bold text-dark d-block" style={{ fontSize: "12.5px" }}>
-                          Rajesh Mehta
+                {!idleLead ? (
+                  <div className="py-3 text-center text-muted" style={{ fontSize: "12px" }}>
+                    <i className="ri-checkbox-circle-line text-success fs-18 d-block mb-1"></i>
+                    No leads currently requiring attention.
+                  </div>
+                ) : (
+                  <div
+                    className="p-2.5 border"
+                    style={{
+                      backgroundColor: "#ffffff",
+                      borderColor: "#e2e8f0",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    {/* Top: Avatar, Name & Value */}
+                    <div className="d-flex align-items-start justify-content-between">
+                      <div className="d-flex align-items-center gap-2">
+                        <span
+                          style={{
+                            width: "32px",
+                            height: "32px",
+                            borderRadius: "4px",
+                            backgroundColor: "#fef2f2",
+                            color: "#991b1b",
+                            border: "1px solid #fecaca",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "11.5px",
+                            fontWeight: 700,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {getInitials(idleLead.lead_name)}
                         </span>
-                        <span className="text-muted" style={{ fontSize: "10.5px" }}>
-                          ABC Tech Solutions Ltd.
-                        </span>
+                        <div>
+                          <span className="fw-bold text-dark d-block" style={{ fontSize: "12.5px" }}>
+                            {idleLead.lead_name || "—"}
+                          </span>
+                          <span className="text-muted" style={{ fontSize: "10.5px" }}>
+                            {idleLead.company_name || "—"}
+                          </span>
+                        </div>
                       </div>
+
+                      <span
+                        className="font-monospace fw-bold text-dark"
+                        style={{ fontSize: "13px" }}
+                      >
+                        {formatCurrency(Number(idleLead.estimated_value || idleLead.amount || openPipeline || 0))}
+                      </span>
                     </div>
 
-                    <span
-                      className="font-monospace fw-bold text-dark"
-                      style={{ fontSize: "13px" }}
-                    >
-                      {formatCurrency(openPipeline)}
-                    </span>
-                  </div>
+                    {/* Middle: Badge & Owner */}
+                    <div className="d-flex align-items-center gap-2 my-2">
+                      <span
+                        style={{
+                          backgroundColor: "#fffbeb",
+                          color: "#b45309",
+                          border: "1px solid #fde68a",
+                          fontSize: "10.5px",
+                          fontWeight: 600,
+                          padding: "1.5px 6px",
+                          borderRadius: "3px",
+                        }}
+                      >
+                        {idleLead.status || "New"} • {calculateAgeDays(idleLead.created_date || idleLead.created_at)} days idle
+                      </span>
+                      <span className="text-muted" style={{ fontSize: "10.5px" }}>
+                        Owner: {idleLead.sales_rep || "Unassigned"}
+                      </span>
+                    </div>
 
-                  {/* Middle: Badge & Owner */}
-                  <div className="d-flex align-items-center gap-2 my-2">
-                    <span
-                      style={{
-                        backgroundColor: "#fffbeb",
-                        color: "#b45309",
-                        border: "1px solid #fde68a",
-                        fontSize: "10.5px",
-                        fontWeight: 600,
-                        padding: "1.5px 6px",
-                        borderRadius: "3px",
-                      }}
-                    >
-                      New • 23 days idle
-                    </span>
-                    <span className="text-muted" style={{ fontSize: "10.5px" }}>
-                      Owner: Amit Kumar
-                    </span>
+                    {/* Bottom Actions: Call now & Reassign */}
+                    <div className="d-flex align-items-center gap-1.5 mt-2">
+                      {idleLead.mobile ? (
+                        <a
+                          href={`tel:${idleLead.mobile}`}
+                          className="btn btn-sm"
+                          style={{
+                            backgroundColor: "#7f1d1d",
+                            borderColor: "#7f1d1d",
+                            color: "#ffffff",
+                            fontSize: "11px",
+                            fontWeight: 600,
+                            padding: "4px 14px",
+                            borderRadius: "3px",
+                          }}
+                        >
+                          Call now
+                        </a>
+                      ) : null}
+                      <Link
+                        to={`/crm/leads/${idleLead.lead_id || 1}`}
+                        className="btn btn-sm btn-light border"
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 500,
+                          padding: "4px 12px",
+                          borderRadius: "3px",
+                          color: "#334155",
+                        }}
+                      >
+                        View lead
+                      </Link>
+                    </div>
                   </div>
-
-                  {/* Bottom Actions: Call now & Reassign */}
-                  <div className="d-flex align-items-center gap-1.5 mt-2">
-                    <a
-                      href="tel:9876543210"
-                      className="btn btn-sm"
-                      style={{
-                        backgroundColor: "#7f1d1d",
-                        borderColor: "#7f1d1d",
-                        color: "#ffffff",
-                        fontSize: "11px",
-                        fontWeight: 600,
-                        padding: "4px 14px",
-                        borderRadius: "3px",
-                      }}
-                    >
-                      Call now
-                    </a>
-                    <Link
-                      to="/crm/leads/1"
-                      className="btn btn-sm btn-light border"
-                      style={{
-                        fontSize: "11px",
-                        fontWeight: 500,
-                        padding: "4px 12px",
-                        borderRadius: "3px",
-                        color: "#334155",
-                      }}
-                    >
-                      Reassign
-                    </Link>
-                  </div>
-                </div>
+                )}
               </CardBody>
             </Card>
 
@@ -976,79 +1036,88 @@ const LeadConversionFunnelView = ({
               </div>
 
               <CardBody className="p-3">
-                <div className="d-flex flex-column gap-2">
-                  {leadSources.map((ls, idx) => {
-                    const isTop = ls.name === "Website";
-                    return (
-                      <div
-                        key={ls.name || idx}
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "70px 1fr 24px 52px",
-                          alignItems: "center",
-                          fontSize: "12px",
-                          gap: "8px",
-                          padding: "3px 0",
-                        }}
-                      >
-                        {/* Source Name */}
-                        <span
-                          className="text-dark"
-                          style={{ fontWeight: isTop ? 600 : 400, whiteSpace: "nowrap" }}
+                {leadSources.length === 0 ? (
+                  <div className="py-2 text-center text-muted" style={{ fontSize: "12px" }}>
+                    No lead sources recorded.
+                  </div>
+                ) : (
+                  <div className="d-flex flex-column gap-2">
+                    {leadSources.map((ls, idx) => {
+                      const isTop = idx === 0 && ls.count > 0;
+                      const maxLeadCount = leadSources[0]?.count || 1;
+                      const barWidth = Math.round((ls.count / maxLeadCount) * 100);
+                      return (
+                        <div
+                          key={ls.name || idx}
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "70px 1fr 24px 52px",
+                            alignItems: "center",
+                            fontSize: "12px",
+                            gap: "8px",
+                            padding: "3px 0",
+                          }}
                         >
-                          {ls.name}
-                        </span>
-
-                        {/* Progress Bar */}
-                        <div>
-                          <div
-                            className="progress"
-                            style={{
-                              height: "6px",
-                              backgroundColor: "#f1f5f9",
-                              borderRadius: "2px",
-                              overflow: "hidden",
-                              maxWidth: "140px",
-                              margin: 0,
-                            }}
+                          {/* Source Name */}
+                          <span
+                            className="text-dark"
+                            style={{ fontWeight: isTop ? 600 : 400, whiteSpace: "nowrap" }}
                           >
+                            {ls.name}
+                          </span>
+
+                          {/* Progress Bar */}
+                          <div>
                             <div
-                              className="progress-bar"
+                              className="progress"
                               style={{
-                                width: isTop ? "100%" : "0%",
-                                backgroundColor: isTop ? "#7f1d1d" : "#e2e8f0",
+                                height: "6px",
+                                backgroundColor: "#f1f5f9",
+                                borderRadius: "2px",
+                                overflow: "hidden",
+                                maxWidth: "140px",
+                                margin: 0,
                               }}
-                            />
+                            >
+                              <div
+                                className="progress-bar"
+                                style={{
+                                  width: `${barWidth}%`,
+                                  backgroundColor: isTop ? "#7f1d1d" : "#cbd5e1",
+                                }}
+                              />
+                            </div>
                           </div>
+
+                          {/* Count */}
+                          <span
+                            className="font-monospace text-dark text-center"
+                            style={{ fontWeight: isTop ? 700 : 400 }}
+                          >
+                            {ls.count}
+                          </span>
+
+                          {/* Win Rate */}
+                          <span
+                            className="text-muted font-monospace text-end"
+                            style={{ fontSize: "10.5px" }}
+                          >
+                            {ls.wonRate}
+                          </span>
                         </div>
+                      );
+                    })}
+                  </div>
+                )}
 
-                        {/* Count */}
-                        <span
-                          className="font-monospace text-dark text-center"
-                          style={{ fontWeight: isTop ? 700 : 400 }}
-                        >
-                          {ls.count}
-                        </span>
-
-                        {/* Win Rate */}
-                        <span
-                          className="text-muted font-monospace text-end"
-                          style={{ fontSize: "10.5px" }}
-                        >
-                          {ls.wonRate}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Subtitle note matching mockup */}
-                <div
-                  className="pt-2 mt-2 border-top text-muted"
-                  style={{ fontSize: "11px" }}
-                >
-                  Website • 0% won
-                </div>
+                {leadSources.length > 0 && (
+                  <div
+                    className="pt-2 mt-2 border-top text-muted"
+                    style={{ fontSize: "11px" }}
+                  >
+                    {leadSources[0].name} • {leadSources[0].wonRate}
+                  </div>
+                )}
               </CardBody>
             </Card>
 
@@ -1097,67 +1166,79 @@ const LeadConversionFunnelView = ({
                   <div style={{ textAlign: "right" }}>AVG DAYS</div>
                 </div>
 
-                {/* Rep Row */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 45px 38px 48px 58px",
-                    alignItems: "center",
-                    padding: "8px 0",
-                    fontSize: "12px",
-                    cursor: "pointer",
-                    borderRadius: "3px",
-                  }}
-                  onClick={() =>
-                    setSelectedRepFilter(selectedRepFilter === "Amit Kumar" ? "" : "Amit Kumar")
-                  }
-                >
-                  <div className="d-flex align-items-center gap-2" style={{ minWidth: 0 }}>
-                    <span
+                {/* Dynamic Rep Rows */}
+                {repPerformance.length === 0 ? (
+                  <div className="py-2 text-center text-muted" style={{ fontSize: "12px" }}>
+                    No sales rep activity recorded.
+                  </div>
+                ) : (
+                  repPerformance.map((rep, idx) => (
+                    <div
+                      key={rep.name || idx}
                       style={{
-                        width: "22px",
-                        height: "22px",
-                        borderRadius: "3px",
-                        backgroundColor: "#fef2f2",
-                        color: "#991b1b",
-                        fontSize: "10px",
-                        fontWeight: 700,
-                        display: "inline-flex",
+                        display: "grid",
+                        gridTemplateColumns: "1fr 45px 38px 48px 58px",
                         alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
+                        padding: "8px 0",
+                        fontSize: "12px",
+                        cursor: "pointer",
+                        borderRadius: "3px",
+                        backgroundColor: selectedRepFilter === rep.name ? "#f8fafc" : "transparent",
                       }}
+                      onClick={() =>
+                        setSelectedRepFilter(selectedRepFilter === rep.name ? "" : rep.name)
+                      }
                     >
-                      AK
-                    </span>
-                    <span className="text-dark fw-medium text-truncate" style={{ fontSize: "11.5px" }}>
-                      Amit Kumar
-                    </span>
-                  </div>
+                      <div className="d-flex align-items-center gap-2" style={{ minWidth: 0 }}>
+                        <span
+                          style={{
+                            width: "22px",
+                            height: "22px",
+                            borderRadius: "3px",
+                            backgroundColor: "#fef2f2",
+                            color: "#991b1b",
+                            fontSize: "10px",
+                            fontWeight: 700,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {getInitials(rep.name)}
+                        </span>
+                        <span className="text-dark fw-medium text-truncate" style={{ fontSize: "11.5px" }}>
+                          {rep.name}
+                        </span>
+                      </div>
 
-                  <div className="text-center font-monospace" style={{ fontSize: "12px", fontWeight: 600, color: "#0f172a" }}>
-                    1
-                  </div>
-                  <div className="text-center font-monospace text-muted" style={{ fontSize: "12px" }}>
-                    0
-                  </div>
-                  <div className="text-center font-monospace text-muted" style={{ fontSize: "12px" }}>
-                    0%
-                  </div>
-                  <div
-                    className="text-end font-monospace"
-                    style={{ color: "#dc2626", fontWeight: 700, fontSize: "12px" }}
-                  >
-                    23 d
-                  </div>
-                </div>
+                      <div className="text-center font-monospace" style={{ fontSize: "12px", fontWeight: 600, color: "#0f172a" }}>
+                        {rep.leads}
+                      </div>
+                      <div className="text-center font-monospace text-muted" style={{ fontSize: "12px" }}>
+                        {rep.won}
+                      </div>
+                      <div className="text-center font-monospace text-muted" style={{ fontSize: "12px" }}>
+                        {rep.convRate}
+                      </div>
+                      <div
+                        className="text-end font-monospace"
+                        style={{ color: "#dc2626", fontWeight: 700, fontSize: "12px" }}
+                      >
+                        {rep.avgDays}
+                      </div>
+                    </div>
+                  ))
+                )}
 
                 {/* Sub-text note */}
                 <div
                   className="pt-2 mt-2 border-top text-muted"
                   style={{ fontSize: "10.5px", lineHeight: "1.4" }}
                 >
-                  Only 1 rep has leads. Add more reps or set targets to compare performance here.
+                  {repPerformance.length > 0
+                    ? `Showing ${repPerformance.length} sales rep${repPerformance.length > 1 ? "s" : ""}.`
+                    : "No active sales reps found."}
                 </div>
               </CardBody>
             </Card>
@@ -1296,8 +1377,10 @@ const LeadConversionFunnelView = ({
                   </tr>
                 ) : (
                   paginatedRows.map((r, idx) => {
-                    const val = Number(r.estimated_value || openPipeline);
-                    const ageDays = calculateAgeDays(r.created_date);
+                    const val = Number(r.estimated_value || r.amount || 0);
+                    const ageDays = calculateAgeDays(r.created_date || r.created_at);
+                    const leadInitials = getInitials(r.lead_name);
+                    const repInitials = getInitials(r.sales_rep);
 
                     return (
                       <tr key={r.lead_id || idx} style={{ borderBottom: "1px solid #f1f5f9" }}>
@@ -1313,13 +1396,13 @@ const LeadConversionFunnelView = ({
                                 color: "#991b1b",
                                 display: "inline-flex",
                                 alignItems: "center",
-                                justifyContent: "center",
+                                justifyCenter: "center",
                                 fontSize: "11px",
                                 fontWeight: 700,
                                 flexShrink: 0,
                               }}
                             >
-                              RM
+                              {leadInitials}
                             </span>
                             <div>
                               <Link
@@ -1327,10 +1410,10 @@ const LeadConversionFunnelView = ({
                                 className="fw-bold text-dark text-decoration-none d-block"
                                 style={{ fontSize: "12.5px" }}
                               >
-                                {r.lead_name || "Rajesh Mehta"}
+                                {r.lead_name || "—"}
                               </Link>
                               <span className="text-muted" style={{ fontSize: "11px" }}>
-                                {r.company_name || "ABC Tech Solutions Ltd."}
+                                {r.company_name || "—"}
                               </span>
                             </div>
                           </div>
@@ -1355,7 +1438,7 @@ const LeadConversionFunnelView = ({
 
                         {/* SOURCE */}
                         <td style={{ padding: "12px 16px", color: "#334155", fontSize: "12.5px" }}>
-                          {r.source || "Website"}
+                          {r.source || "—"}
                         </td>
 
                         {/* OWNER */}
@@ -1375,17 +1458,17 @@ const LeadConversionFunnelView = ({
                                 fontWeight: 700,
                               }}
                             >
-                              AK
+                              {repInitials}
                             </span>
                             <span style={{ color: "#334155", fontSize: "12.5px" }}>
-                              {r.sales_rep || "Amit Kumar"}
+                              {r.sales_rep || "Unassigned"}
                             </span>
                           </div>
                         </td>
 
                         {/* CREATED */}
                         <td style={{ padding: "12px 16px", color: "#475569", fontSize: "12px" }}>
-                          {r.created_date ? new Date(r.created_date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "28 Oct 2026"}
+                          {r.created_date ? new Date(r.created_date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
                         </td>
 
                         {/* AGE */}

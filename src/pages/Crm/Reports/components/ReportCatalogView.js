@@ -8,6 +8,28 @@ import {
   Button,
 } from "reactstrap";
 
+const CHART_TYPE_META = {
+  horizontal_bar: { icon: "ri-bar-chart-horizontal-line", label: "Horizontal Bar" },
+  donut: { icon: "ri-pie-chart-line", label: "Donut Chart" },
+  area: { icon: "ri-line-chart-line", label: "Area Trend" },
+  funnel: { icon: "ri-filter-3-line", label: "Funnel Velocity" },
+  storage_gauge: { icon: "ri-dashboard-3-line", label: "Storage Gauge" },
+  multi_bar: { icon: "ri-bar-chart-grouped-line", label: "Grouped Bar" },
+  bullet_bar: { icon: "ri-git-commit-line", label: "Bullet Progress" },
+  aging_bars: { icon: "ri-time-line", label: "Aging Bars" },
+  top_list: { icon: "ri-list-ordered", label: "Ranked Table" },
+  risk_bars: { icon: "ri-alarm-warning-line", label: "Risk Meter" },
+  trend_column: { icon: "ri-bar-chart-line", label: "Trend Column" },
+  gauge: { icon: "ri-dashboard-line", label: "Compliance Gauge" },
+};
+
+const resolveChartMeta = (type) => {
+  const key = String(type || "").toLowerCase().trim();
+  if (CHART_TYPE_META[key]) return CHART_TYPE_META[key];
+  const formatted = key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return { icon: "ri-bar-chart-2-line", label: formatted || "Analytics Chart" };
+};
+
 const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -42,9 +64,9 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
     <div>
       {/* Category Navigation and Search Header */}
       <Card
-        className="shadow-sm border-0 mb-4"
+        className="shadow-sm border-0 mb-4 rounded-0"
         style={{
-          borderRadius: "10px",
+          borderRadius: 0,
           background: "#ffffff",
           border: "1px solid #e2e8f0",
         }}
@@ -62,9 +84,9 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                   <button
                     key={cat.id}
                     type="button"
-                    className="btn btn-sm d-flex align-items-center gap-2 border-0"
+                    className="btn btn-sm d-flex align-items-center gap-2 border-0 rounded-0"
                     style={{
-                      borderRadius: "8px",
+                      borderRadius: 0,
                       fontSize: "13px",
                       fontWeight: isActive ? 600 : 500,
                       padding: "7px 14px",
@@ -96,7 +118,7 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                         minWidth: "20px",
                         height: "19px",
                         padding: "0 6px",
-                        borderRadius: "10px",
+                        borderRadius: 0,
                         backgroundColor: isActive
                           ? "rgba(255, 255, 255, 0.22)"
                           : "#f1f5f9",
@@ -118,9 +140,9 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
               <Input
                 type="text"
                 placeholder="Search reports by keyword..."
-                className="ps-4"
+                className="ps-4 rounded-0"
                 style={{
-                  borderRadius: "8px",
+                  borderRadius: 0,
                   fontSize: "13px",
                   height: "38px",
                   borderColor: "#cbd5e1",
@@ -156,8 +178,8 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
       {/* Reports Grid */}
       {filteredReports.length === 0 ? (
         <Card
-          className="shadow-sm border-0 py-5"
-          style={{ borderRadius: "10px", border: "1px solid #e2e8f0" }}
+          className="shadow-sm border-0 py-5 rounded-0"
+          style={{ borderRadius: 0, border: "1px solid #e2e8f0" }}
         >
           <CardBody className="text-center">
             <div
@@ -165,7 +187,7 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
               style={{
                 width: "56px",
                 height: "56px",
-                borderRadius: "50%",
+                borderRadius: 0,
                 backgroundColor: "rgba(127, 29, 29, 0.08)",
                 color: "#7f1d1d",
                 fontSize: "24px",
@@ -180,8 +202,8 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
             <Button
               color="light"
               size="sm"
-              className="border px-3"
-              style={{ borderRadius: "6px" }}
+              className="border px-3 rounded-0"
+              style={{ borderRadius: 0 }}
               onClick={() => {
                 setActiveCategory("all");
                 setSearchTerm("");
@@ -195,13 +217,14 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
         <Row className="g-4">
           {filteredReports.map((report) => {
             const isHovered = hoveredCode === report.code;
+            const chartMeta = resolveChartMeta(report.chart_type);
 
             return (
               <Col xl={4} md={6} xs={12} key={report.code}>
                 <Card
-                  className="h-100 border-0 d-flex flex-column"
+                  className="h-100 border-0 d-flex flex-column rounded-0"
                   style={{
-                    borderRadius: "4px",
+                    borderRadius: 0,
                     background: "#ffffff",
                     border: isHovered
                       ? "1px solid #fca5a5"
@@ -219,32 +242,48 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                   onClick={() => onSelectReport(report)}
                 >
                   <CardBody className="p-4 d-flex flex-column">
-                    {/* Title & Badge */}
-                    <div className="mb-3">
-                      <h6
-                        className="fw-bold mb-1"
+                    {/* Title, Icon & Badge */}
+                    <div className="d-flex align-items-start gap-3 mb-3">
+                      <div
+                        className="d-flex align-items-center justify-content-center flex-shrink-0"
                         style={{
-                          color: "#0f172a",
-                          fontSize: "15px",
-                          lineHeight: "1.35",
+                          width: "38px",
+                          height: "38px",
+                          borderRadius: 0,
+                          backgroundColor: isHovered ? "#7f1d1d" : "rgba(127, 29, 29, 0.08)",
+                          color: isHovered ? "#ffffff" : "#7f1d1d",
+                          fontSize: "18px",
+                          transition: "all 0.15s ease",
                         }}
                       >
-                        {report.name}
-                      </h6>
-                      <span
-                        style={{
-                          display: "inline-block",
-                          backgroundColor: "#f8fafc",
-                          border: "1px solid #e2e8f0",
-                          color: "#475569",
-                          fontSize: "10.5px",
-                          fontWeight: 600,
-                          padding: "2px 6px",
-                          borderRadius: "4px",
-                        }}
-                      >
-                        {report.badge || "Analytics"}
-                      </span>
+                        <i className={report.icon || "ri-file-chart-line"}></i>
+                      </div>
+                      <div className="flex-grow-1 min-w-0">
+                        <h6
+                          className="fw-bold mb-1"
+                          style={{
+                            color: "#0f172a",
+                            fontSize: "15px",
+                            lineHeight: "1.35",
+                          }}
+                        >
+                          {report.name}
+                        </h6>
+                        <span
+                          style={{
+                            display: "inline-block",
+                            backgroundColor: "#f8fafc",
+                            border: "1px solid #e2e8f0",
+                            color: "#475569",
+                            fontSize: "10.5px",
+                            fontWeight: 600,
+                            padding: "2px 6px",
+                            borderRadius: 0,
+                          }}
+                        >
+                          {report.badge || "Analytics"}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Description */}
@@ -269,7 +308,7 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                       style={{ borderTop: "1px solid #f1f5f9" }}
                     >
                       <span
-                        className="d-flex align-items-center gap-1"
+                        className="d-flex align-items-center gap-1.5"
                         style={{
                           fontSize: "11.5px",
                           color: "#64748b",
@@ -277,17 +316,17 @@ const ReportCatalogView = ({ categories, reports, onSelectReport }) => {
                         }}
                       >
                         <i
-                          className="ri-line-chart-line"
-                          style={{ color: "#7f1d1d" }}
+                          className={chartMeta.icon}
+                          style={{ color: "#7f1d1d", fontSize: "14px" }}
                         ></i>
-                        {report.chart_type?.replace(/_/g, " ")}
+                        <span>{chartMeta.label}</span>
                       </span>
 
                       <button
                         type="button"
-                        className="btn btn-sm d-flex align-items-center gap-1"
+                        className="btn btn-sm d-flex align-items-center gap-1 rounded-0"
                         style={{
-                          borderRadius: "4px",
+                          borderRadius: 0,
                           fontSize: "12px",
                           fontWeight: 600,
                           backgroundColor: isHovered ? "#7f1d1d" : "#ffffff",

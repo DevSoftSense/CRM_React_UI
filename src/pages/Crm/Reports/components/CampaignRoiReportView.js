@@ -37,9 +37,19 @@ const CampaignRoiReportView = ({
     return Array.isArray(reportResult?.chart_data) ? reportResult.chart_data : [];
   }, [reportResult]);
 
-  const totalSpend = summary.total_spend ?? 237000;
-  const totalBudget = summary.total_budget ?? 237000;
-  const totalCampaigns = summary.total_campaigns ?? rows.length ?? 3;
+  const totalSpend = Number(
+    summary.total_spend ??
+      rows.reduce((sum, r) => sum + Number(r.actual_spend || 0), 0) ??
+      0
+  );
+  const totalBudget = Number(
+    summary.total_budget ??
+      rows.reduce((sum, r) => sum + Number(r.budget || 0), 0) ??
+      0
+  );
+  const totalCampaigns = Number(
+    summary.total_campaigns ?? rows.length ?? 0
+  );
   const totalWonRevenue = rows.reduce(
     (sum, r) => sum + Number(r.won_revenue || 0),
     0

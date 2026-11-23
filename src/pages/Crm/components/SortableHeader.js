@@ -91,7 +91,7 @@ export const SortableHeader = ({
             <Input
               type="text"
               bsSize="sm"
-              className="form-control form-control-sm apt-list-colfilters__input"
+              className="form-control form-control-sm apt-list-colfilters__input rounded-0"
               style={{
                 width: "100%",
                 maxWidth: column?.inputWidth || "100%",

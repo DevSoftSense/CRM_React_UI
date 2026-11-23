@@ -22,6 +22,7 @@ import { toastSuccess, toastApiError } from "../../../helpers/crmToast";
 import { createContact } from "../../../helpers/crmContactApi";
 import { createActivity } from "../../../helpers/crmActivityApi";
 import { createTask } from "../../../helpers/crmTaskApi";
+import { getCampaignDropdown } from "../../../helpers/crmCampaignApi";
 
 const THEME = {
   primary: "#7f1d1d",
@@ -139,6 +140,16 @@ const OpportunityCreateEdit = ({
     subject: "",
     body: "",
   });
+
+  const [campaignOptions, setCampaignOptions] = useState([]);
+
+  useEffect(() => {
+    getCampaignDropdown()
+      .then((data) => {
+        if (Array.isArray(data)) setCampaignOptions(data);
+      })
+      .catch(() => {});
+  }, []);
 
   // Sync initialData if editing
   useEffect(() => {
@@ -844,6 +855,11 @@ const OpportunityCreateEdit = ({
                     onChange={(e) => setFormData({ ...formData, campaignId: e.target.value })}
                   >
                     <option value="">Select campaign</option>
+                    {campaignOptions.map((c) => (
+                      <option key={c.campaign_id} value={c.campaign_id}>
+                        {c.campaign_name} {c.channel_name ? `(${c.channel_name})` : ""}
+                      </option>
+                    ))}
                   </Input>
                 </Col>
 

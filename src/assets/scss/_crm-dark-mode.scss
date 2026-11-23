@@ -43,29 +43,40 @@ body[data-layout-mode="dark"] {
     color: var(--vz-body-color, #cbd5e1);
   }
 
-  /* ── 2. Cards & Containers across ALL Modules ── */
+  /* ── 2. Cards & Containers across ALL Modules (True Black, Zero Blue Tint, 100% Square) ── */
   .card,
   .card[style*="ffffff"],
   .card[style*="#fff"],
   .card[style*="f8fafc"],
-  .card[style*="rgb(255, 255, 255)"] {
-    background-color: var(--vz-card-bg, #212529) !important;
-    border-color: var(--vz-border-color, #32383e) !important;
+  .card[style*="rgb(255, 255, 255)"],
+  .card[style*="1e293b"],
+  .crm-kpi-card,
+  .crm-pipeline-column-card,
+  .crm-sales-kpi-card {
+    background-color: #121212 !important;
+    border-color: #262626 !important;
+    border-radius: 0 !important;
     color: var(--vz-body-color, #cbd5e1);
   }
 
   .card-header,
   .card-footer {
-    border-color: var(--vz-border-color, #32383e) !important;
+    border-color: #262626 !important;
+    border-radius: 0 !important;
     background-color: transparent !important;
+  }
+
+  .card-body {
+    border-radius: 0 !important;
   }
 
   /* ── 3. Utility Color Classes (Overrides) ── */
   .bg-white,
   .bg-light {
-    background-color: var(--vz-card-bg, #212529) !important;
+    background-color: #121212 !important;
     color: var(--vz-body-color, #cbd5e1) !important;
-    border-color: var(--vz-border-color, #32383e) !important;
+    border-color: #262626 !important;
+    border-radius: 0 !important;
   }
 
   .text-dark {

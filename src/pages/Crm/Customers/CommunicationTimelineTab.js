@@ -26,6 +26,7 @@ import {
   getTimelineLookups,
   logTimelineActivity,
 } from "../../../helpers/crmTimelineApi";
+import { deactivateActivity } from "../../../helpers/crmActivityApi";
 import { toastApiError, toastSuccess } from "../../../helpers/crmToast";
 
 const THEME = {
@@ -191,6 +192,10 @@ const CommunicationTimelineTab = ({
   const [logModalOpen, setLogModalOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [activeItem, setActiveItem] = useState(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [deletingTitle, setDeletingTitle] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   // Log Form State
   const [logForm, setLogForm] = useState({
@@ -255,7 +260,7 @@ const CommunicationTimelineTab = ({
           search: search.trim() || undefined,
           ownerId: selectedOwnerId ? Number(selectedOwnerId) : undefined,
           dateFrom: dateFrom ? new Date(dateFrom).toISOString() : undefined,
-          dateTo: dateTo ? new Date(dateTo).toISOString() : undefined,
+          dateTo: dateTo ? new Date(`${dateTo}T23:59:59.999Z`).toISOString() : undefined,
           limit: currentLimit,
           offset: 0,
         });
@@ -444,8 +449,36 @@ const CommunicationTimelineTab = ({
       status: summary?.status || customer?.status || "Active",
       location: summary?.location || customer?.placeOfSupply || "India",
       customerSince: summary?.customer_since || "Recent",
+      partyType: summary?.party_type || customer?.partyType || "Customer",
     };
   }, [summary, customer]);
+
+  // Delete Activity Handler
+  const confirmDelete = (timelineId, title = "this activity") => {
+    if (timelineId && String(timelineId).startsWith("ACT_")) {
+      const actId = Number(String(timelineId).replace("ACT_", ""));
+      setDeletingId(actId);
+      setDeletingTitle(title);
+      setDeleteModalOpen(true);
+    }
+  };
+
+  const handleDeleteActivity = async () => {
+    if (!deletingId) return;
+    setDeleting(true);
+    try {
+      await deactivateActivity(deletingId);
+      toastSuccess("Activity removed from timeline successfully.");
+      setDeleteModalOpen(false);
+      setDeletingId(null);
+      setDeletingTitle("");
+      await Promise.all([loadTimeline(false, limit), loadStats()]);
+    } catch (err) {
+      toastApiError(err, "Failed to delete activity.");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="communication-timeline-wrapper">
@@ -653,7 +686,7 @@ const CommunicationTimelineTab = ({
                         {isFirstOfDay ? (
                           renderDateLabel(item.date_label)
                         ) : (
-                          <div className="text-muted fs-11 fw-medium">{item.time_label}</div>
+                          <div className="text-muted fs-11 fw-medium">{item.date_label}</div>
                         )}
                       </div>
 
@@ -803,6 +836,18 @@ const CommunicationTimelineTab = ({
                                   >
                                     <i className="ri-reply-line me-2 text-muted" /> Log Follow-up
                                   </DropdownItem>
+                                  {item.timeline_id && String(item.timeline_id).startsWith("ACT_") && (
+                                    <>
+                                      <DropdownItem divider />
+                                      <DropdownItem
+                                        onClick={() => confirmDelete(item.timeline_id, item.title)}
+                                        className="text-danger"
+                                        style={{ borderRadius: 0 }}
+                                      >
+                                        <i className="ri-delete-bin-line me-2 text-danger" /> Delete Activity
+                                      </DropdownItem>
+                                    </>
+                                  )}
                                 </DropdownMenu>
                               </Dropdown>
                             </div>
@@ -907,7 +952,9 @@ const CommunicationTimelineTab = ({
           >
             <CardBody className="p-3">
               <div className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
-                <h6 className="fw-bold text-dark mb-0 fs-14">Lead Summary</h6>
+                <h6 className="fw-bold text-dark mb-0 fs-14">
+                  {displayProfile.partyType?.toLowerCase() === "lead" ? "Lead Summary" : "Customer Summary"}
+                </h6>
                 {onEditCustomer && (
                   <button
                     type="button"
@@ -1791,6 +1838,72 @@ const CommunicationTimelineTab = ({
             style={{ borderRadius: 0 }}
           >
             Close
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* ======================================================== */}
+      {/* IN-PAGE MODAL: Confirm Delete Activity Modal             */}
+      {/* ======================================================== */}
+      <Modal
+        isOpen={deleteModalOpen}
+        toggle={() => setDeleteModalOpen(false)}
+        centered
+        style={{ borderRadius: 0 }}
+      >
+        <ModalHeader
+          toggle={() => setDeleteModalOpen(false)}
+          className="border-bottom text-danger"
+          style={{ backgroundColor: "#ffffff" }}
+        >
+          <span className="fw-bold fs-16 d-flex align-items-center gap-2">
+            <span
+              className="d-inline-flex align-items-center justify-content-center"
+              style={{
+                width: "28px",
+                height: "28px",
+                borderRadius: 0,
+                backgroundColor: "#fee2e2",
+                color: "#dc2626",
+              }}
+            >
+              <i className="ri-delete-bin-line" />
+            </span>
+            Confirm Delete Activity
+          </span>
+        </ModalHeader>
+        <ModalBody className="p-4 bg-white">
+          <p className="fs-13 text-dark mb-2">
+            Are you sure you want to remove <strong>"{deletingTitle || "this activity"}"</strong> from the customer timeline?
+          </p>
+          <div className="text-muted fs-12">
+            This will permanently remove the logged activity and update customer interaction statistics.
+          </div>
+        </ModalBody>
+        <ModalFooter className="border-top bg-light d-flex justify-content-end gap-2" style={{ borderRadius: 0 }}>
+          <Button
+            color="light"
+            className="border"
+            onClick={() => setDeleteModalOpen(false)}
+            disabled={deleting}
+            style={{ borderRadius: 0 }}
+          >
+            Cancel
+          </Button>
+          <Button
+            color="danger"
+            className="fw-semibold px-4"
+            onClick={handleDeleteActivity}
+            disabled={deleting}
+            style={{ borderRadius: 0 }}
+          >
+            {deleting ? (
+              <>
+                <Spinner size="sm" className="me-2" /> Deleting...
+              </>
+            ) : (
+              "Delete Activity"
+            )}
           </Button>
         </ModalFooter>
       </Modal>
