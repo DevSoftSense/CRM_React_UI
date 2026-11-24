@@ -140,7 +140,10 @@ const DashboardCrm = () => {
                 <TodaysScheduleCard activities={data?.todays_schedule || data?.todaysSchedule || []} />
               </Col>
               <Col xl={3} lg={6} md={12}>
-                <PendingFollowupsCard tasks={data?.pending_followups || data?.pendingFollowups || []} />
+                <PendingFollowupsCard
+                  tasks={data?.pending_followups || data?.pendingFollowups || []}
+                  onTaskCompleted={fetchDashboardData}
+                />
               </Col>
               <Col xl={3} lg={6} md={12}>
                 <HotOpportunitiesCard opportunities={data?.hot_opportunities || data?.hotOpportunities || []} />

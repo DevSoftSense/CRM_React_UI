@@ -123,36 +123,6 @@ const SalesEffortTouchpointView = ({
     return result;
   }, [rawRows, typeFilter, searchTerm]);
 
-  // Mini Sparkline Config for KPI Cards
-  const makeSparklineConfig = (seriesData, strokeColor, fillColor) => ({
-    series: [{ data: seriesData }],
-    options: {
-      chart: {
-        type: "area",
-        height: 40,
-        width: 100,
-        sparkline: { enabled: true },
-      },
-      stroke: { curve: "smooth", width: 2, colors: [strokeColor] },
-      fill: {
-        type: "gradient",
-        gradient: {
-          shadeIntensity: 1,
-          opacityFrom: 0.35,
-          opacityTo: 0.05,
-          stops: [0, 90, 100],
-          colorStops: [{ offset: 0, color: fillColor, opacity: 0.35 }, { offset: 100, color: fillColor, opacity: 0.0 }],
-        },
-      },
-      colors: [strokeColor],
-      tooltip: { enabled: false },
-    },
-  });
-
-  const callsSparkline = useMemo(() => makeSparklineConfig([1, 2, 1, 2, 2], "#7f1d1d", "#7f1d1d"), []);
-  const meetingsSparkline = useMemo(() => makeSparklineConfig([0, 1, 0, 1, 1], "#f87171", "#f87171"), []);
-  const activitiesSparkline = useMemo(() => makeSparklineConfig([3, 4, 2, 3, 4], "#7f1d1d", "#7f1d1d"), []);
-
   // 1. Touchpoint Donut Chart Configuration
   const touchpointDonutConfig = useMemo(() => {
     return {
@@ -176,18 +146,44 @@ const SalesEffortTouchpointView = ({
         tooltip: {
           theme: "dark",
           y: {
-            formatter: (val) => `${val} activities (${((val / effectiveTotal) * 100).toFixed(1)}%)`,
+            formatter: (val) =>
+              `${val} activities (${effectiveTotal > 0 ? ((val / effectiveTotal) * 100).toFixed(1) : "0.0"}%)`,
           },
         },
       },
     };
   }, [typeCounts, effectiveTotal, cardBg]);
 
-  // 2. Activity Trend Spline Area Chart
+  // 2. Activity Trend Spline Area Chart (computed dynamically across last 4 months from rawRows)
   const trendChartConfig = useMemo(() => {
-    const categories = ["Oct 2026", "Nov 2026", "Dec 2026", "Jan 2027"];
-    const totalActivitiesSeries = [3, 4, 2, 3];
-    const meetingsSeries = [1, 1, 0, 1];
+    const now = new Date();
+    const monthBuckets = Array.from({ length: 4 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (3 - i), 1);
+      return {
+        year: d.getFullYear(),
+        month: d.getMonth(),
+        label: d.toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+        total: 0,
+        meetings: 0,
+      };
+    });
+
+    rawRows.forEach((r) => {
+      const dt = new Date(r.activity_date || r.start_time || r.created_at);
+      if (isNaN(dt.getTime())) return;
+      const bucket = monthBuckets.find((b) => b.year === dt.getFullYear() && b.month === dt.getMonth());
+      if (bucket) {
+        bucket.total += 1;
+        if (String(r.type || "").toUpperCase().includes("MEET")) {
+          bucket.meetings += 1;
+        }
+      }
+    });
+
+    const categories = monthBuckets.map((b) => b.label);
+    const totalActivitiesSeries = monthBuckets.map((b) => b.total);
+    const meetingsSeries = monthBuckets.map((b) => b.meetings);
+    const maxVal = Math.max(...totalActivitiesSeries, ...meetingsSeries, 4);
 
     return {
       series: [
@@ -251,7 +247,7 @@ const SalesEffortTouchpointView = ({
           axisTicks: { show: false },
         },
         yaxis: {
-          max: 8,
+          max: Math.ceil(maxVal * 1.25),
           tickAmount: 4,
           labels: {
             style: {
@@ -270,7 +266,7 @@ const SalesEffortTouchpointView = ({
         },
       },
     };
-  }, [isDark, textSub]);
+  }, [rawRows, isDark, textSub]);
 
   return (
     <div className="sales-effort-touchpoint-view">
@@ -326,10 +322,10 @@ const SalesEffortTouchpointView = ({
                   </div>
                   <div className="d-flex align-items-center gap-1 mt-1">
                     <span style={{ color: "#16a34a", fontSize: "11px", fontWeight: 600 }}>
-                      <i className="ri-arrow-up-line"></i> 0%
+                      {callPct}%
                     </span>
                     <span style={{ fontSize: "11px", color: textSub }}>
-                      vs last period
+                      of logged touchpoints
                     </span>
                   </div>
                 </div>
@@ -388,10 +384,10 @@ const SalesEffortTouchpointView = ({
                   </div>
                   <div className="d-flex align-items-center gap-1 mt-1">
                     <span style={{ color: "#16a34a", fontSize: "11px", fontWeight: 600 }}>
-                      <i className="ri-arrow-up-line"></i> 0%
+                      {meetPct}%
                     </span>
                     <span style={{ fontSize: "11px", color: textSub }}>
-                      vs last period
+                      of logged touchpoints
                     </span>
                   </div>
                 </div>
@@ -449,10 +445,10 @@ const SalesEffortTouchpointView = ({
                   </div>
                   <div className="d-flex align-items-center gap-1 mt-1">
                     <span style={{ color: "#16a34a", fontSize: "11px", fontWeight: 600 }}>
-                      <i className="ri-arrow-up-line"></i> 0%
+                      {effectiveTotal} records
                     </span>
                     <span style={{ fontSize: "11px", color: textSub }}>
-                      vs last period
+                      in selected period
                     </span>
                   </div>
                 </div>
@@ -786,7 +782,7 @@ const SalesEffortTouchpointView = ({
               Detailed Data Ledger
             </h6>
             <span style={{ fontSize: "11.5px", color: textSub }}>
-              Showing 1 to {filteredRows.length} of {rawRows.length} entries
+              Showing {filteredRows.length > 0 ? 1 : 0} to {filteredRows.length} of {rawRows.length} entries
             </span>
           </div>
 

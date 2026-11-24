@@ -310,7 +310,7 @@ const Activities = () => {
       const tasks = rows.filter((r) => (r.actType || "").toUpperCase() === "TASK").length;
 
       const base = total > 0 ? total : 1;
-      const todayStr = new Date().toISOString().slice(0, 10);
+      const todayStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
       const todaySched = rows
         .filter((r) => r.startTime && String(r.startTime).slice(0, 10) === todayStr)
         .map((r) => ({
@@ -319,8 +319,8 @@ const Activities = () => {
           act_type: r.actType,
           start_time: r.startTime,
           time_str: formatTimeStr(r.startTime),
-          related_to: r.relatedTo || "Direct Client",
-          with_name: r.withName || "Decision Maker",
+          related_to: r.relatedTo || "",
+          with_name: r.withName || "",
           activity_status: r.activityStatus,
         }));
 
@@ -355,13 +355,13 @@ const Activities = () => {
       // Effective type from tab or filter
       const effectiveType = activeTab !== "ALL" ? activeTab : typeFilter || undefined;
 
-      // Effective date filter (either specific day from calendar, or date range)
-      let fromDate = dateRangeFrom ? new Date(dateRangeFrom).toISOString() : undefined;
-      let toDate = dateRangeTo ? new Date(dateRangeTo + "T23:59:59").toISOString() : undefined;
+      // Effective date filter (either specific day from calendar, or date range — local timezone safe)
+      let fromDate = dateRangeFrom ? new Date(`${dateRangeFrom}T00:00:00`).toISOString() : undefined;
+      let toDate = dateRangeTo ? new Date(`${dateRangeTo}T23:59:59`).toISOString() : undefined;
 
       if (selectedCalendarDate) {
-        fromDate = new Date(selectedCalendarDate + "T00:00:00").toISOString();
-        toDate = new Date(selectedCalendarDate + "T23:59:59").toISOString();
+        fromDate = new Date(`${selectedCalendarDate}T00:00:00`).toISOString();
+        toDate = new Date(`${selectedCalendarDate}T23:59:59`).toISOString();
       }
 
       const res = await getActivities({

@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
-  Badge,
   Button,
   Card,
   CardBody,
@@ -366,16 +365,6 @@ const CreateLead = () => {
       setSaving(false);
     }
   };
-
-  // Dynamic AI Suggestions derived strictly from live form input
-  const sourceObj = (lookups.leadSource || []).find((s) => String(s.masterId) === String(form.sourceId));
-  const sourceName = sourceObj?.masterName || "Website";
-  const revenuePotential =
-    Number(form.estimatedValue) >= 1000000
-      ? "High"
-      : Number(form.estimatedValue) > 0
-      ? "Good"
-      : "Standard";
 
   return (
     <div className="page-content">
@@ -952,20 +941,27 @@ const CreateLead = () => {
                         value={form.campaignId}
                         onChange={(e) => {
                           const val = e.target.value;
-                          const selectedCamp = campaignOptions.find((c) => String(c.campaign_id) === String(val));
+                          const selectedCamp = campaignOptions.find(
+                            (c) => String(c.campaignId ?? c.campaign_id) === String(val)
+                          );
                           setForm((prev) => ({
                             ...prev,
                             campaignId: val,
-                            campaign: selectedCamp?.campaign_name || "",
+                            campaign: selectedCamp?.campaignName ?? selectedCamp?.campaign_name ?? "",
                           }));
                         }}
                       >
                         <option value="">Select Campaign</option>
-                        {campaignOptions.map((c) => (
-                          <option key={c.campaign_id} value={c.campaign_id}>
-                            {c.campaign_name} {c.channel_name ? `(${c.channel_name})` : ""}
-                          </option>
-                        ))}
+                        {campaignOptions.map((c) => {
+                          const id = c.campaignId ?? c.campaign_id;
+                          const name = c.campaignName ?? c.campaign_name;
+                          const channel = c.channelName ?? c.channel_name;
+                          return (
+                            <option key={id} value={id}>
+                              {name} {channel ? `(${channel})` : ""}
+                            </option>
+                          );
+                        })}
                       </Input>
                     </Col>
                   </Row>
@@ -977,7 +973,7 @@ const CreateLead = () => {
               </Card>
             </Col>
 
-            {/* Right 4 Columns — Quick Add, AI Assistant, Uploads & Reminder */}
+            {/* Right 4 Columns — Quick Add, Uploads & Reminder */}
             <Col lg={4}>
               {/* Card 1: Quick Add Shortcuts matching Mockup */}
               <Card className="mb-3 border bg-white" style={{ borderRadius: "4px", borderColor: "#e2e8f0" }}>
@@ -1077,74 +1073,7 @@ const CreateLead = () => {
                 </CardBody>
               </Card>
 
-              {/* Card 2: AI Assistant (Beta) matching Mockup */}
-              <Card className="mb-3 border bg-white" style={{ borderRadius: "4px", borderColor: "#e2e8f0" }}>
-                <CardBody className="p-3">
-                  <div className="d-flex align-items-center justify-content-between mb-2">
-                    <div className="d-flex align-items-center gap-1">
-                      <i className="ri-sparkling-fill text-primary fs-15" />
-                      <span className="fw-bold text-dark fs-13">AI Assistant</span>
-                      <Badge color="primary" className="ms-1 px-1" style={{ fontSize: "9px" }}>
-                        Beta
-                      </Badge>
-                    </div>
-                  </div>
-                  <p className="text-muted fs-11 mb-2">
-                    AI suggestions based on lead information
-                  </p>
-
-                  <div className="d-flex flex-column gap-2 p-2 bg-light rounded" style={{ borderRadius: "3px" }}>
-                    <div className="d-flex align-items-start gap-2 fs-11 text-dark">
-                      <i className={`ri-${form.sourceId ? "checkbox-circle-fill text-success" : "information-line text-muted"} fs-13 mt-0 flex-shrink-0`} />
-                      <span>
-                        {form.sourceId ? (
-                          <>
-                            This lead from <strong className="text-primary">{sourceName}</strong> has high conversion rate.
-                          </>
-                        ) : (
-                          "Select a lead source to evaluate conversion likelihood."
-                        )}
-                      </span>
-                    </div>
-                    <div className="d-flex align-items-start gap-2 fs-11 text-dark">
-                      <i className={`ri-${form.industry ? "checkbox-circle-fill text-success" : "information-line text-muted"} fs-13 mt-0 flex-shrink-0`} />
-                      <span>
-                        {form.industry ? (
-                          <>
-                            Company is from <strong className="text-dark">{form.industry}</strong> industry.
-                          </>
-                        ) : (
-                          "Select company industry to profile business sector."
-                        )}
-                      </span>
-                    </div>
-                    <div className="d-flex align-items-start gap-2 fs-11 text-dark">
-                      <i className={`ri-${form.estimatedValue ? "checkbox-circle-fill text-success" : "information-line text-muted"} fs-13 mt-0 flex-shrink-0`} />
-                      <span>
-                        {form.estimatedValue ? (
-                          <>
-                            Revenue potential looks <strong className="text-success">{revenuePotential}</strong> (₹{Number(form.estimatedValue).toLocaleString("en-IN")}).
-                          </>
-                        ) : (
-                          "Enter estimated value to score deal potential."
-                        )}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="mt-2 text-end">
-                    <span
-                      role="button"
-                      className="text-primary fs-11 fw-semibold text-decoration-none"
-                      onClick={() => toastSuccess("AI relationship model synced with lead criteria.")}
-                    >
-                      Get More Insights &gt;
-                    </span>
-                  </div>
-                </CardBody>
-              </Card>
-
-              {/* Card 3: Upload Documents Dropzone matching Mockup */}
+              {/* Card 2: Upload Documents Dropzone matching Mockup */}
               <Card className="mb-3 border bg-white" style={{ borderRadius: "4px", borderColor: "#e2e8f0" }}>
                 <CardBody className="p-3">
                   <h6 className="fw-bold text-dark fs-13 mb-2">Upload Documents</h6>

@@ -31,7 +31,7 @@ export const getOwnerDropdown = (params = {}) =>
     cleanParams({
       search: params.search,
       limit: params.limit ?? 200,
-      ensureSeed: params.ensureSeed !== false,
+      ensureSeed: params.ensureSeed === true,
     })
   );
 

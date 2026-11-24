@@ -56,7 +56,8 @@ const formatCurrency = (amount, currencyCode = "INR") => {
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
   try {
-    const d = new Date(dateStr);
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateStr).trim());
+    const d = m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
     return d.toLocaleDateString("en-IN", {
       day: "2-digit",
@@ -417,7 +418,7 @@ const CampaignDetail = () => {
                   style={{ cursor: "pointer" }}
                 >
                   <i className="ri-user-follow-line me-2 align-middle"></i>
-                  Attributed Leads ({campaign.recentLeads?.length || 0})
+                  Attributed Leads ({campaign.leadsCount ?? campaign.recentLeads?.length ?? 0})
                 </NavLink>
               </NavItem>
               <NavItem>
@@ -427,7 +428,7 @@ const CampaignDetail = () => {
                   style={{ cursor: "pointer" }}
                 >
                   <i className="ri-hand-coin-line me-2 align-middle"></i>
-                  Attributed Deals ({campaign.recentOpportunities?.length || 0})
+                  Attributed Deals ({campaign.opportunitiesCount ?? campaign.recentOpportunities?.length ?? 0})
                 </NavLink>
               </NavItem>
             </Nav>
@@ -617,7 +618,7 @@ const CampaignDetail = () => {
                   </FormGroup>
                 </Col>
 
-                <Col md={6}>
+                <Col md={4}>
                   <FormGroup className="mb-0">
                     <Label className="form-label fw-medium fs-12 mb-1">Campaign Owner</Label>
                     <Input
@@ -636,7 +637,7 @@ const CampaignDetail = () => {
                   </FormGroup>
                 </Col>
 
-                <Col md={6}>
+                <Col md={4}>
                   <FormGroup className="mb-0">
                     <Label className="form-label fw-medium fs-12 mb-1">Budget</Label>
                     <Input
@@ -649,6 +650,33 @@ const CampaignDetail = () => {
                       onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
                     />
                     {formErrors.budget && <FormFeedback>{formErrors.budget}</FormFeedback>}
+                  </FormGroup>
+                </Col>
+
+                <Col md={4}>
+                  <FormGroup className="mb-0">
+                    <Label className="form-label fw-medium fs-12 mb-1">Currency</Label>
+                    <Input
+                      type="select"
+                      className="form-select rounded-0"
+                      value={formData.currencyCode || "INR"}
+                      onChange={(e) => setFormData({ ...formData, currencyCode: e.target.value })}
+                    >
+                      {(lookups.currencies && lookups.currencies.length > 0
+                        ? lookups.currencies
+                        : [
+                            { masterCode: "INR", masterName: "INR (₹)" },
+                            { masterCode: "USD", masterName: "USD ($)" },
+                            { masterCode: "EUR", masterName: "EUR (€)" },
+                            { masterCode: "GBP", masterName: "GBP (£)" },
+                            { masterCode: "AED", masterName: "AED" },
+                          ]
+                      ).map((cur) => (
+                        <option key={cur.masterCode} value={cur.masterCode}>
+                          {cur.masterName || cur.masterCode}
+                        </option>
+                      ))}
+                    </Input>
                   </FormGroup>
                 </Col>
 

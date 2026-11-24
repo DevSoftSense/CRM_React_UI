@@ -91,6 +91,17 @@ const LeadConversionFunnelView = ({
     );
   }, [rawRows]);
 
+  // Compute dynamic average days in funnel & lost count from real rows
+  const avgDaysInFunnel = useMemo(() => {
+    if (rawRows.length === 0) return 0;
+    const sum = rawRows.reduce((acc, r) => acc + calculateAgeDays(r.created_date || r.created_at), 0);
+    return Math.round(sum / rawRows.length);
+  }, [rawRows]);
+
+  const lostLeadsCount = useMemo(() => {
+    return rawRows.filter((r) => String(r.status || "").toUpperCase().includes("LOST")).length;
+  }, [rawRows]);
+
   // 6 Funnel Stages definition
   const funnelStages = useMemo(() => {
     const list = [
@@ -104,27 +115,46 @@ const LeadConversionFunnelView = ({
 
     const totalCount = totalLeads || 1;
     const totalVal = openPipeline || 1;
+    let prevCount = 0;
 
-    return list.map((st) => {
-      // Find matching item from chartData or default
+    return list.map((st, idx) => {
       const found = chartData.find(
         (c) => String(c.status_name || "").toUpperCase() === st.name.toUpperCase()
       );
-      const count = found ? Number(found.lead_count || 0) : st.name === "New" ? totalLeads : 0;
-      const val = found ? Number(found.estimated_amount || 0) : st.name === "New" ? openPipeline : 0;
-      const countPct = Math.round((count / totalCount) * 100);
-      const valPct = Math.round((val / totalVal) * 100);
+      const stageRows = rawRows.filter(
+        (r) => String(r.status || "").toUpperCase() === st.name.toUpperCase()
+      );
+      const count = found ? Number(found.lead_count || 0) : stageRows.length;
+      const val = found
+        ? Number(found.estimated_amount || 0)
+        : stageRows.reduce((s, r) => s + Number(r.estimated_value || r.amount || 0), 0);
+      const countPct = totalLeads > 0 ? Math.round((count / totalCount) * 100) : 0;
+      const valPct = openPipeline > 0 ? Math.round((val / totalVal) * 100) : 0;
+      const stageAvgDays =
+        stageRows.length > 0
+          ? Math.round(
+              stageRows.reduce((acc, r) => acc + calculateAgeDays(r.created_date || r.created_at), 0) /
+                stageRows.length
+            )
+          : 0;
+      const fromPrev =
+        idx === 0
+          ? "Entry stage"
+          : prevCount > 0 && count > 0
+            ? `${Math.round((count / prevCount) * 100)}%`
+            : "—";
+      prevCount = count;
 
       return {
         ...st,
         count,
         value: val,
         percentage: metricView === "leads" ? countPct : valPct,
-        fromPrevious: st.name === "New" ? "Entry stage" : "—",
-        avgTime: st.name === "New" ? "23 d" : "—",
+        fromPrevious: fromPrev,
+        avgTime: stageRows.length > 0 ? `${stageAvgDays} d` : "—",
       };
     });
-  }, [chartData, totalLeads, openPipeline, metricView]);
+  }, [chartData, rawRows, totalLeads, openPipeline, metricView]);
 
   // Lead Sources breakdown dynamically computed from data
   const leadSources = useMemo(() => {
@@ -250,16 +280,38 @@ const LeadConversionFunnelView = ({
     );
   };
 
-  // Weekly Leads & Won ApexChart configuration dynamically calculated
+  // Weekly Leads & Won ApexChart configuration dynamically bucketed across last 4 weeks
   const timelineChartConfig = useMemo(() => {
-    const leadsCount = rawRows.length;
-    const wonCount = rawRows.filter((r) => {
-      const st = String(r.status || "").toUpperCase();
-      return st.includes("CONVERT") || st.includes("WON");
-    }).length;
+    const now = new Date();
+    const buckets = Array.from({ length: 4 }, (_, i) => {
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (3 - i) * 7 - 6);
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (3 - i) * 7, 23, 59, 59, 999);
+      return {
+        label: start.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        start,
+        end,
+        leads: 0,
+        won: 0,
+      };
+    });
 
-    const newLeadsData = leadsCount > 0 ? [leadsCount, 0, 0, 0] : [0, 0, 0, 0];
-    const wonData = wonCount > 0 ? [wonCount, 0, 0, 0] : [0, 0, 0, 0];
+    rawRows.forEach((r) => {
+      const dt = new Date(r.created_date || r.created_at);
+      if (isNaN(dt.getTime())) return;
+      const isWon =
+        String(r.status || "").toUpperCase().includes("CONVERT") ||
+        String(r.status || "").toUpperCase().includes("WON");
+      const b = buckets.find((x) => dt >= x.start && dt <= x.end);
+      if (b) {
+        b.leads += 1;
+        if (isWon) b.won += 1;
+      }
+    });
+
+    const categories = buckets.map((b) => b.label);
+    const newLeadsData = buckets.map((b) => b.leads);
+    const wonData = buckets.map((b) => b.won);
+    const maxY = Math.max(...newLeadsData, ...wonData, 3);
 
     return {
       series: [
@@ -288,8 +340,8 @@ const LeadConversionFunnelView = ({
         },
         colors: [isDark ? "#f87171" : "#7f1d1d", "#16a34a"],
         markers: {
-          size: [6, 0],
-          colors: [isDark ? "#f87171" : "#7f1d1d"],
+          size: [5, 4],
+          colors: [isDark ? "#f87171" : "#7f1d1d", "#16a34a"],
           strokeColors: isDark ? "#121212" : "#ffffff",
           strokeWidth: 2,
         },
@@ -301,7 +353,7 @@ const LeadConversionFunnelView = ({
           padding: { top: 10, bottom: 0, left: 10, right: 10 },
         },
         xaxis: {
-          categories: ["Oct 26", "Nov 2", "Nov 9", "Nov 16"],
+          categories,
           labels: {
             style: {
               colors: isDark ? "#94a3b8" : "#64748b",
@@ -314,8 +366,8 @@ const LeadConversionFunnelView = ({
         },
         yaxis: {
           min: 0,
-          max: 3,
-          tickAmount: 3,
+          max: maxY,
+          tickAmount: Math.min(maxY, 4),
           labels: {
             style: {
               colors: isDark ? "#94a3b8" : "#64748b",
@@ -326,33 +378,6 @@ const LeadConversionFunnelView = ({
           },
         },
         legend: { show: false },
-        annotations: {
-          points: [
-            {
-              x: "Oct 26",
-              y: 1,
-              marker: {
-                size: 6,
-                fillColor: isDark ? "#f87171" : "#7f1d1d",
-                strokeColor: isDark ? "#121212" : "#ffffff",
-                strokeWidth: 2,
-              },
-              label: {
-                borderColor: "transparent",
-                style: {
-                  color: textTitle,
-                  background: "transparent",
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  fontFamily: "Inter, sans-serif",
-                },
-                text: "1 lead (28 Oct)",
-                offsetY: -6,
-                offsetX: 48,
-              },
-            },
-          ],
-        },
         tooltip: {
           theme: "dark",
           y: {
@@ -361,7 +386,7 @@ const LeadConversionFunnelView = ({
         },
       },
     };
-  }, [rawRows, isDark, textTitle]);
+  }, [rawRows, isDark]);
 
   return (
     <div className="lead-conversion-funnel-view">
@@ -409,8 +434,8 @@ const LeadConversionFunnelView = ({
                 {totalLeads}
               </div>
               <div className="d-flex align-items-center gap-1.5 mt-2" style={{ fontSize: "11.5px" }}>
-                <span style={{ color: "#16a34a", fontWeight: 600 }}>▲ 1 new</span>
-                <span style={{ color: textSub }}>vs previous period</span>
+                <span style={{ color: "#16a34a", fontWeight: 600 }}>{totalLeads} tracked</span>
+                <span style={{ color: textSub }}>in selected period</span>
               </div>
             </CardBody>
           </Card>
@@ -459,8 +484,9 @@ const LeadConversionFunnelView = ({
               </div>
               <div className="d-flex align-items-center justify-content-between mt-2">
                 <div className="d-flex align-items-center gap-1.5" style={{ fontSize: "11.5px" }}>
-                  <span style={{ color: textSub }}>0 of 1 lead won •</span>
-                  <span style={{ color: textSub }}>Target 15%</span>
+                  <span style={{ color: textSub }}>
+                    {convertedLeads} of {totalLeads} {totalLeads === 1 ? "lead" : "leads"} converted
+                  </span>
                 </div>
                 <div
                   style={{
@@ -572,12 +598,11 @@ const LeadConversionFunnelView = ({
                 className="fw-bold font-monospace"
                 style={{ fontSize: "28px", lineHeight: "1.1", margin: "6px 0", color: textTitle }}
               >
-                23 d
+                {avgDaysInFunnel} d
               </div>
               <div className="d-flex align-items-center justify-content-between mt-2">
                 <div className="d-flex align-items-center gap-1" style={{ fontSize: "11.5px" }}>
-                  <span style={{ color: textSub }}>Target 7 d •</span>
-                  <span style={{ color: isDark ? "#f87171" : "#dc2626", fontWeight: 600 }}>▲ 16 d over</span>
+                  <span style={{ color: textSub }}>Avg age across {totalLeads} {totalLeads === 1 ? "lead" : "leads"}</span>
                 </div>
                 <div
                   style={{
@@ -590,9 +615,9 @@ const LeadConversionFunnelView = ({
                 >
                   <div
                     style={{
-                      width: "100%",
+                      width: `${Math.min(100, Math.round((avgDaysInFunnel / 30) * 100))}%`,
                       height: "100%",
-                      backgroundColor: isDark ? "#ef4444" : "#dc2626",
+                      backgroundColor: avgDaysInFunnel > 14 ? (isDark ? "#ef4444" : "#dc2626") : "#16a34a",
                       borderRadius: 0,
                     }}
                   ></div>
@@ -854,7 +879,7 @@ const LeadConversionFunnelView = ({
                       </div>
 
                       <div className="text-center font-monospace" style={{ fontSize: "12px", color: textSub }}>
-                        0
+                        {lostLeadsCount}
                       </div>
 
                       <div className="text-center" style={{ fontSize: "11.5px", color: textSub }}>
@@ -1064,7 +1089,7 @@ const LeadConversionFunnelView = ({
                         </a>
                       ) : null}
                       <Link
-                        to={`/crm/leads/${idleLead.lead_id || 1}`}
+                        to={idleLead.lead_id ? `/crm/leads/${idleLead.lead_id}` : "/crm/leads"}
                         className="btn btn-sm border"
                         style={{
                           fontSize: "11px",
@@ -1381,10 +1406,11 @@ const LeadConversionFunnelView = ({
               onChange={(e) => setSourceFilter(e.target.value)}
             >
               <option value="ALL">Source: All</option>
-              <option value="Website">Website</option>
-              <option value="Referral">Referral</option>
-              <option value="LinkedIn">LinkedIn</option>
-              <option value="Cold Call">Cold Call</option>
+              {leadSources.map((ls) => (
+                <option key={ls.name} value={ls.name}>
+                  {ls.name}
+                </option>
+              ))}
             </select>
 
             {/* Stage Filter Dropdown */}
@@ -1483,7 +1509,7 @@ const LeadConversionFunnelView = ({
                             </span>
                             <div>
                               <Link
-                                to={`/crm/leads/${r.lead_id || 1}`}
+                                to={r.lead_id ? `/crm/leads/${r.lead_id}` : "/crm/leads"}
                                 className="fw-bold text-decoration-none d-block"
                                 style={{ fontSize: "12.5px", color: textTitle }}
                               >
@@ -1498,19 +1524,7 @@ const LeadConversionFunnelView = ({
 
                         {/* STAGE */}
                         <td style={{ padding: "12px 16px" }}>
-                          <div>
-                            <div className="d-flex align-items-center gap-1 mb-1">
-                              <span style={{ width: "6px", height: "6px", borderRadius: 0, backgroundColor: isDark ? "#f87171" : "#7f1d1d" }}></span>
-                              <span style={{ width: "6px", height: "6px", borderRadius: 0, backgroundColor: isDark ? "#334155" : "#e2e8f0" }}></span>
-                              <span style={{ width: "6px", height: "6px", borderRadius: 0, backgroundColor: isDark ? "#334155" : "#e2e8f0" }}></span>
-                              <span style={{ width: "6px", height: "6px", borderRadius: 0, backgroundColor: isDark ? "#334155" : "#e2e8f0" }}></span>
-                              <span style={{ width: "6px", height: "6px", borderRadius: 0, backgroundColor: isDark ? "#334155" : "#e2e8f0" }}></span>
-                              <span style={{ width: "6px", height: "6px", borderRadius: 0, backgroundColor: isDark ? "#334155" : "#e2e8f0" }}></span>
-                            </div>
-                            <span className="fw-medium" style={{ fontSize: "11.5px", color: textTitle }}>
-                              {r.status || "New"}
-                            </span>
-                          </div>
+                          {renderStageDots(r.status)}
                         </td>
 
                         {/* SOURCE */}
@@ -1574,23 +1588,25 @@ const LeadConversionFunnelView = ({
                         {/* ACTIONS */}
                         <td style={{ padding: "12px 16px", textAlign: "center" }}>
                           <div className="d-flex align-items-center justify-content-center gap-2">
-                            <a
-                              href="tel:9876543210"
-                              className="btn btn-sm"
-                              style={{
-                                backgroundColor: "#7f1d1d",
-                                borderColor: "#7f1d1d",
-                                color: "#ffffff",
-                                fontSize: "11px",
-                                fontWeight: 600,
-                                padding: "3px 12px",
-                                borderRadius: 0,
-                              }}
-                            >
-                              Call
-                            </a>
+                            {r.mobile ? (
+                              <a
+                                href={`tel:${r.mobile}`}
+                                className="btn btn-sm"
+                                style={{
+                                  backgroundColor: "#7f1d1d",
+                                  borderColor: "#7f1d1d",
+                                  color: "#ffffff",
+                                  fontSize: "11px",
+                                  fontWeight: 600,
+                                  padding: "3px 12px",
+                                  borderRadius: 0,
+                                }}
+                              >
+                                Call
+                              </a>
+                            ) : null}
                             <Link
-                              to={`/crm/leads/${r.lead_id || 1}`}
+                              to={r.lead_id ? `/crm/leads/${r.lead_id}` : "/crm/leads"}
                               className="btn btn-sm border"
                               style={{
                                 fontSize: "11px",

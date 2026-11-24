@@ -32,6 +32,7 @@ import {
   deactivateContact,
 } from "../../../helpers/crmContactApi";
 import { createActivity } from "../../../helpers/crmActivityApi";
+import { completeTask } from "../../../helpers/crmTaskApi";
 import { toastApiError, toastSuccess } from "../../../helpers/crmToast";
 
 // ============================================================================
@@ -270,7 +271,7 @@ const ContactDetail = () => {
     if (!data?.invoices || data.invoices.length === 0) return data?.kpis?.totalOutstanding || 0;
     const pendingInvs = data.invoices.filter((inv) => String(inv.status).toLowerCase() !== "paid");
     if (pendingInvs.length > 0) {
-      return pendingInvs.reduce((sum, inv) => sum + (Number(inv.amount || inv.outstanding) || 0), 0);
+      return pendingInvs.reduce((sum, inv) => sum + (Number(inv.outstanding ?? inv.amount ?? 0) || 0), 0);
     }
     return 0;
   }, [data]);
@@ -284,11 +285,21 @@ const ContactDetail = () => {
     toastSuccess("Copied to clipboard!");
   };
 
-  // Toggle checklist item
-  const toggleTask = (id) => {
+  // Toggle checklist item (persists task completion to backend)
+  const toggleTask = async (id) => {
+    const target = tasksList.find((t) => t.taskId === id || t.id === id);
+    if (!target || target.completed || String(target.status || "").toUpperCase() === "COMPLETED") return;
+    const prevTasks = tasksList;
     setTasksList((prev) =>
-      prev.map((t) => (t.taskId === id || t.id === id ? { ...t, completed: !t.completed } : t))
+      prev.map((t) => (t.taskId === id || t.id === id ? { ...t, completed: true, status: "COMPLETED" } : t))
     );
+    try {
+      await completeTask(id);
+      toastSuccess("Task marked as completed.");
+    } catch (err) {
+      setTasksList(prevTasks);
+      toastApiError(err, "Failed to complete task.");
+    }
   };
 
   // Open Edit Modal
@@ -360,12 +371,17 @@ const ContactDetail = () => {
     }
     setActivitySubmitting(true);
     try {
+      const accTag = data?.organization?.accountId ? `[Account: ${data.organization.accountId}] ` : "";
+      const metaTag = `${accTag}[Contact: ${contactPersonId}] Related: ${titleName}`;
+      const combinedNotes = activityForm.notes?.trim()
+        ? `${activityForm.notes.trim()}\n${metaTag}`
+        : metaTag;
       await createActivity({
         subject: `[${titleName}] ${activityForm.subject.trim()}`,
         actType: activityForm.actType,
         startTime: new Date(activityForm.startTime).toISOString(),
         callNumber: activityForm.phoneNumber || undefined,
-        callNotes: activityForm.notes || undefined,
+        callNotes: combinedNotes,
       });
       toastSuccess("Activity logged successfully.");
       setActivityModalOpen(false);
@@ -381,7 +397,7 @@ const ContactDetail = () => {
   const openEmailModal = () => {
     setEmailForm({
       to: data?.contact?.email || "",
-      subject: `Business Discussion regarding ${data?.organization?.companyName || "SoftOnCloud"}`,
+      subject: `Business Discussion regarding ${data?.organization?.companyName || "our account"}`,
       message: `Dear ${data?.contact?.firstName || titleName},\n\nHope you are having a productive day.\n\nBest regards,\n${data?.contact?.ownerName || ""}`,
     });
     setEmailModalOpen(true);
@@ -682,7 +698,7 @@ const ContactDetail = () => {
                       <span>{contact.location || "Location not recorded"}</span>
                     </div>
 
-                    {/* Tags row */}
+                    {/* Tags row (strictly derived from real DB flags/tags) */}
                     <div className="d-flex align-items-center gap-2 flex-wrap">
                       {contact.isPrimary && (
                         <span
@@ -692,17 +708,20 @@ const ContactDetail = () => {
                           Primary Contact
                         </span>
                       )}
-                      <span
-                        className="badge px-2 py-0.5 rounded-0 fs-11 fw-semibold"
-                        style={{
-                          backgroundColor: "#fef2f2",
-                          color: "#7f1d1d",
-                          border: "1px solid #fecaca",
-                          borderRadius: 0,
-                        }}
-                      >
-                        Key Decision Maker
-                      </span>
+                      {Array.isArray(contact.tags) && contact.tags.map((tag, idx) => (
+                        <span
+                          key={idx}
+                          className="badge px-2 py-0.5 rounded-0 fs-11 fw-semibold"
+                          style={{
+                            backgroundColor: "#fef2f2",
+                            color: "#7f1d1d",
+                            border: "1px solid #fecaca",
+                            borderRadius: 0,
+                          }}
+                        >
+                          {tag}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -763,7 +782,7 @@ const ContactDetail = () => {
                   </div>
                   <div className="d-flex justify-content-between py-1 border-bottom border-light">
                     <span className="text-muted fw-medium">Contact ID</span>
-                    <span className="fw-bold text-dark">{contact.contactCode || `CON-2026-${contactPersonId}`}</span>
+                    <span className="fw-bold text-dark">{contact.contactCode || `CON-${new Date().getFullYear()}-${String(contactPersonId).padStart(5, "0")}`}</span>
                   </div>
                   <div className="d-flex justify-content-between align-items-center py-1">
                     <span className="text-muted fw-medium">Tags</span>
@@ -899,7 +918,7 @@ const ContactDetail = () => {
                                 <i className="ri-phone-fill fs-13" />
                               </a>
                               <a
-                                href={`https://wa.me/91${String(contact.mobile).replace(/\D/g, "").slice(-10)}`}
+                                href={`https://wa.me/${String(contact.mobile).replace(/\D/g, "")}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="text-success"

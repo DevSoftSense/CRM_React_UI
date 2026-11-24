@@ -446,7 +446,7 @@ const TargetAchievementReportView = ({
                       <i className="ri-speed-up-fill"></i> Pacing
                     </span>
                     <span style={{ fontSize: "11px", color: textSub }}>
-                      Target: ₹15 Lakhs
+                      Target: {formatCurrency(totalTargetAmount)}
                     </span>
                   </div>
                 </div>
@@ -764,7 +764,7 @@ const TargetAchievementReportView = ({
               <div className="d-flex flex-column gap-1.5">
                 {rawRows.map((r, i) => {
                   const won = Number(r.won_revenue || 0);
-                  const target = Number(r.target_amount || 500000);
+                  const target = Number(r.target_amount || 0);
                   const pct = Number(r.attainment_pct || 0);
                   const isLeader = i === 0 && won > 0;
                   const initials = getRepInitials(r.sales_rep);
@@ -995,7 +995,7 @@ const TargetAchievementReportView = ({
                   paginatedRows.map((r, idx) => {
                     const rowNumber = (currentPage - 1) * pageSize + idx + 1;
                     const wonAmount = Number(r.won_revenue || 0);
-                    const targetAmount = Number(r.target_amount || 500000);
+                    const targetAmount = Number(r.target_amount || 0);
                     const gapAmount = Number(r.gap_amount ?? Math.max(0, targetAmount - wonAmount));
                     const pct = Number(r.attainment_pct || 0);
                     const initials = getRepInitials(r.sales_rep);

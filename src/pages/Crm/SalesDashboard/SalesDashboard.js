@@ -18,12 +18,25 @@ import ForecastVsTargetGauge from "./components/ForecastVsTargetGauge";
 import RecentWonDealsTable from "./components/RecentWonDealsTable";
 import UpcomingFollowupsTable from "./components/UpcomingFollowupsTable";
 
+const toLocalIso = (d) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
 const SalesDashboard = () => {
   document.title = "Sales Dashboard | SoftOnCloud CRM";
 
   const [period, setPeriod] = useState("this_month");
+  const [dateFrom, setDateFrom] = useState(() => {
+    const n = new Date();
+    return toLocalIso(new Date(n.getFullYear(), n.getMonth(), 1));
+  });
+  const [dateTo, setDateTo] = useState(() => toLocalIso(new Date()));
   const [selectedOwner, setSelectedOwner] = useState("");
   const [owners, setOwners] = useState([]);
+  const [periods, setPeriods] = useState([]);
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -36,6 +49,7 @@ const SalesDashboard = () => {
         if (!isMounted) return;
         const data = res?.data || res || {};
         if (Array.isArray(data.owners)) setOwners(data.owners);
+        if (Array.isArray(data.periods)) setPeriods(data.periods);
       })
       .catch((err) => {
         console.warn("Failed to load sales dashboard lookups:", err);
@@ -47,11 +61,14 @@ const SalesDashboard = () => {
 
   // 2. Load Sales Dashboard Data
   const loadDashboard = useCallback(async () => {
+    if (period === "custom" && (!dateFrom || !dateTo)) return;
     try {
       setLoading(true);
       setError(null);
       const res = await getSalesDashboard({
         period,
+        dateFrom: period === "custom" ? dateFrom : undefined,
+        dateTo: period === "custom" ? dateTo : undefined,
         ownerId: selectedOwner || undefined,
       });
       const data = res?.data || res || {};
@@ -62,7 +79,7 @@ const SalesDashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, [period, selectedOwner]);
+  }, [period, dateFrom, dateTo, selectedOwner]);
 
   useEffect(() => {
     loadDashboard();
@@ -87,6 +104,11 @@ const SalesDashboard = () => {
         <SalesDashboardHeader
           period={period}
           onPeriodChange={setPeriod}
+          periods={periods}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          onDateFromChange={setDateFrom}
+          onDateToChange={setDateTo}
           owners={owners}
           selectedOwner={selectedOwner}
           onOwnerChange={setSelectedOwner}

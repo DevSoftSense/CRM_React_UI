@@ -118,66 +118,39 @@ const RosetteMedal = ({ rank = 1 }) => {
   );
 };
 
-// Illustrated SVG Avatar matching mockup
+// Neutral square monogram avatar (no hardcoded name/gender heuristics)
+const AVATAR_PALETTES = [
+  { bg: "#fee2e2", border: "#fca5a5", color: "#991b1b" },
+  { bg: "#e0f2fe", border: "#7dd3fc", color: "#0369a1" },
+  { bg: "#ecfdf5", border: "#6ee7b7", color: "#047857" },
+  { bg: "#fef3c7", border: "#fcd34d", color: "#92400e" },
+  { bg: "#f1f5f9", border: "#cbd5e1", color: "#334155" },
+];
+
 const RepAvatar = ({ name = "", index = 0 }) => {
-  const isFemale = ["neha", "priya", "pooja", "ananya", "sneha", "kavita", "ritu", "sunita", "anita"].some(
-    (n) => name.toLowerCase().includes(n)
-  );
-
-  if (isFemale) {
-    return (
-      <svg
-        width="34"
-        height="34"
-        viewBox="0 0 36 36"
-        style={{ borderRadius: 0, flexShrink: 0, display: "block" }}
-      >
-        <rect x="1" y="1" width="34" height="34" fill="#ffe4e6" stroke="#f87171" strokeWidth="1.8" />
-        <path d="M 10,18 C 9,28 10,32 12,34 L 24,34 C 26,32 27,28 26,18 Z" fill="#1c1917" />
-        <path d="M 8,36 C 10,29 14,27 18,27 C 22,27 26,29 28,36 Z" fill="#be123c" />
-        <rect x="15.5" y="21" width="5" height="7" fill="#fed7aa" rx="0" />
-        <ellipse cx="18" cy="17" rx="6.5" ry="7.5" fill="#fde68a" />
-        <path
-          d="M 11.5,16 C 11.5,10 14,8 18,8 C 22,8 24.5,10 24.5,16 C 23,13 20,11 18,12 C 16,11 13,13 11.5,16 Z"
-          fill="#1c1917"
-        />
-        <circle cx="15.5" cy="16.5" r="1" fill="#1c1917" />
-        <circle cx="20.5" cy="16.5" r="1" fill="#1c1917" />
-        <path d="M 16.5,20 Q 18,21.5 19.5,20" fill="none" stroke="#b91c1c" strokeWidth="0.8" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
-  const hasFullBeard = index % 2 === 1 || name.toLowerCase().includes("vikram");
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+  const initials =
+    parts.length >= 2
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : (parts[0] ? parts[0].slice(0, 2).toUpperCase() : "UN");
+  const palette = AVATAR_PALETTES[index % AVATAR_PALETTES.length];
 
   return (
-    <svg
-      width="34"
-      height="34"
-      viewBox="0 0 36 36"
-      style={{ borderRadius: 0, flexShrink: 0, display: "block" }}
+    <div
+      className="d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
+      style={{
+        width: "32px",
+        height: "32px",
+        borderRadius: 0,
+        backgroundColor: palette.bg,
+        border: `1.5px solid ${palette.border}`,
+        color: palette.color,
+        fontSize: "0.72rem",
+        letterSpacing: "0.02em",
+      }}
     >
-      <rect x="1" y="1" width="34" height="34" fill="#ffedd5" stroke="#f87171" strokeWidth="1.8" />
-      <path d="M 7,36 C 9,28 13,26 18,26 C 23,26 27,28 29,36 Z" fill={hasFullBeard ? "#1e293b" : "#0f766e"} />
-      <rect x="15.5" y="21" width="5" height="6" fill="#fed7aa" rx="0" />
-      <ellipse cx="18" cy="16.5" rx="6.5" ry="7.5" fill="#fde68a" />
-      <path
-        d="M 11.5,15 C 11.5,9 14,7 18,7 C 22,7 24.5,9 24.5,15 C 23,12 21,11 18,11 C 15,11 13,12 11.5,15 Z"
-        fill="#451a03"
-      />
-      <circle cx="15.5" cy="16" r="1" fill="#1c1917" />
-      <circle cx="20.5" cy="16" r="1" fill="#1c1917" />
-      {hasFullBeard ? (
-        <path d="M 13.5,18 C 14.5,23.5 21.5,23.5 22.5,18 C 21,20 15,20 13.5,18 Z" fill="#451a03" />
-      ) : (
-        <path
-          d="M 14.5,19 C 15.5,22.5 20.5,22.5 21.5,19 C 20,20.2 16,20.2 14.5,19 Z"
-          fill="#78350f"
-          opacity="0.6"
-        />
-      )}
-      <path d="M 16.5,19.5 Q 18,20.8 19.5,19.5" fill="none" stroke="#451a03" strokeWidth="0.8" strokeLinecap="round" />
-    </svg>
+      {initials}
+    </div>
   );
 };
 

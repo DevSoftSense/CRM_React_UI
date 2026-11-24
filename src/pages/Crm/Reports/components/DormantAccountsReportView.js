@@ -52,23 +52,38 @@ const DormantAccountsReportView = ({
     return Array.isArray(reportResult?.chart_data) ? reportResult.chart_data : [];
   }, [reportResult]);
 
-  // Executive KPI metrics
-  const dormantCount = Number(summary.dormant_accounts_count ?? (rawRows.length > 0 ? rawRows.length : 1));
-  const totalAccounts = 4; // Total customer accounts in tenant
-  const healthyAccounts = Math.max(1, totalAccounts - dormantCount);
-  const retentionRate = Math.round((healthyAccounts / totalAccounts) * 100);
+  // Executive KPI metrics (strictly dynamic from tenant data)
+  const dormantCount = Number(summary.dormant_accounts_count ?? rawRows.length ?? 0);
+  const totalAccounts = Number(
+    summary.total_accounts ?? summary.total_customers ?? Math.max(dormantCount, rawRows.length)
+  );
+  const healthyAccounts = Math.max(0, totalAccounts - dormantCount);
+  const retentionRate =
+    totalAccounts > 0 ? Math.round((healthyAccounts / totalAccounts) * 100) : 100;
+  const atRiskPct =
+    totalAccounts > 0 ? Math.round((dormantCount / totalAccounts) * 100) : 0;
 
-  // Inactivity bracket counts
+  // Inactivity bracket counts (strictly dynamic — zero hardcoded demo counts)
   const bracketCounts = useMemo(() => {
-    const counts = { "30-60": 3, "60-90": 2, ">90": 1 };
-    chartData.forEach((d) => {
-      const b = String(d.inactivity_bracket || "");
-      if (b.includes("30") || b.includes("60 Days")) counts["30-60"] = Number(d.count || 3);
-      if (b.includes("60 - 90")) counts["60-90"] = Number(d.count || 2);
-      if (b.includes("> 90") || b.includes("90 Days")) counts[">90"] = Number(d.count || 1);
-    });
+    const counts = { "30-60": 0, "60-90": 0, ">90": 0 };
+    if (chartData.length > 0) {
+      chartData.forEach((d) => {
+        const b = String(d.inactivity_bracket || "");
+        const val = Number(d.count || 0);
+        if (b.includes("30") && b.includes("60")) counts["30-60"] = val;
+        else if (b.includes("60") && b.includes("90")) counts["60-90"] = val;
+        else if (b.includes("90")) counts[">90"] = val;
+      });
+    } else {
+      rawRows.forEach((r) => {
+        const days = Number(r.days_inactive ?? r.days_since_activity ?? 0);
+        if (days > 90) counts[">90"] += 1;
+        else if (days >= 60) counts["60-90"] += 1;
+        else if (days >= 30) counts["30-60"] += 1;
+      });
+    }
     return counts;
-  }, [chartData]);
+  }, [chartData, rawRows]);
 
   // Filtered rows for search and risk level
   const filteredRows = useMemo(() => {
@@ -155,7 +170,7 @@ const DormantAccountsReportView = ({
           axisTicks: { show: false },
         },
         yaxis: {
-          max: 4,
+          max: Math.max(4, Math.ceil(Math.max(...seriesData, 1) * 1.25)),
           tickAmount: 4,
           labels: {
             style: {
@@ -432,7 +447,7 @@ const DormantAccountsReportView = ({
                   </span>
                   <div className="d-flex align-items-center gap-1 mt-1">
                     <span style={{ color: isDark ? "#4ade80" : "#16a34a", fontSize: "11px", fontWeight: 600 }}>
-                      <i className="ri-arrow-up-line"></i> 75%
+                      <i className="ri-arrow-up-line"></i> {retentionRate}%
                     </span>
                     <span style={{ fontSize: "11px", color: textSub }}>
                       Healthy account base
@@ -600,7 +615,7 @@ const DormantAccountsReportView = ({
                       lineHeight: "1.1",
                     }}
                   >
-                    25%
+                    {atRiskPct}%
                   </div>
                   <div
                     style={{
@@ -687,7 +702,10 @@ const DormantAccountsReportView = ({
                     }}
                   ></span>
                   <p className="mb-0" style={{ fontSize: "12px", lineHeight: "1.5", color: textTitle }}>
-                    <span className="fw-semibold">1 key account</span> has exceeded 65 days with zero touchpoint.
+                    <span className="fw-semibold">
+                      {dormantCount} {dormantCount === 1 ? "account" : "accounts"}
+                    </span>{" "}
+                    {dormantCount === 1 ? "has" : "have"} exceeded 30 days with zero touchpoints.
                   </p>
                 </div>
 
@@ -776,7 +794,7 @@ const DormantAccountsReportView = ({
               Detailed Data Ledger
             </h6>
             <span style={{ fontSize: "11.5px", color: textSub }}>
-              Showing 1 to {filteredRows.length} of {rawRows.length} dormant records
+              Showing {filteredRows.length > 0 ? 1 : 0} to {filteredRows.length} of {rawRows.length} dormant records
             </span>
           </div>
 

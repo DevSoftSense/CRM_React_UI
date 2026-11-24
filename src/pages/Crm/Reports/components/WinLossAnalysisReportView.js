@@ -105,7 +105,46 @@ const WinLossAnalysisReportView = ({
 
   const avgDealSize = totalClosedDeals > 0
     ? Math.round((wonRevenue + lostRevenue) / totalClosedDeals)
-    : 250000;
+    : 0;
+
+  const currentMonthShort = new Date().toLocaleString("en-US", { month: "short" });
+
+  // Dynamic monthly won/lost aggregates (supports both revenue and deal count modes)
+  const monthlyStats = useMemo(() => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const byMonth = months.map((month) => {
+      const wonDeals = rawRows.filter((r) => {
+        if (!r.close_date || String(r.outcome).toLowerCase() !== "won") return false;
+        const d = new Date(r.close_date);
+        return !isNaN(d.getTime()) && d.toLocaleString("en-US", { month: "short" }) === month;
+      });
+      const lostDeals = rawRows.filter((r) => {
+        if (!r.close_date || String(r.outcome).toLowerCase() !== "lost") return false;
+        const d = new Date(r.close_date);
+        return !isNaN(d.getTime()) && d.toLocaleString("en-US", { month: "short" }) === month;
+      });
+      return {
+        month,
+        wonDeals,
+        lostDeals,
+        wonAmt: wonDeals.reduce((a, b) => a + Number(b.amount || 0), 0),
+        lostAmt: lostDeals.reduce((a, b) => a + Number(b.amount || 0), 0),
+        wonCount: wonDeals.length,
+        lostCount: lostDeals.length,
+      };
+    });
+    const maxVal = Math.max(
+      ...byMonth.map((m) =>
+        metricMode === "count" ? Math.max(m.wonCount, m.lostCount) : Math.max(m.wonAmt, m.lostAmt)
+      ),
+      metricMode === "count" ? 2 : 100000
+    );
+    return { byMonth, maxVal };
+  }, [rawRows, metricMode]);
+
+  const maxBubbleAmount = useMemo(() => {
+    return Math.max(...rawRows.map((r) => Number(r.amount || 0)), 100000);
+  }, [rawRows]);
 
   // Short currency formatter for charts & badges (e.g. ₹2.5 L)
   const formatShortLakhs = (amt) => {
@@ -560,11 +599,11 @@ const WinLossAnalysisReportView = ({
                     }}
                   >
                     <span style={{ color: isDark ? "#4ade80" : "#16a34a", fontWeight: 700 }}>▲ WON</span>
-                    <span>₹3 L</span>
-                    <span>₹1.5 L</span>
-                    <span style={{ color: textSub, fontWeight: 600 }}>₹0</span>
-                    <span>-₹1.5 L</span>
-                    <span>-₹3 L</span>
+                    <span>{metricMode === "count" ? monthlyStats.maxVal : formatShortLakhs(monthlyStats.maxVal)}</span>
+                    <span>{metricMode === "count" ? Math.round(monthlyStats.maxVal / 2) : formatShortLakhs(monthlyStats.maxVal / 2)}</span>
+                    <span style={{ color: textSub, fontWeight: 600 }}>{metricMode === "count" ? "0" : "₹0"}</span>
+                    <span>{metricMode === "count" ? `-${Math.round(monthlyStats.maxVal / 2)}` : `-${formatShortLakhs(monthlyStats.maxVal / 2)}`}</span>
+                    <span>{metricMode === "count" ? `-${monthlyStats.maxVal}` : `-${formatShortLakhs(monthlyStats.maxVal)}`}</span>
                     <span style={{ color: isDark ? "#f87171" : "#dc2626", fontWeight: 700 }}>▼ LOST</span>
                   </div>
 
@@ -600,21 +639,17 @@ const WinLossAnalysisReportView = ({
                       className="d-flex justify-content-between align-items-center h-100 position-relative"
                       style={{ paddingLeft: "10px", paddingRight: "10px" }}
                     >
-                      {[
-                        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-                      ].map((month) => {
-                        const monthWonDeals = rawRows.filter((r) => {
-                          if (!r.close_date || String(r.outcome).toLowerCase() !== "won") return false;
-                          const d = new Date(r.close_date);
-                          if (isNaN(d.getTime())) return false;
-                          return d.toLocaleString("en-US", { month: "short" }) === month;
-                        });
-                        const hasWon = monthWonDeals.length > 0;
-                        const monthWonAmt = monthWonDeals.reduce((a, b) => a + Number(b.amount || 0), 0);
-                        const topDeal = monthWonDeals[0];
+                      {monthlyStats.byMonth.map((mStat) => {
+                        const { month, wonDeals, lostDeals, wonAmt, lostAmt, wonCount, lostCount } = mStat;
+                        const hasWon = wonCount > 0;
+                        const hasLost = lostCount > 0;
+                        const hasAny = hasWon || hasLost;
+                        const topDeal = wonDeals[0] || lostDeals[0];
                         const isHovered = hoveredMonth === month;
-                        const heightPct = Math.min(80, Math.max(15, Math.round((monthWonAmt / 500000) * 100)));
+                        const wonMetric = metricMode === "count" ? wonCount : wonAmt;
+                        const lostMetric = metricMode === "count" ? lostCount : lostAmt;
+                        const wonHeightPct = hasWon ? Math.min(46, Math.max(10, Math.round((wonMetric / monthlyStats.maxVal) * 46))) : 0;
+                        const lostHeightPct = hasLost ? Math.min(46, Math.max(10, Math.round((lostMetric / monthlyStats.maxVal) * 46))) : 0;
 
                         return (
                           <div
@@ -623,86 +658,111 @@ const WinLossAnalysisReportView = ({
                             style={{
                               flex: 1,
                               height: "100%",
-                              cursor: hasWon ? "pointer" : "default",
+                              cursor: hasAny ? "pointer" : "default",
                             }}
                             onMouseEnter={() => {
-                              if (hasWon) setHoveredMonth(month);
+                              if (hasAny) setHoveredMonth(month);
                             }}
                             onMouseLeave={() => {
-                              if (hasWon) setHoveredMonth(null);
+                              if (hasAny) setHoveredMonth(null);
                             }}
                           >
-                            {/* If deals won in this month, render the green rising column */}
-                            {hasWon && (
-                              <>
-                                {/* Floating Tooltip Card */}
-                                {isHovered && topDeal && (
-                                  <div
-                                    className="position-absolute rounded-0"
-                                    style={{
-                                      bottom: "105%",
-                                      right: "50%",
-                                      transform: "translateX(15%)",
-                                      backgroundColor: isDark ? "#1a202c" : "#ffffff",
-                                      border: `1px solid ${cardBorder}`,
-                                      borderRadius: 0,
-                                      padding: "8px 12px",
-                                      boxShadow: isDark ? "0 6px 18px rgba(0, 0, 0, 0.4)" : "0 6px 18px rgba(15, 23, 42, 0.12)",
-                                      whiteSpace: "nowrap",
-                                      zIndex: 30,
-                                      minWidth: "220px",
-                                      pointerEvents: "none",
-                                      animation: "fadeIn 0.15s ease-in-out",
-                                    }}
-                                  >
-                                    <div style={{ fontSize: "11.5px", fontWeight: 700, color: textTitle }}>
-                                      {topDeal.opportunity_name || "—"}
-                                    </div>
-                                    <div style={{ fontSize: "10.5px", color: textSub, marginTop: "1px" }}>
-                                      Won on {topDeal.close_date || "—"} • {topDeal.sales_rep || "Unassigned"}
-                                    </div>
-                                    <div style={{ fontSize: "11px", fontWeight: 700, color: isDark ? "#4ade80" : "#16a34a", marginTop: "2px" }}>
-                                      {formatCurrency(monthWonAmt)} • {topDeal.cycle_days || 0} days cycle
-                                    </div>
+                            {isHovered && topDeal && (
+                              <div
+                                className="position-absolute rounded-0"
+                                style={{
+                                  bottom: "102%",
+                                  left: "50%",
+                                  transform: "translateX(-50%)",
+                                  backgroundColor: isDark ? "#1a202c" : "#ffffff",
+                                  border: `1px solid ${cardBorder}`,
+                                  borderRadius: 0,
+                                  padding: "8px 12px",
+                                  boxShadow: isDark ? "0 6px 18px rgba(0, 0, 0, 0.4)" : "0 6px 18px rgba(15, 23, 42, 0.12)",
+                                  whiteSpace: "nowrap",
+                                  zIndex: 30,
+                                  minWidth: "200px",
+                                  pointerEvents: "none",
+                                }}
+                              >
+                                <div style={{ fontSize: "11.5px", fontWeight: 700, color: textTitle }}>
+                                  {month} Summary
+                                </div>
+                                {hasWon && (
+                                  <div style={{ fontSize: "11px", fontWeight: 600, color: isDark ? "#4ade80" : "#16a34a", marginTop: "2px" }}>
+                                    Won: {wonCount} ({formatCurrency(wonAmt)})
                                   </div>
                                 )}
-
-                                {/* Monthly Pillar */}
-                                <div
-                                  className="position-absolute rounded-0"
-                                  style={{
-                                    bottom: "50%",
-                                    width: "28px",
-                                    height: `${heightPct}%`,
-                                    backgroundColor: isHovered ? (isDark ? "#16a34a" : "#15803d") : (isDark ? "#22c55e" : "#16a34a"),
-                                    borderRadius: 0,
-                                    boxShadow: isHovered
-                                      ? "0 0 0 3px rgba(34, 197, 94, 0.35), 0 4px 10px rgba(34, 197, 94, 0.4)"
-                                      : "0 2px 6px rgba(22, 163, 74, 0.3)",
-                                    transition: "all 0.15s ease",
-                                    cursor: "pointer",
-                                  }}
-                                  onMouseEnter={() => setHoveredMonth(month)}
-                                  onMouseLeave={() => setHoveredMonth(null)}
-                                >
-                                  {/* Pillar label on top */}
-                                  <div
-                                    style={{
-                                      position: "absolute",
-                                      bottom: "100%",
-                                      left: "50%",
-                                      transform: "translateX(-50%)",
-                                      fontSize: "10.5px",
-                                      fontWeight: 700,
-                                      color: isDark ? "#4ade80" : "#16a34a",
-                                      marginBottom: "2px",
-                                      whiteSpace: "nowrap",
-                                    }}
-                                  >
-                                    {formatShortLakhs(monthWonAmt)}
+                                {hasLost && (
+                                  <div style={{ fontSize: "11px", fontWeight: 600, color: isDark ? "#f87171" : "#dc2626", marginTop: "2px" }}>
+                                    Lost: {lostCount} ({formatCurrency(lostAmt)})
                                   </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Green rising column for Won deals */}
+                            {hasWon && (
+                              <div
+                                className="position-absolute rounded-0"
+                                style={{
+                                  bottom: "50%",
+                                  width: "26px",
+                                  height: `${wonHeightPct}%`,
+                                  backgroundColor: isHovered ? (isDark ? "#16a34a" : "#15803d") : (isDark ? "#22c55e" : "#16a34a"),
+                                  borderRadius: 0,
+                                  transition: "all 0.15s ease",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    bottom: "100%",
+                                    left: "50%",
+                                    transform: "translateX(-50%)",
+                                    fontSize: "10px",
+                                    fontWeight: 700,
+                                    color: isDark ? "#4ade80" : "#16a34a",
+                                    marginBottom: "2px",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {metricMode === "count" ? wonCount : formatShortLakhs(wonAmt)}
                                 </div>
-                              </>
+                              </div>
+                            )}
+
+                            {/* Red falling column for Lost deals */}
+                            {hasLost && (
+                              <div
+                                className="position-absolute rounded-0"
+                                style={{
+                                  top: "50%",
+                                  width: "26px",
+                                  height: `${lostHeightPct}%`,
+                                  backgroundColor: isHovered ? "#b91c1c" : "#dc2626",
+                                  borderRadius: 0,
+                                  transition: "all 0.15s ease",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    top: "100%",
+                                    left: "50%",
+                                    transform: "translateX(-50%)",
+                                    fontSize: "10px",
+                                    fontWeight: 700,
+                                    color: isDark ? "#f87171" : "#dc2626",
+                                    marginTop: "2px",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {metricMode === "count" ? lostCount : formatShortLakhs(lostAmt)}
+                                </div>
+                              </div>
                             )}
                           </div>
                         );
@@ -731,8 +791,8 @@ const WinLossAnalysisReportView = ({
                           flex: 1,
                           textAlign: "center",
                           fontSize: "11px",
-                          color: m === "Nov" ? textTitle : textSub,
-                          fontWeight: m === "Nov" ? 700 : 500,
+                          color: m === currentMonthShort ? textTitle : textSub,
+                          fontWeight: m === currentMonthShort ? 700 : 500,
                         }}
                       >
                         {m}
@@ -750,7 +810,9 @@ const WinLossAnalysisReportView = ({
                     borderTop: `1px solid ${cardBorder}`,
                   }}
                 >
-                  Lost deals will appear as red bars below the line. Right now there are none.
+                  {lostDealsCount > 0
+                    ? `Showing ${wonDealsCount} won and ${lostDealsCount} lost closed deals across the selected period.`
+                    : "Lost deals will appear as red bars below the line when recorded."}
                 </div>
               </CardBody>
             </Card>
@@ -803,9 +865,9 @@ const WinLossAnalysisReportView = ({
                       fontWeight: 500,
                     }}
                   >
-                    <span>₹5 L</span>
-                    <span>₹3.3 L</span>
-                    <span>₹1.7 L</span>
+                    <span>{formatShortLakhs(maxBubbleAmount)}</span>
+                    <span>{formatShortLakhs(Math.round((maxBubbleAmount * 2) / 3))}</span>
+                    <span>{formatShortLakhs(Math.round(maxBubbleAmount / 3))}</span>
                     <span>₹0</span>
                   </div>
 
@@ -882,7 +944,7 @@ const WinLossAnalysisReportView = ({
                         const cycle = Number(r.cycle_days || 0);
                         const leftPct = Math.min(85, Math.max(5, Math.round((cycle / 60) * 100)));
                         const amt = Number(r.amount || 0);
-                        const topPct = Math.min(75, Math.max(20, Math.round(100 - (amt / 500000) * 100)));
+                        const topPct = Math.min(78, Math.max(12, Math.round(100 - (amt / maxBubbleAmount) * 85)));
                         const color = isWon ? (isDark ? "#22c55e" : "#16a34a") : (isDark ? "#ef4444" : "#dc2626");
 
                         return (
@@ -1045,7 +1107,7 @@ const WinLossAnalysisReportView = ({
                       }}
                     ></span>
                     <span style={{ fontSize: "12.5px", color: textTitle, lineHeight: "1.4" }}>
-                      <strong>{formatCurrency(wonRevenue)}</strong> won from {wonDealsCount} deal. No deals lost this year.
+                      <strong>{formatCurrency(wonRevenue)}</strong> won across {wonDealsCount} {wonDealsCount === 1 ? "deal" : "deals"}; {lostDealsCount} {lostDealsCount === 1 ? "deal" : "deals"} lost ({formatCurrency(lostRevenue)}).
                     </span>
                   </div>
 
@@ -1061,7 +1123,7 @@ const WinLossAnalysisReportView = ({
                       }}
                     ></span>
                     <span style={{ fontSize: "12.5px", color: textTitle, lineHeight: "1.4" }}>
-                      The deal closed in <strong>{avgSalesCycle} days</strong>. Check the created date.
+                      Average closed sales cycle is <strong>{avgSalesCycle} days</strong> with avg deal size {formatCurrency(avgDealSize)}.
                     </span>
                   </div>
 
@@ -1220,7 +1282,9 @@ const WinLossAnalysisReportView = ({
                     borderTop: `1px solid ${cardBorder}`,
                   }}
                 >
-                  One rep so far. Rankings appear with 2+ reps.
+                  {repsData.length === 0
+                    ? "No closed deals recorded by sales reps yet."
+                    : `${repsData.length} sales ${repsData.length === 1 ? "rep" : "reps"} with closed deal outcomes.`}
                 </div>
               </CardBody>
             </Card>
@@ -1394,7 +1458,7 @@ const WinLossAnalysisReportView = ({
                                 fontWeight: 700,
                               }}
                             >
-                              {(r.sales_rep || "AK")
+                              {(r.sales_rep || "UN")
                                 .split(" ")
                                 .map((w) => w[0])
                                 .join("")

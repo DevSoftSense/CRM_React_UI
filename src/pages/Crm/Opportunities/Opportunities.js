@@ -181,6 +181,7 @@ const Opportunities = () => {
   const [listError, setListError] = useState("");
 
   const [editId, setEditId] = useState(null);
+  const [createResetKey, setCreateResetKey] = useState(0);
   const [saving, setSaving] = useState(false);
 
   const [deleteModal, setDeleteModal] = useState(false);
@@ -344,7 +345,7 @@ const Opportunities = () => {
       const isNetwork =
         /network error|cannot reach crm api/i.test(raw) || err?.code === "ERR_NETWORK";
       const msg = isNetwork
-        ? "Cannot reach CRM API (http://localhost:5191). Start CRM.API (F5), then refresh."
+        ? "Cannot reach CRM API. Please ensure the CRM API server is running, then refresh."
         : raw || "Failed to load opportunities.";
       setListError(msg);
       toastApiError({ message: msg }, msg);
@@ -452,7 +453,9 @@ const Opportunities = () => {
         toastSuccess("Opportunity created successfully.");
         if (saveAndNew) {
           setSelectedOpp(null);
-          // keep viewMode create
+          setContactOptions([]);
+          setCreateResetKey((k) => k + 1);
+          // keep viewMode create with a fresh empty form
         } else {
           setViewMode("list");
           await loadList();
@@ -488,6 +491,7 @@ const Opportunities = () => {
       <div className="page-content">
         <Container fluid>
           <OpportunityCreateEdit
+            key={viewMode === "edit" ? `edit-${editId}` : `create-${createResetKey}`}
             isEdit={viewMode === "edit"}
             opportunityId={editId}
             initialData={selectedOpp}

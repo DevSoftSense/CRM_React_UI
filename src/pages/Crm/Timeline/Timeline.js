@@ -73,14 +73,12 @@ const SoftOnCloudTimeline = () => {
       .then((res) => {
         const list = Array.isArray(res)
           ? res
-          : res?.customers || res?.data || [];
+          : res?.items || res?.customers || res?.data || [];
         setCustomerOptions(list);
 
-        // If no customer selected yet or invalid, default to Customer 130 or first customer
+        // If no customer selected yet or invalid, default to first customer for this tenant
         if (list.length > 0) {
-          const defaultCust =
-            list.find((c) => String(c.accountId ?? c.account_id ?? c.id) === "130") ||
-            list[0];
+          const defaultCust = list[0];
           const rawId = defaultCust ? (defaultCust.accountId ?? defaultCust.account_id ?? defaultCust.id) : null;
           if (rawId != null && (!selectedCustomerId || selectedCustomerId === "undefined" || isNaN(Number(selectedCustomerId)))) {
             const defId = String(rawId);
@@ -245,14 +243,24 @@ const SoftOnCloudTimeline = () => {
                       </span>
                     </div>
                     <div className="fs-12 mt-1" style={{ color: textSub }}>
-                      {customer.placeOfSupply || "India"} &bull; Customer Since :{" "}
-                      {customer.customerSince
-                        ? new Date(customer.customerSince).toLocaleDateString("en-GB", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })
-                        : "15 Jan 2025"}
+                      {[
+                        customer.placeOfSupply,
+                        customer.customerSince
+                          ? `Customer Since : ${new Date(customer.customerSince).toLocaleDateString("en-GB", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })}`
+                          : customer.createdAt
+                            ? `Customer Since : ${new Date(customer.createdAt).toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              })}`
+                            : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" • ") || "Customer Account"}
                     </div>
                   </div>
                 </div>

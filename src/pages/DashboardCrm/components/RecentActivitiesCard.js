@@ -559,7 +559,7 @@ const RecentActivitiesCard = ({ activities = [] }) => {
                               textOverflow: "ellipsis",
                             }}
                           >
-                            by <span className="fw-semibold">{a.employee_name || "Amit Kumar"}</span>
+                            by <span className="fw-semibold">{a.employee_name || "Unassigned"}</span>
                           </div>
                         </div>
 

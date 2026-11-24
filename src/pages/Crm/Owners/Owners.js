@@ -179,7 +179,7 @@ const Owners = () => {
       const isNetwork =
         /network error|cannot reach crm api/i.test(raw) || err?.code === "ERR_NETWORK";
       const msg = isNetwork
-        ? "Cannot reach CRM API (http://localhost:5191). Start CRM.API (F5), then refresh."
+        ? "Cannot reach CRM API. Please check your connection and try again."
         : raw || "Failed to load owners.";
       setListError(msg);
       toastApiError({ message: msg }, msg);

@@ -12,6 +12,8 @@ import {
   Table,
 } from "reactstrap";
 import { formatNumber } from "../utils/reportUtils";
+import { downloadDocumentBlob } from "../../../../helpers/crmDocumentApi";
+import { toastApiError } from "../../../../helpers/crmToast";
 
 const DocumentStorageAuditView = ({
   reportResult,
@@ -67,8 +69,21 @@ const DocumentStorageAuditView = ({
     if (rows.length > 0 && rows[0].uploaded_on) {
       return rows[0].uploaded_on;
     }
-    return "06 Nov 2026, 11:47 AM";
+    return "No uploads yet";
   }, [rows]);
+
+  const handleDownloadFile = async (file) => {
+    const docId = file?.document_id || file?.file_id;
+    if (!docId) {
+      toastApiError(null, "Document ID not available for download.");
+      return;
+    }
+    try {
+      await downloadDocumentBlob(docId, file.file_name || `document_${docId}`);
+    } catch (err) {
+      toastApiError(err, "Failed to download document.");
+    }
+  };
 
   // Unique file types for filter dropdown
   const availableTypes = useMemo(() => {
@@ -100,11 +115,33 @@ const DocumentStorageAuditView = ({
     });
   }, [rows, searchTerm, selectedTypeFilter]);
 
-  // 1. Trend Chart Configuration (Area Spline)
+  // 1. Trend Chart Configuration (Area Spline — dynamically computed from rows by upload date)
   const trendChartOptions = useMemo(() => {
     const isDoc = trendMetric === "documents";
-    const seriesData = isDoc ? [1, 1, 2, 2, 2] : [0.09, 0.09, 0.21, 0.21, 0.21];
-    const categories = ["Nov 01", "Nov 07", "Nov 14", "Nov 21", "Nov 30"];
+    const byDay = {};
+    rows.forEach((r) => {
+      const dt = r.uploaded_on ? new Date(r.uploaded_on) : null;
+      const key =
+        dt && !isNaN(dt.getTime())
+          ? dt.toLocaleDateString("en-US", { month: "short", day: "2-digit" })
+          : "Current";
+      if (!byDay[key]) byDay[key] = { count: 0, mb: 0, ts: dt && !isNaN(dt.getTime()) ? dt.getTime() : 0 };
+      byDay[key].count += 1;
+      const rawBytes = Number(r.file_size_bytes || 0);
+      byDay[key].mb += rawBytes / (1024 * 1024);
+    });
+    const sorted = Object.entries(byDay).sort((a, b) => a[1].ts - b[1].ts);
+    const categories = sorted.length > 0 ? sorted.map(([k]) => k) : ["No Data"];
+    let cumCount = 0;
+    let cumMb = 0;
+    const seriesData =
+      sorted.length > 0
+        ? sorted.map(([, v]) => {
+            cumCount += v.count;
+            cumMb += v.mb;
+            return isDoc ? cumCount : Number(cumMb.toFixed(2));
+          })
+        : [0];
 
     return {
       series: [
@@ -203,35 +240,36 @@ const DocumentStorageAuditView = ({
         },
       },
     };
-  }, [trendMetric, isDark, cardBg, cardBorder, textSub]);
+  }, [rows, trendMetric, isDark, cardBg, cardBorder, textSub]);
 
-  // 2. Storage Breakdown Donut Chart
+  // 2. Storage Breakdown Donut Chart (strictly dynamic — zero fake percentages when empty)
   const donutChartConfig = useMemo(() => {
-    // If chart_data has formats, use them; otherwise provide rich breakdown
+    const colors = ["#7f1d1d", "#991b1b", "#b91c1c", "#c2410c", "#64748b"];
     let labels = [];
     let series = [];
-    let colors = [];
     let details = [];
 
     if (chartData.length > 0) {
+      const totalChartCount = chartData.reduce((s, d) => s + Number(d.count || 0), 0);
       labels = chartData.map((d) => d.name || d.file_type || "Format");
-      series = chartData.map((d) => Number(d.count || 1));
-      colors = ["#7f1d1d", "#991b1b", "#b91c1c", "#c2410c", "#e2e8f0"];
-      details = chartData.map((d, i) => ({
-        label: d.name || d.file_type || "Format",
-        percentage: d.percentage ?? (series[i] / totalDocuments) * 100,
-        color: colors[i % colors.length],
-      }));
+      series = chartData.map((d) => Number(d.count || 0));
+      details = chartData.map((d, i) => {
+        const pct =
+          d.percentage !== undefined && d.percentage !== null
+            ? Number(d.percentage)
+            : totalChartCount > 0
+              ? (series[i] / totalChartCount) * 100
+              : 0;
+        return {
+          label: d.name || d.file_type || "Format",
+          percentage: Number(pct.toFixed(1)),
+          color: colors[i % colors.length],
+        };
+      });
     } else {
-      // High-polish default distribution matching reference
-      labels = ["PDF", "DOCX", "Others"];
-      series = [58.3, 27.8, 13.9];
-      colors = ["#7f1d1d", "#991b1b", "#cbd5e1"];
-      details = [
-        { label: "PDF", percentage: 58.3, color: "#7f1d1d" },
-        { label: "DOCX", percentage: 27.8, color: "#991b1b" },
-        { label: "Others", percentage: 13.9, color: "#cbd5e1" },
-      ];
+      labels = ["No Files"];
+      series = [0];
+      details = [];
     }
 
     return {
@@ -346,10 +384,10 @@ const DocumentStorageAuditView = ({
                     {totalDocuments}
                   </div>
                   <span
-                    className="text-success fw-semibold mt-1 d-inline-flex align-items-center gap-1"
+                    className="text-muted fw-medium mt-1 d-inline-flex align-items-center gap-1"
                     style={{ fontSize: "11.5px" }}
                   >
-                    <i className="ri-arrow-up-line"></i> 0% vs last period
+                    {rows.length} {rows.length === 1 ? "file" : "files"} in period
                   </span>
                 </div>
               </div>
@@ -423,10 +461,10 @@ const DocumentStorageAuditView = ({
                     {totalStorageMb} MB
                   </div>
                   <span
-                    className="text-success fw-semibold mt-1 d-inline-flex align-items-center gap-1"
+                    className="text-muted fw-medium mt-1 d-inline-flex align-items-center gap-1"
                     style={{ fontSize: "11.5px" }}
                   >
-                    <i className="ri-arrow-up-line"></i> 0% vs last period
+                    {rows.length} {rows.length === 1 ? "file" : "files"} in period
                   </span>
                 </div>
               </div>
@@ -986,7 +1024,7 @@ const DocumentStorageAuditView = ({
                           {file.uploaded_on}
                         </td>
                         <td className="fw-bold font-monospace" style={{ fontSize: "12px", color: textTitle }}>
-                          {file.file_size || "850 KB"}
+                          {file.file_size || "0 KB"}
                         </td>
                         <td>
                           <span
@@ -1048,39 +1086,10 @@ const DocumentStorageAuditView = ({
                                 border: `1px solid ${cardBorder}`,
                                 color: textSub,
                               }}
-                              title="View Document"
-                            >
-                              <i className="ri-eye-line"></i>
-                            </button>
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-icon"
-                              style={{
-                                borderRadius: 0,
-                                width: "28px",
-                                height: "28px",
-                                backgroundColor: subtleBg,
-                                border: `1px solid ${cardBorder}`,
-                                color: textSub,
-                              }}
                               title="Download Document"
+                              onClick={() => handleDownloadFile(file)}
                             >
                               <i className="ri-download-2-line"></i>
-                            </button>
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-icon"
-                              style={{
-                                borderRadius: 0,
-                                width: "28px",
-                                height: "28px",
-                                backgroundColor: subtleBg,
-                                border: `1px solid ${cardBorder}`,
-                                color: textSub,
-                              }}
-                              title="More Options"
-                            >
-                              <i className="ri-more-2-fill"></i>
                             </button>
                           </div>
                         </td>
@@ -1154,7 +1163,7 @@ const DocumentStorageAuditView = ({
                             {file.file_name}
                           </h6>
                           <div className="small mb-2" style={{ fontSize: "11px", color: textSub }}>
-                            {file.folder_name || "General"} • {file.file_size || "850 KB"}
+                            {file.folder_name || "General"} • {file.file_size || "0 KB"}
                           </div>
                         </div>
 
@@ -1163,7 +1172,7 @@ const DocumentStorageAuditView = ({
                           style={{ borderColor: cardBorder }}
                         >
                           <span style={{ fontSize: "11px", color: textSub }}>
-                            {file.uploaded_by || "Admin"}
+                            {file.uploaded_by || "Unassigned"}
                           </span>
                           <button
                             type="button"
@@ -1175,6 +1184,7 @@ const DocumentStorageAuditView = ({
                               borderColor: cardBorder,
                               color: textTitle,
                             }}
+                            onClick={() => handleDownloadFile(file)}
                           >
                             <i className="ri-download-2-line me-1"></i> Download
                           </button>

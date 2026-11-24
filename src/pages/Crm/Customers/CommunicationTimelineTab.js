@@ -215,12 +215,18 @@ const CommunicationTimelineTab = ({
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [filterType, setFilterType] = useState("ALL");
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [selectedOwnerId, setSelectedOwnerId] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [limit, setLimit] = useState(25);
   const [hasMore, setHasMore] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setSearch(searchInput.trim()), 350);
+    return () => clearTimeout(t);
+  }, [searchInput]);
 
   // UI Dropdowns
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
@@ -299,8 +305,8 @@ const CommunicationTimelineTab = ({
           interactionType: filterType,
           search: search.trim() || undefined,
           ownerId: selectedOwnerId ? Number(selectedOwnerId) : undefined,
-          dateFrom: dateFrom ? new Date(dateFrom).toISOString() : undefined,
-          dateTo: dateTo ? new Date(`${dateTo}T23:59:59.999Z`).toISOString() : undefined,
+          dateFrom: dateFrom ? new Date(`${dateFrom}T00:00:00`).toISOString() : undefined,
+          dateTo: dateTo ? new Date(`${dateTo}T23:59:59.999`).toISOString() : undefined,
           limit: currentLimit,
           offset: 0,
         });
@@ -456,17 +462,17 @@ const CommunicationTimelineTab = ({
   // Clear all filters
   const handleClearFilters = () => {
     setFilterType("ALL");
+    setSearchInput("");
     setSearch("");
     setSelectedOwnerId("");
     setDateFrom("");
     setDateTo("");
   };
 
-  // Load More Interactions
+  // Load More Interactions (single fetch triggered via useEffect on limit change)
   const handleLoadMore = () => {
-    const nextLimit = limit + 25;
-    setLimit(nextLimit);
-    loadTimeline(true, nextLimit);
+    setLoadingMore(true);
+    setLimit((prev) => prev + 25);
   };
 
   // Copy note to clipboard
@@ -476,19 +482,19 @@ const CommunicationTimelineTab = ({
     toastSuccess("Discussion notes copied to clipboard.");
   };
 
-  // Effective customer profile data (merged from summary API and props)
+  // Effective customer profile data (merged from summary API and props — zero fake fallbacks)
   const displayProfile = useMemo(() => {
     return {
       displayName: summary?.display_name || customer?.displayName || customer?.companyName || "Customer",
-      industry: summary?.industry || customer?.department || customer?.partyProfile || "Information Technology",
+      industry: summary?.industry || customer?.department || customer?.partyProfile || "—",
       website: summary?.website || customer?.websiteUrl || "",
       phone: summary?.phone || customer?.phoneWork || customer?.phoneMobile || "",
       email: summary?.email || customer?.email || "",
-      ownerName: summary?.owner_name || customer?.assignedOwnerName || "Sales Team",
-      leadSource: summary?.lead_source || customer?.acquisitionSource || "Website",
+      ownerName: summary?.owner_name || customer?.assignedOwnerName || "Unassigned",
+      leadSource: summary?.lead_source || customer?.acquisitionSource || "—",
       status: summary?.status || customer?.status || "Active",
-      location: summary?.location || customer?.placeOfSupply || "India",
-      customerSince: summary?.customer_since || "Recent",
+      location: summary?.location || customer?.placeOfSupply || "—",
+      customerSince: summary?.customer_since || "—",
       partyType: summary?.party_type || customer?.partyType || "Customer",
     };
   }, [summary, customer]);
@@ -611,8 +617,8 @@ const CommunicationTimelineTab = ({
                 <Input
                   type="text"
                   placeholder="Search in timeline..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                   className="border-start-0 ps-1"
                   style={{
                     borderRadius: 0,
@@ -622,11 +628,14 @@ const CommunicationTimelineTab = ({
                     height: "36px",
                   }}
                 />
-                {search && (
+                {searchInput && (
                   <button
                     type="button"
                     className="btn btn-sm border border-start-0"
-                    onClick={() => setSearch("")}
+                    onClick={() => {
+                      setSearchInput("");
+                      setSearch("");
+                    }}
                     style={{
                       borderRadius: 0,
                       borderColor: subtleBorder,

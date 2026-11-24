@@ -64,11 +64,11 @@ const RevenueForecastReportView = ({
 
   // Helper for Rep Initials
   const getInitials = (name) => {
-    const parts = String(name || "").trim().split(" ");
+    const parts = String(name || "").trim().split(" ").filter(Boolean);
     if (parts.length >= 2) {
       return (parts[0][0] + parts[1][0]).toUpperCase();
     }
-    return (name || "AK").slice(0, 2).toUpperCase();
+    return (name || "UN").slice(0, 2).toUpperCase();
   };
 
   // Executive KPI Calculations
@@ -92,30 +92,81 @@ const RevenueForecastReportView = ({
     activeDealsCount > 0 ? Math.round(grossPipeline / activeDealsCount) : 0;
 
   // Next expected close calculation
-  const nextCloseDateStr = useMemo(() => {
-    const dates = rawRows
-      .map((r) => r.expected_close_date)
-      .filter(Boolean)
-      .map((d) => new Date(d))
-      .filter((d) => !isNaN(d.getTime()))
-      .sort((a, b) => a - b);
-    return dates.length > 0 ? dates[0].toISOString() : null;
+  const nextCloseDeal = useMemo(() => {
+    const withDates = rawRows
+      .filter((r) => r.expected_close_date)
+      .map((r) => ({ ...r, _d: new Date(r.expected_close_date) }))
+      .filter((r) => !isNaN(r._d.getTime()))
+      .sort((a, b) => a._d - b._d);
+    return withDates[0] || null;
   }, [rawRows]);
 
+  const nextCloseDateStr = nextCloseDeal ? nextCloseDeal._d.toISOString() : null;
+
   const formattedNextCloseDate = useMemo(() => {
-    if (!nextCloseDateStr) return "19 Mar 2027";
+    if (!nextCloseDateStr) return "No close date";
     try {
       const d = new Date(nextCloseDateStr);
-      if (isNaN(d.getTime())) return "19 Mar 2027";
+      if (isNaN(d.getTime())) return "No close date";
       return d.toLocaleDateString("en-GB", {
         day: "2-digit",
         month: "short",
         year: "numeric",
       });
     } catch {
-      return "19 Mar 2027";
+      return "No close date";
     }
   }, [nextCloseDateStr]);
+
+  const nextCloseQuarterLabel = useMemo(() => {
+    if (!nextCloseDateStr) return "";
+    const d = new Date(nextCloseDateStr);
+    if (isNaN(d.getTime())) return "";
+    return `Q${Math.floor(d.getMonth() / 3) + 1} ${d.getFullYear()}`;
+  }, [nextCloseDateStr]);
+
+  // Dynamic 6-month timeline labels starting from current month
+  const timelineMonths = useMemo(() => {
+    const now = new Date();
+    return Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      return d.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+    });
+  }, []);
+
+  const todayShortLabel = useMemo(() => {
+    return new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+  }, []);
+
+  // Dynamic stage breakdown for Pipeline by Stage card
+  const stageBreakdown = useMemo(() => {
+    const palette = ["#0d9488", "#2563eb", "#7f1d1d", "#d97706", "#7c3aed"];
+    const map = {};
+    rawRows.forEach((r) => {
+      const st = r.stage_name || "Unstaged";
+      if (!map[st]) map[st] = { name: st, deals: 0, gross: 0, weighted: 0, probSum: 0 };
+      map[st].deals += 1;
+      const amt = Number(r.amount || 0);
+      const prob = Number(r.probability ?? 0);
+      map[st].gross += amt;
+      map[st].weighted += Number(r.weighted_amount ?? amt * (prob / 100));
+      map[st].probSum += prob;
+    });
+    const list = Object.values(map).sort((a, b) => b.gross - a.gross);
+    const totalGross = list.reduce((s, x) => s + x.gross, 0);
+    return list.map((item, idx) => ({
+      ...item,
+      avgProb: item.deals > 0 ? Math.round(item.probSum / item.deals) : 0,
+      sharePct: totalGross > 0 ? Math.round((item.gross / totalGross) * 100) : 0,
+      color: palette[idx % palette.length],
+    }));
+  }, [rawRows]);
+
+  const waterfallMax = Math.max(grossPipeline, targetAmount, 1);
+  const grossBarH = grossPipeline > 0 ? Math.max(12, Math.round((grossPipeline / waterfallMax) * 140)) : 4;
+  const weightedBarH = weightedForecast > 0 ? Math.max(8, Math.round((weightedForecast / waterfallMax) * 140)) : 4;
+  const haircutBarH = riskHaircut > 0 ? Math.max(8, Math.round((riskHaircut / waterfallMax) * 140)) : 4;
+  const haircutPct = grossPipeline > 0 ? Math.round((riskHaircut / grossPipeline) * 100) : 0;
 
   const calculateDaysToClose = (dateStr) => {
     if (!dateStr) return 0;
@@ -413,7 +464,7 @@ const RevenueForecastReportView = ({
                     {formattedNextCloseDate}
                   </div>
                   <div style={{ fontSize: "11px", color: textSub, marginTop: "4px" }}>
-                    In {daysToClose} days • Q1 2027
+                    {nextCloseDateStr ? `In ${daysToClose} days • ${nextCloseQuarterLabel}` : "No scheduled open deals"}
                   </div>
                 </div>
               </div>
@@ -482,10 +533,10 @@ const RevenueForecastReportView = ({
                     className="position-absolute start-0 top-0 bottom-0 d-flex flex-column justify-content-between ps-2"
                     style={{ fontSize: "10.5px", pointerEvents: "none", color: textSub }}
                   >
-                    <span>₹20 L</span>
-                    <span>₹15 L</span>
-                    <span>₹10 L</span>
-                    <span>₹5 L</span>
+                    <span>{formatShortLakhs(waterfallMax)}</span>
+                    <span>{formatShortLakhs(Math.round(waterfallMax * 0.75))}</span>
+                    <span>{formatShortLakhs(Math.round(waterfallMax * 0.5))}</span>
+                    <span>{formatShortLakhs(Math.round(waterfallMax * 0.25))}</span>
                     <span>₹0</span>
                   </div>
 
@@ -500,7 +551,7 @@ const RevenueForecastReportView = ({
                     <div
                       style={{
                         width: "80px",
-                        height: "140px",
+                        height: `${grossBarH}px`,
                         backgroundColor: isDark ? "#38bdf8" : "#93c5fd",
                         borderRadius: 0,
                       }}
@@ -509,7 +560,7 @@ const RevenueForecastReportView = ({
                       Gross pipeline
                     </span>
                     <span style={{ fontSize: "10px", color: textSub }}>
-                      1 deal
+                      {activeDealsCount} {activeDealsCount === 1 ? "deal" : "deals"}
                     </span>
                   </div>
 
@@ -521,11 +572,11 @@ const RevenueForecastReportView = ({
                     >
                       - {formatCurrency(riskHaircut)}
                     </span>
-                    <div style={{ height: "124px" }}></div>
+                    <div style={{ height: `${Math.max(0, grossBarH - haircutBarH)}px` }}></div>
                     <div
                       style={{
                         width: "80px",
-                        height: "16px",
+                        height: `${haircutBarH}px`,
                         backgroundColor: isDark ? "#ef4444" : "#dc2626",
                         borderRadius: 0,
                       }}
@@ -534,7 +585,7 @@ const RevenueForecastReportView = ({
                       Probability risk
                     </span>
                     <span style={{ fontSize: "10px", color: textSub }}>
-                      10% of gross
+                      {haircutPct}% of gross
                     </span>
                   </div>
 
@@ -549,7 +600,7 @@ const RevenueForecastReportView = ({
                     <div
                       style={{
                         width: "80px",
-                        height: "125px",
+                        height: `${weightedBarH}px`,
                         backgroundColor: isDark ? "#991b1b" : "#7f1d1d",
                         borderRadius: 0,
                       }}
@@ -558,7 +609,7 @@ const RevenueForecastReportView = ({
                       Weighted forecast
                     </span>
                     <span style={{ fontSize: "10px", color: textSub }}>
-                      90% confidence
+                      {confidencePct}% confidence
                     </span>
                   </div>
 
@@ -633,7 +684,7 @@ const RevenueForecastReportView = ({
                       style={{ left: "10%", top: "-4px" }}
                     >
                       <span className="fw-bold mb-0.5" style={{ fontSize: "10px", color: textTitle }}>
-                        Today • 20 Nov
+                        Today • {todayShortLabel}
                       </span>
                       <i className="ri-arrow-down-s-fill" style={{ fontSize: "14px", lineHeight: "0.5", color: textTitle }}></i>
                     </div>
@@ -653,37 +704,39 @@ const RevenueForecastReportView = ({
                         fontWeight: 600,
                       }}
                     >
-                      {daysToClose} days to close
+                      {nextCloseDeal ? `${daysToClose} days to close` : "No open deals"}
                     </div>
 
                     {/* Milestone Deal Diamond Marker */}
-                    <div
-                      className="position-absolute d-flex flex-column align-items-center"
-                      style={{ left: "80%", top: "-1px" }}
-                    >
+                    {nextCloseDeal && (
                       <div
-                        style={{
-                          width: "10px",
-                          height: "10px",
-                          backgroundColor: isDark ? "#f87171" : "#7f1d1d",
-                          transform: "rotate(45deg)",
-                        }}
-                      ></div>
-                      <div
-                        className="mt-1 px-1.5 py-0.5 border"
-                        style={{
-                          backgroundColor: isDark ? "rgba(127, 29, 29, 0.3)" : "#fef2f2",
-                          borderColor: isDark ? "rgba(248, 113, 113, 0.4)" : "#fecaca",
-                          borderRadius: 0,
-                          fontSize: "10px",
-                          color: isDark ? "#fca5a5" : "#7f1d1d",
-                          fontWeight: 600,
-                          whiteSpace: "nowrap",
-                        }}
+                        className="position-absolute d-flex flex-column align-items-center"
+                        style={{ left: "78%", top: "-1px" }}
                       >
-                        ERP Implementation • 19 Mar • ₹16.65 L
+                        <div
+                          style={{
+                            width: "10px",
+                            height: "10px",
+                            backgroundColor: isDark ? "#f87171" : "#7f1d1d",
+                            transform: "rotate(45deg)",
+                          }}
+                        ></div>
+                        <div
+                          className="mt-1 px-1.5 py-0.5 border"
+                          style={{
+                            backgroundColor: isDark ? "rgba(127, 29, 29, 0.3)" : "#fef2f2",
+                            borderColor: isDark ? "rgba(248, 113, 113, 0.4)" : "#fecaca",
+                            borderRadius: 0,
+                            fontSize: "10px",
+                            color: isDark ? "#fca5a5" : "#7f1d1d",
+                            fontWeight: 600,
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {nextCloseDeal.opportunity_name || "Next Deal"} • {formattedNextCloseDate} • {formatShortLakhs(Number(nextCloseDeal.weighted_amount ?? nextCloseDeal.amount ?? 0))}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   {/* Timeline Months Labels */}
@@ -691,12 +744,9 @@ const RevenueForecastReportView = ({
                     className="d-flex align-items-center justify-content-between mt-2"
                     style={{ fontSize: "10.5px", color: textSub }}
                   >
-                    <span>Nov 2026</span>
-                    <span>Dec 2026</span>
-                    <span>Jan 2027</span>
-                    <span>Feb 2027</span>
-                    <span>Mar 2027</span>
-                    <span>Apr 2027</span>
+                    {timelineMonths.map((lbl) => (
+                      <span key={lbl}>{lbl}</span>
+                    ))}
                   </div>
 
                   <div className="mt-2 pt-1" style={{ borderTop: `1px solid ${cardBorder}`, fontSize: "11px", color: textSub }}>
@@ -723,7 +773,7 @@ const RevenueForecastReportView = ({
                   Forecast vs target
                 </h6>
                 <span style={{ fontSize: "11.5px", color: textSub }}>
-                  Track progress to your Q1 2027 revenue goal
+                  Track progress to your revenue goal
                 </span>
               </div>
 
@@ -905,55 +955,57 @@ const RevenueForecastReportView = ({
               </div>
 
               <CardBody className="p-3">
-                {/* Full Width Segment Bar */}
-                <div
-                  className="p-1.5 text-center text-white fw-bold mb-2.5"
-                  style={{
-                    backgroundColor: "#0d9488",
-                    borderRadius: 0,
-                    fontSize: "11.5px",
-                    letterSpacing: "0.2px",
-                  }}
-                >
-                  Qualified 100%
-                </div>
-
-                <div
-                  className="d-flex align-items-center justify-content-between pb-2 mb-2"
-                  style={{ borderBottom: `1px solid ${cardBorder}` }}
-                >
-                  <div>
-                    <span className="d-flex align-items-center gap-1.5 fw-semibold" style={{ fontSize: "12px", color: textTitle }}>
-                      <span style={{ color: "#0d9488", fontSize: "12px" }}>●</span> Qualified
-                    </span>
-                    <span style={{ fontSize: "11px", color: textSub }}>
-                      Gross {formatCurrency(grossPipeline)}
-                    </span>
+                {stageBreakdown.length === 0 ? (
+                  <div className="py-3 text-center" style={{ fontSize: "12px", color: textSub }}>
+                    No active pipeline stages in this period.
                   </div>
+                ) : (
+                  <>
+                    {/* Dynamic Multi-Segment Stage Bar */}
+                    <div className="d-flex mb-2.5" style={{ height: "24px", overflow: "hidden" }}>
+                      {stageBreakdown.map((st) => (
+                        <div
+                          key={st.name}
+                          className="d-flex align-items-center justify-content-center text-white fw-bold text-truncate px-1"
+                          style={{
+                            width: `${Math.max(st.sharePct, 8)}%`,
+                            backgroundColor: st.color,
+                            fontSize: "10.5px",
+                          }}
+                          title={`${st.name}: ${st.sharePct}% (${formatCurrency(st.gross)})`}
+                        >
+                          {st.sharePct >= 20 ? `${st.name} ${st.sharePct}%` : `${st.sharePct}%`}
+                        </div>
+                      ))}
+                    </div>
 
-                  <div className="text-end">
-                    <span className="d-block" style={{ fontSize: "11px", color: textSub }}>
-                      1 deal • 90% probability
-                    </span>
-                    <span className="fw-bold font-monospace" style={{ fontSize: "12px", color: textTitle }}>
-                      Weighted {formatCurrency(weightedForecast)}
-                    </span>
-                  </div>
-                </div>
+                    {stageBreakdown.map((st, idx) => (
+                      <div
+                        key={st.name}
+                        className="d-flex align-items-center justify-content-between pb-2 mb-2"
+                        style={{ borderBottom: idx < stageBreakdown.length - 1 ? `1px solid ${cardBorder}` : "none" }}
+                      >
+                        <div>
+                          <span className="d-flex align-items-center gap-1.5 fw-semibold" style={{ fontSize: "12px", color: textTitle }}>
+                            <span style={{ color: st.color, fontSize: "12px" }}>●</span> {st.name}
+                          </span>
+                          <span style={{ fontSize: "11px", color: textSub }}>
+                            Gross {formatCurrency(st.gross)}
+                          </span>
+                        </div>
 
-                <div
-                  className="d-flex align-items-center gap-1.5 p-2"
-                  style={{
-                    backgroundColor: isDark ? "rgba(234, 179, 8, 0.1)" : "#fefce8",
-                    border: `1px solid ${isDark ? "rgba(234, 179, 8, 0.2)" : "#fef08a"}`,
-                    borderRadius: 0,
-                    fontSize: "11px",
-                    color: isDark ? "#fde047" : "#854d0e",
-                  }}
-                >
-                  <i className="ri-alert-line" style={{ fontSize: "13px" }}></i>
-                  <span>90% is high for "Qualified". Review stage probabilities.</span>
-                </div>
+                        <div className="text-end">
+                          <span className="d-block" style={{ fontSize: "11px", color: textSub }}>
+                            {st.deals} {st.deals === 1 ? "deal" : "deals"} • {st.avgProb}% avg prob
+                          </span>
+                          <span className="fw-bold font-monospace" style={{ fontSize: "12px", color: textTitle }}>
+                            Weighted {formatCurrency(st.weighted)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
               </CardBody>
             </Card>
 
@@ -1156,9 +1208,9 @@ const RevenueForecastReportView = ({
                   </tr>
                 ) : (
                   paginatedRows.map((r, idx) => {
-                    const prob = Number(r.probability || 90);
-                    const amt = Number(r.amount || grossPipeline);
-                    const wAmt = Number(r.weighted_amount || weightedForecast);
+                    const prob = Number(r.probability ?? 0);
+                    const amt = Number(r.amount ?? 0);
+                    const wAmt = Number(r.weighted_amount ?? Math.round(amt * (prob / 100)));
                     const dealDays = calculateDaysToClose(r.expected_close_date);
                     const formattedDealClose = r.expected_close_date
                       ? (() => {
@@ -1175,7 +1227,7 @@ const RevenueForecastReportView = ({
                             return r.expected_close_date;
                           }
                         })()
-                      : "19 Mar 2027";
+                      : "—";
 
                     return (
                       <tr key={r.opportunity_id || idx} style={{ borderBottom: `1px solid ${cardBorder}` }}>
@@ -1183,7 +1235,7 @@ const RevenueForecastReportView = ({
                         <td>
                           <div>
                             <Link
-                              to={`/crm/opportunities/${r.opportunity_id || 1}`}
+                              to={r.opportunity_id ? `/crm/opportunities/${r.opportunity_id}` : "/crm/opportunities"}
                               className="fw-bold text-decoration-none d-block"
                               style={{ fontSize: "12.5px", color: textTitle }}
                             >
@@ -1290,7 +1342,7 @@ const RevenueForecastReportView = ({
                         {/* ACTIONS */}
                         <td className="text-end pe-3">
                           <Link
-                            to={`/crm/opportunities/${r.opportunity_id || 1}`}
+                            to={r.opportunity_id ? `/crm/opportunities/${r.opportunity_id}` : "/crm/opportunities"}
                             className="btn btn-sm border"
                             style={{
                               fontSize: "11.5px",

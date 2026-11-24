@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import {
   Alert,
   Badge,
@@ -41,11 +42,17 @@ import {
 import { getOwnerDropdown } from "../../../helpers/crmOwnerApi";
 import { toastApiError, toastSuccess } from "../../../helpers/crmToast";
 
-const todayIso = () => new Date().toISOString().slice(0, 10);
+const toLocalIsoDate = (d) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+const todayIso = () => toLocalIsoDate(new Date());
 const tomorrowIso = () => {
   const d = new Date();
   d.setDate(d.getDate() + 1);
-  return d.toISOString().slice(0, 10);
+  return toLocalIsoDate(d);
 };
 
 const emptyForm = () => ({
@@ -126,7 +133,7 @@ const getStatusBadge = (status, isOverdue, isDark = false) => {
 };
 
 const getInitials = (name) => {
-  if (!name) return "AK";
+  if (!name) return "UN";
   const parts = name.trim().split(/\s+/);
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
@@ -213,14 +220,7 @@ const Tasks = () => {
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
-
-  // Quick Action Modals (In-page)
-  const [uploadDocModal, setUploadDocModal] = useState(false);
-  const [createQuoteModal, setCreateQuoteModal] = useState(false);
-  const [uploadFileName, setUploadFileName] = useState("");
-  const [uploadFileEntity, setUploadFileEntity] = useState("");
-  const [quoteAccount, setQuoteAccount] = useState("");
-  const [quoteAmount, setQuoteAmount] = useState("");
+  const navigate = useNavigate();
 
   // Debounced search
   useEffect(() => {
@@ -1857,7 +1857,7 @@ const Tasks = () => {
                         backgroundColor: subtleBg,
                         color: textTitle,
                       }}
-                      onClick={() => setUploadDocModal(true)}
+                      onClick={() => navigate("/crm/documents")}
                     >
                       <i className="ri-file-upload-line fs-16 text-warning"></i>
                       <span>Upload Doc</span>
@@ -1873,10 +1873,10 @@ const Tasks = () => {
                         backgroundColor: subtleBg,
                         color: textTitle,
                       }}
-                      onClick={() => setCreateQuoteModal(true)}
+                      onClick={() => navigate("/crm/opportunities")}
                     >
                       <i className="ri-file-text-line fs-16 text-danger"></i>
-                      <span>Create Quote</span>
+                      <span>Opportunities</span>
                     </Button>
                   </Col>
                 </Row>
@@ -1998,11 +1998,13 @@ const Tasks = () => {
                         color: textTitle,
                       }}
                     >
-                      {lookups.taskStatus.map((s) => (
-                        <option key={s.masterCode || s.master_code} value={s.masterCode || s.master_code}>
-                          {s.masterName || s.master_name}
-                        </option>
-                      ))}
+                      {lookups.taskStatus
+                        .filter((s) => String(s.masterCode || s.master_code || "").toUpperCase() !== "OVERDUE")
+                        .map((s) => (
+                          <option key={s.masterCode || s.master_code} value={s.masterCode || s.master_code}>
+                            {s.masterName || s.master_name}
+                          </option>
+                        ))}
                     </Input>
                   </FormGroup>
                 </Col>
@@ -2273,7 +2275,11 @@ const Tasks = () => {
                       {/* Priority Badge */}
                       <Badge
                         color={
-                          String(detailTask.priority).toUpperCase() === "HIGH" ? "danger" : "warning"
+                          String(detailTask.priority).toUpperCase() === "HIGH"
+                            ? "danger"
+                            : String(detailTask.priority).toUpperCase() === "LOW"
+                              ? "success"
+                              : "warning"
                         }
                         className="rounded-0 fs-11"
                       >
@@ -2446,214 +2452,7 @@ const Tasks = () => {
         </Modal>
 
         {/* ================================================================= */}
-        {/* IN-PAGE MODAL 3: Quick Action - Upload Document                   */}
-        {/* ================================================================= */}
-        <Modal
-          isOpen={uploadDocModal}
-          toggle={() => setUploadDocModal(!uploadDocModal)}
-          centered
-          className="rounded-0"
-        >
-          <ModalHeader
-            toggle={() => setUploadDocModal(!uploadDocModal)}
-            className="rounded-0"
-            style={{
-              backgroundColor: subtleBg,
-              borderBottom: `1px solid ${cardBorder}`,
-            }}
-          >
-            <span className="fw-semibold fs-15" style={{ color: textTitle }}>Upload Task Document</span>
-          </ModalHeader>
-          <ModalBody className="p-4" style={{ backgroundColor: cardBg, color: textTitle }}>
-            <FormGroup className="mb-3">
-              <Label className="fw-medium fs-12" style={{ color: textTitle }}>Document Name</Label>
-              <Input
-                type="text"
-                className="form-control rounded-0 fs-13"
-                placeholder="e.g. Requirement_Spec.pdf"
-                value={uploadFileName}
-                onChange={(e) => setUploadFileName(e.target.value)}
-                style={{
-                  borderRadius: 0,
-                  backgroundColor: isDark ? "#1a1d21" : "#ffffff",
-                  borderColor: subtleBorder,
-                  color: textTitle,
-                }}
-              />
-            </FormGroup>
-            <FormGroup className="mb-3">
-              <Label className="fw-medium fs-12" style={{ color: textTitle }}>Related Company</Label>
-              <Input
-                type="select"
-                className="form-select rounded-0 fs-13"
-                value={uploadFileEntity}
-                onChange={(e) => setUploadFileEntity(e.target.value)}
-                style={{
-                  borderRadius: 0,
-                  backgroundColor: isDark ? "#1a1d21" : "#ffffff",
-                  borderColor: subtleBorder,
-                  color: textTitle,
-                }}
-              >
-                <option value="">Select Company / Account</option>
-                {lookups.accounts.map((a) => (
-                  <option key={a.accountId || a.account_id} value={a.companyName || a.displayName}>
-                    {a.companyName || a.displayName}
-                  </option>
-                ))}
-              </Input>
-            </FormGroup>
-            <div
-              className="p-4 border border-dashed rounded-0 text-center cursor-pointer"
-              style={{
-                borderColor: subtleBorder,
-                backgroundColor: isDark ? "#1a1d21" : "#f8fafc",
-              }}
-            >
-              <i className="ri-upload-cloud-2-line fs-32 d-block mb-1" style={{ color: primaryColor }}></i>
-              <div className="fw-medium fs-13" style={{ color: textTitle }}>Drop file here or click to browse</div>
-              <div className="fs-11" style={{ color: textSub }}>Supports PDF, XLSX, DOCX up to 10MB</div>
-            </div>
-          </ModalBody>
-          <ModalFooter
-            className="rounded-0 py-2"
-            style={{
-              backgroundColor: subtleBg,
-              borderTop: `1px solid ${cardBorder}`,
-            }}
-          >
-            <Button
-              color="light"
-              size="sm"
-              className="rounded-0"
-              onClick={() => setUploadDocModal(false)}
-              style={{
-                borderRadius: 0,
-                backgroundColor: isDark ? "#212529" : "#ffffff",
-                borderColor: subtleBorder,
-                color: textTitle,
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              className="rounded-0 text-white"
-              style={{
-                borderRadius: 0,
-                backgroundColor: primaryColor,
-                borderColor: primaryColor,
-              }}
-              onClick={() => {
-                toastSuccess("Document attachment recorded.");
-                setUploadDocModal(false);
-              }}
-            >
-              Upload
-            </Button>
-          </ModalFooter>
-        </Modal>
-
-        {/* ================================================================= */}
-        {/* IN-PAGE MODAL 4: Quick Action - Create Quote                      */}
-        {/* ================================================================= */}
-        <Modal
-          isOpen={createQuoteModal}
-          toggle={() => setCreateQuoteModal(!createQuoteModal)}
-          centered
-          className="rounded-0"
-        >
-          <ModalHeader
-            toggle={() => setCreateQuoteModal(!createQuoteModal)}
-            className="rounded-0"
-            style={{
-              backgroundColor: subtleBg,
-              borderBottom: `1px solid ${cardBorder}`,
-            }}
-          >
-            <span className="fw-semibold fs-15" style={{ color: textTitle }}>Quick Quotation</span>
-          </ModalHeader>
-          <ModalBody className="p-4" style={{ backgroundColor: cardBg, color: textTitle }}>
-            <FormGroup className="mb-3">
-              <Label className="fw-medium fs-12" style={{ color: textTitle }}>Customer Account</Label>
-              <Input
-                type="select"
-                className="form-select rounded-0 fs-13"
-                value={quoteAccount}
-                onChange={(e) => setQuoteAccount(e.target.value)}
-                style={{
-                  borderRadius: 0,
-                  backgroundColor: isDark ? "#1a1d21" : "#ffffff",
-                  borderColor: subtleBorder,
-                  color: textTitle,
-                }}
-              >
-                <option value="">Select Customer Account</option>
-                {lookups.accounts.map((a) => (
-                  <option key={a.accountId || a.account_id} value={a.companyName || a.displayName}>
-                    {a.companyName || a.displayName}
-                  </option>
-                ))}
-              </Input>
-            </FormGroup>
-            <FormGroup className="mb-3">
-              <Label className="fw-medium fs-12" style={{ color: textTitle }}>Quotation Amount (INR)</Label>
-              <Input
-                type="number"
-                className="form-control rounded-0 fs-13"
-                placeholder="e.g. 150000"
-                value={quoteAmount}
-                onChange={(e) => setQuoteAmount(e.target.value)}
-                style={{
-                  borderRadius: 0,
-                  backgroundColor: isDark ? "#1a1d21" : "#ffffff",
-                  borderColor: subtleBorder,
-                  color: textTitle,
-                }}
-              />
-            </FormGroup>
-          </ModalBody>
-          <ModalFooter
-            className="rounded-0 py-2"
-            style={{
-              backgroundColor: subtleBg,
-              borderTop: `1px solid ${cardBorder}`,
-            }}
-          >
-            <Button
-              color="light"
-              size="sm"
-              className="rounded-0"
-              onClick={() => setCreateQuoteModal(false)}
-              style={{
-                borderRadius: 0,
-                backgroundColor: isDark ? "#212529" : "#ffffff",
-                borderColor: subtleBorder,
-                color: textTitle,
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              className="rounded-0 text-white"
-              style={{
-                borderRadius: 0,
-                backgroundColor: primaryColor,
-                borderColor: primaryColor,
-              }}
-              onClick={() => {
-                toastSuccess("Quotation draft generated.");
-                setCreateQuoteModal(false);
-              }}
-            >
-              Create Quote
-            </Button>
-          </ModalFooter>
-        </Modal>
-
-        {/* ================================================================= */}
-        {/* IN-PAGE MODAL 5: Delete Confirmation Modal                        */}
+        {/* IN-PAGE MODAL 3: Delete Confirmation Modal                        */}
         {/* ================================================================= */}
         <DeleteModal
           show={deleteModal}

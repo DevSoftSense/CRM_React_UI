@@ -18,17 +18,24 @@ export const formatPercent = (val) => {
   return `${Number(val).toFixed(1)}%`;
 };
 
+const toLocalIsoDate = (d) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
 /**
- * Derives start and end ISO dates based on a preset name
+ * Derives start and end ISO dates based on a preset name (using local timezone)
  */
 export const getDateRangeFromPreset = (preset) => {
   const now = new Date();
-  const todayStr = now.toISOString().slice(0, 10);
+  const todayStr = toLocalIsoDate(now);
 
   if (preset === "this_month") {
     const start = new Date(now.getFullYear(), now.getMonth(), 1);
     return {
-      dateFrom: start.toISOString().slice(0, 10),
+      dateFrom: toLocalIsoDate(start),
       dateTo: todayStr,
     };
   }
@@ -37,7 +44,7 @@ export const getDateRangeFromPreset = (preset) => {
     const quarterStartMonth = Math.floor(now.getMonth() / 3) * 3;
     const start = new Date(now.getFullYear(), quarterStartMonth, 1);
     return {
-      dateFrom: start.toISOString().slice(0, 10),
+      dateFrom: toLocalIsoDate(start),
       dateTo: todayStr,
     };
   }
@@ -45,15 +52,15 @@ export const getDateRangeFromPreset = (preset) => {
   if (preset === "this_year") {
     const start = new Date(now.getFullYear(), 0, 1);
     return {
-      dateFrom: start.toISOString().slice(0, 10),
+      dateFrom: toLocalIsoDate(start),
       dateTo: todayStr,
     };
   }
 
   if (preset === "last_30_days") {
-    const start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
     return {
-      dateFrom: start.toISOString().slice(0, 10),
+      dateFrom: toLocalIsoDate(start),
       dateTo: todayStr,
     };
   }
@@ -289,9 +296,6 @@ export const getKpiConfig = (key, value) => {
     color = "#b45309";
     bg = "rgba(180, 83, 9, 0.08)";
     icon = "ri-funds-line";
-  } else if (k === "active_deals_count") {
-    label = "Active Pipeline Deals";
-    icon = "ri-briefcase-line";
   } else if (k === "win_rate_percentage") {
     label = "Overall Win Rate";
     icon = "ri-trophy-line";
@@ -359,7 +363,7 @@ export const exportToCsv = (filename, rows) => {
   link.setAttribute("href", url);
   link.setAttribute(
     "download",
-    `${filename || "crm_report"}_${new Date().toISOString().slice(0, 10)}.csv`
+    `${filename || "crm_report"}_${toLocalIsoDate(new Date())}.csv`
   );
   document.body.appendChild(link);
   link.click();

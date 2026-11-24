@@ -391,10 +391,10 @@ const RepProductivityScorecardView = ({
                   </div>
                   <div className="d-flex align-items-center gap-1 mt-1">
                     <span style={{ color: "#16a34a", fontSize: "11px", fontWeight: 600 }}>
-                      <i className="ri-checkbox-circle-fill"></i> 100%
+                      <i className="ri-checkbox-circle-fill"></i> {totalDealsWon} {totalDealsWon === 1 ? "deal" : "deals"} won
                     </span>
                     <span style={{ fontSize: "11px", color: textSub }}>
-                      Closed Won target
+                      in period
                     </span>
                   </div>
                 </div>
@@ -580,7 +580,7 @@ const RepProductivityScorecardView = ({
                       {totalDealsWon} Won
                     </span>
                     <span style={{ fontSize: "11px", color: textSub }}>
-                      • 2 In Pipeline
+                      • {totalActivitiesCount} Activities
                     </span>
                   </div>
                 </div>
@@ -736,7 +736,7 @@ const RepProductivityScorecardView = ({
                   {rawRows.map((r, i) => {
                     const colors = [isDark ? "#dc2626" : "#7f1d1d", isDark ? "#38bdf8" : "#2563eb", isDark ? "#64748b" : "#94a3b8"];
                     const rev = Number(r.won_revenue || 0);
-                    const pct = totalWonRevenue > 0 ? Math.round((rev / totalWonRevenue) * 100) : (i === 0 ? 100 : 0);
+                    const pct = totalWonRevenue > 0 ? Math.round((rev / totalWonRevenue) * 100) : 0;
                     const isTop = i === 0;
 
                     return (

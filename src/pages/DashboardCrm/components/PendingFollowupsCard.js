@@ -128,9 +128,6 @@ const PendingFollowupsCard = ({ tasks = [], onTaskCompleted }) => {
       setSelectedTask(null);
       if (typeof onTaskCompleted === "function") {
         onTaskCompleted();
-      } else {
-        // Refresh page or trigger state update
-        window.location.reload();
       }
     } catch (err) {
       toastApiError(err, "Failed to complete task.");
@@ -144,7 +141,7 @@ const PendingFollowupsCard = ({ tasks = [], onTaskCompleted }) => {
     if (phone) {
       window.open(`tel:${phone}`);
     } else {
-      alert(`No direct phone registered for ${t?.customer_name || "this customer"}.`);
+      toastApiError(null, `No direct phone registered for ${t?.customer_name || "this customer"}.`);
     }
   };
 
@@ -153,7 +150,7 @@ const PendingFollowupsCard = ({ tasks = [], onTaskCompleted }) => {
     if (phone) {
       window.open(`https://wa.me/${phone}`, "_blank");
     } else {
-      alert(`No WhatsApp number registered for ${t?.customer_name || "this customer"}.`);
+      toastApiError(null, `No WhatsApp number registered for ${t?.customer_name || "this customer"}.`);
     }
   };
 

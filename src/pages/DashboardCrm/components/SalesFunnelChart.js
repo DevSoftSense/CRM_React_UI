@@ -60,7 +60,7 @@ const SalesFunnelChart = ({ data = [] }) => {
             boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
           }}
         >
-          5 Stages
+          {stages.length} Stages
         </span>
       </CardHeader>
 
@@ -302,7 +302,7 @@ const SalesFunnelChart = ({ data = [] }) => {
                   fontWeight="700"
                   letterSpacing="0.3"
                 >
-                  Won
+                  {sWon.stage_name || "Won"}
                 </text>
                 <text
                   x="166"
@@ -365,7 +365,7 @@ const SalesFunnelChart = ({ data = [] }) => {
                   fontWeight="700"
                   letterSpacing="0.2"
                 >
-                  Negotiation
+                  {sNego.stage_name || "Negotiation"}
                 </text>
                 <text
                   x="167"
@@ -426,7 +426,7 @@ const SalesFunnelChart = ({ data = [] }) => {
                   fontWeight="700"
                   letterSpacing="0.25"
                 >
-                  Proposal
+                  {sProp.stage_name || "Proposal"}
                 </text>
                 <text
                   x="168"
@@ -494,7 +494,7 @@ const SalesFunnelChart = ({ data = [] }) => {
                   fontWeight="700"
                   letterSpacing="0.25"
                 >
-                  Qualified
+                  {sQual.stage_name || "Qualified"}
                 </text>
                 <text
                   x="169"
@@ -561,7 +561,7 @@ const SalesFunnelChart = ({ data = [] }) => {
                   fontWeight="700"
                   letterSpacing="0.3"
                 >
-                  Lead
+                  {sLead.stage_name || "Lead"}
                 </text>
                 <text
                   x="171"

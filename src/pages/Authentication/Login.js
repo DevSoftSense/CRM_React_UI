@@ -46,7 +46,7 @@ const Login = (props) => {
   const validation = useFormik({
     enableReinitialize: true,
     initialValues: {
-      orgId: localStorage.getItem(ORG_ID_STORAGE_KEY) || "100004",
+      orgId: localStorage.getItem(ORG_ID_STORAGE_KEY) || "",
       email: localStorage.getItem(SAVED_EMAIL_KEY) || "",
       password: "",
       rememberMe: localStorage.getItem(REMEMBER_ME_KEY) === "true",

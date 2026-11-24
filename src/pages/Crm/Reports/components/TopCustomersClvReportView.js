@@ -777,7 +777,7 @@ const TopCustomersClvReportView = ({
               Detailed Data Ledger
             </h6>
             <span style={{ fontSize: "11.5px", color: textSub }}>
-              Showing 1 to {filteredRows.length} of {rawRows.length} customer records
+              Showing {filteredRows.length > 0 ? 1 : 0} to {filteredRows.length} of {rawRows.length} customer records
             </span>
           </div>
 
@@ -867,8 +867,8 @@ const TopCustomersClvReportView = ({
                   </tr>
                 ) : (
                   paginatedRows.map((r, idx) => {
-                    const wonAmount = Number(r.lifetime_revenue || 250000);
-                    const dealsCount = Number(r.deals_won_count || 1);
+                    const wonAmount = Number(r.lifetime_revenue || 0);
+                    const dealsCount = Number(r.deals_won_count || 0);
                     const rowNumber = (currentPage - 1) * pageSize + idx + 1;
 
                     return (
@@ -1108,7 +1108,7 @@ const TopCustomersClvReportView = ({
             >
               <div className="d-flex align-items-center gap-1.5">
                 <i className="ri-vip-crown-fill" style={{ color: isDark ? "#f87171" : "#7f1d1d" }}></i>
-                <span>Top tier enterprise accounts drive 100% of realized revenue.</span>
+                <span>Tier 1 accounts represent {tierCounts.t1Pct}% of paying customers ({formatCurrency(totalLifetimeRevenue)} CLV).</span>
               </div>
               <span className="d-none d-md-inline" style={{ color: cardBorder }}>|</span>
               <div className="d-flex align-items-center gap-1.5">

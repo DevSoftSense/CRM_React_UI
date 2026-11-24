@@ -62,9 +62,9 @@ const SalesPipelineAgingReportView = ({
     try {
       setSavingFollowUp(true);
       await createActivity({
-        reason: `Follow-up: ${followUpDeal.opportunity_name}`,
+        subject: `Follow-up: ${followUpDeal.opportunity_name}`,
         actType: followUpType || "CALL",
-        callNotes: followUpNotes || `Followed up on deal ${followUpDeal.opportunity_name} at stage ${followUpDeal.stage_name}.`,
+        callNotes: `${followUpNotes || `Followed up on deal ${followUpDeal.opportunity_name} at stage ${followUpDeal.stage_name}.`}${followUpDeal.opportunity_id ? ` [Opportunity: ${followUpDeal.opportunity_id}]` : ""}`,
         employeeId: followUpDeal.owner_employee_id || (selectedOwnerId ? Number(selectedOwnerId) : null),
       });
       toastSuccess("Follow-up activity logged successfully!");
@@ -818,13 +818,7 @@ const SalesPipelineAgingReportView = ({
                       bottom: 0,
                     }}
                   >
-                    {[
-                      { name: "Prospecting", deals: "0 deals", val: "—" },
-                      { name: "Qualified", deals: "1 deal", val: "₹18,50,000" },
-                      { name: "Proposal", deals: "0 deals", val: "—" },
-                      { name: "Negotiation", deals: "0 deals", val: "—" },
-                      { name: "Closed Won", deals: "1 deal", val: "₹2,50,000" },
-                    ].map((st) => (
+                    {stageBreakdownData.map((st) => (
                       <div
                         key={st.name}
                         style={{
@@ -837,7 +831,7 @@ const SalesPipelineAgingReportView = ({
                           {st.name}
                         </div>
                         <div style={{ fontSize: "10.5px", color: textSub }}>
-                          {st.deals} • {st.val}
+                          {st.deals} {st.deals === 1 ? "deal" : "deals"} • {st.amount ? formatCurrency(st.amount) : "—"}
                         </div>
                       </div>
                     ))}
@@ -962,15 +956,21 @@ const SalesPipelineAgingReportView = ({
                       paddingRight: "30px",
                     }}
                   >
-                    {[
-                      { stage: "Prospecting", target: stageTargets.Prospecting, actual: null },
-                      { stage: "Qualified", target: stageTargets.Qualified, actual: 21 },
-                      { stage: "Proposal", target: stageTargets.Proposal, actual: null },
-                      { stage: "Negotiation", target: stageTargets.Negotiation, actual: null },
-                    ].map((row, idx) => {
+                    {stageBreakdownData
+                      .filter((s) => s.name !== "Closed Won")
+                      .map((s) => ({
+                        stage: s.name,
+                        target: stageTargets[s.name] ?? 14,
+                        actual: s.deals > 0 ? s.avgDays : null,
+                      }))
+                      .map((row) => {
                       // 0d - 40d scale (100% = 40 days)
-                      const targetPct = (row.target / 40) * 100;
-                      const actualPct = row.actual ? (row.actual / 40) * 100 : null;
+                      const targetPct = Math.min(100, Math.max(0, (row.target / 40) * 100));
+                      const actualPct = row.actual !== null ? Math.min(100, Math.max(0, (row.actual / 40) * 100)) : null;
+                      const diffDays = row.actual !== null ? row.actual - row.target : 0;
+                      const isOver = diffDays > 0;
+                      const leftLine = actualPct !== null ? Math.min(targetPct, actualPct) : targetPct;
+                      const lineWidth = actualPct !== null ? Math.abs(actualPct - targetPct) : 0;
 
                       return (
                         <div
@@ -987,8 +987,8 @@ const SalesPipelineAgingReportView = ({
                               right: "100%",
                               paddingRight: "15px",
                               fontSize: "12px",
-                              fontWeight: row.actual ? 700 : 500,
-                              color: row.actual ? textTitle : textSub,
+                              fontWeight: row.actual !== null ? 700 : 500,
+                              color: row.actual !== null ? textTitle : textSub,
                               whiteSpace: "nowrap",
                             }}
                           >
@@ -1012,21 +1012,21 @@ const SalesPipelineAgingReportView = ({
                           ></div>
 
                           {/* Connecting Line if Actual exists */}
-                          {actualPct && (
+                          {actualPct !== null && (
                             <div
                               style={{
                                 position: "absolute",
-                                left: `${targetPct}%`,
-                                width: `${actualPct - targetPct}%`,
+                                left: `${leftLine}%`,
+                                width: `${lineWidth}%`,
                                 height: "3px",
-                                backgroundColor: isDark ? "#fbbf24" : "#f59e0b",
+                                backgroundColor: isOver ? (isDark ? "#fbbf24" : "#f59e0b") : "#16a34a",
                                 zIndex: 1,
                               }}
                             ></div>
                           )}
 
                           {/* Actual Circle and Callout */}
-                          {actualPct && (
+                          {actualPct !== null && (
                             <div
                               style={{
                                 position: "absolute",
@@ -1043,33 +1043,35 @@ const SalesPipelineAgingReportView = ({
                                   width: "14px",
                                   height: "14px",
                                   borderRadius: "50%",
-                                  backgroundColor: isDark ? "#fbbf24" : "#f59e0b",
-                                  boxShadow: isDark ? "0 0 0 3px rgba(245, 158, 11, 0.3)" : "0 0 0 3px rgba(245, 158, 11, 0.2)",
+                                  backgroundColor: isOver ? (isDark ? "#fbbf24" : "#f59e0b") : "#16a34a",
+                                  boxShadow: isOver
+                                    ? isDark ? "0 0 0 3px rgba(245, 158, 11, 0.3)" : "0 0 0 3px rgba(245, 158, 11, 0.2)"
+                                    : "0 0 0 3px rgba(22, 163, 74, 0.2)",
                                 }}
                               ></div>
                               <span
                                 style={{
                                   fontSize: "11px",
                                   fontWeight: 700,
-                                  color: isDark ? "#fbbf24" : "#b45309",
+                                  color: isOver ? (isDark ? "#fbbf24" : "#b45309") : "#16a34a",
                                   whiteSpace: "nowrap",
-                                  backgroundColor: isDark ? "rgba(245, 158, 11, 0.18)" : "#fef3c7",
+                                  backgroundColor: isOver ? (isDark ? "rgba(245, 158, 11, 0.18)" : "#fef3c7") : (isDark ? "rgba(22, 163, 74, 0.18)" : "#f0fdf4"),
                                   padding: "2px 6px",
                                   borderRadius: 0,
-                                  border: isDark ? "1px solid rgba(245, 158, 11, 0.35)" : "1px solid #fde68a",
+                                  border: isOver ? (isDark ? "1px solid rgba(245, 158, 11, 0.35)" : "1px solid #fde68a") : "1px solid #bbf7d0",
                                 }}
                               >
-                                +{row.actual - row.target} d over target
+                                {isOver ? `+${diffDays} d over target` : `${row.actual} d (on target)`}
                               </span>
                             </div>
                           )}
 
                           {/* No deals text if not active */}
-                          {!actualPct && (
+                          {actualPct === null && (
                             <span
                               style={{
                                 position: "absolute",
-                                left: `${targetPct + 5}%`,
+                                left: `${Math.min(85, targetPct + 5)}%`,
                                 fontSize: "11px",
                                 color: textSub,
                               }}
