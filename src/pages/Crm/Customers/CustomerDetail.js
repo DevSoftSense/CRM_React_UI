@@ -202,26 +202,32 @@ const CustomerDetail = () => {
 
       setCustomer(custData);
 
-      // Map opportunities
+      // Map opportunities (C# ListResponse returns { items, totalCount })
       const oppsList = Array.isArray(oppsRes)
         ? oppsRes
-        : oppsRes?.opportunities || oppsRes?.data || [];
+        : oppsRes?.items || oppsRes?.Items || oppsRes?.opportunities || oppsRes?.data || [];
       setOpportunities(oppsList);
 
       // Map contacts
       const contList = Array.isArray(contactsRes)
         ? contactsRes
-        : contactsRes?.contacts || contactsRes?.data || [];
+        : contactsRes?.items || contactsRes?.Items || contactsRes?.contacts || contactsRes?.data || [];
       setContacts(contList);
 
-      // Map customer activities (filtered by company or customer name)
+      // Map customer activities (filtered by account tag, company/customer name, or phone)
       const allActs = Array.isArray(actsRes)
         ? actsRes
-        : actsRes?.activities || actsRes?.data || [];
-      const searchKey = String(custData.companyName || custData.displayName || "").toLowerCase();
+        : actsRes?.items || actsRes?.Items || actsRes?.activities || actsRes?.data || [];
+      const searchKey = String(custData.companyName || custData.displayName || "").trim().toLowerCase();
+      const accTag = `[account: ${accountId}]`;
       const filteredActs = allActs.filter((a) => {
-        const text = `${a.subject || ""} ${a.notes || ""} ${a.callNotes || ""}`.toLowerCase();
-        return text.includes(searchKey) || String(a.accountId) === String(accountId);
+        const text = `${a.subject || a.reason || ""} ${a.notes || ""} ${a.callNotes || ""}`.toLowerCase();
+        return (
+          text.includes(accTag) ||
+          (searchKey && text.includes(searchKey)) ||
+          String(a.accountId) === String(accountId) ||
+          (custData.phoneMobile && a.callNumber && String(a.callNumber).includes(custData.phoneMobile))
+        );
       });
       setActivities(filteredActs);
     } catch (err) {
@@ -375,14 +381,18 @@ const CustomerDetail = () => {
 
     setActivitySubmitting(true);
     try {
+      const accTag = `[Account: ${accountId}] Related: ${customer?.companyName || customer?.displayName || ""}`.trim();
+      const combinedNotes = activityForm.notes?.trim()
+        ? `${activityForm.notes.trim()}\n${accTag}`
+        : accTag;
       await createActivity({
         subject: `[${customer?.companyName || customer?.displayName || "Customer"}] ${activityForm.subject.trim()}`,
         actType: activityForm.actType || "CALL",
         startTime: activityForm.startTime
           ? new Date(activityForm.startTime).toISOString()
           : new Date().toISOString(),
-        callNumber: activityForm.phoneNumber || undefined,
-        callNotes: activityForm.notes || undefined,
+        callNumber: activityForm.phoneNumber || customer?.phoneMobile || undefined,
+        callNotes: combinedNotes,
       });
 
       toastSuccess("Activity logged in database.");
@@ -600,9 +610,9 @@ const CustomerDetail = () => {
                         className="text-white d-inline-flex align-items-center justify-content-center fs-10 fw-bold"
                         style={{ width: "20px", height: "20px", backgroundColor: THEME.primary, borderRadius: 0, flexShrink: 0 }}
                       >
-                        {(opportunities[0]?.ownerName || "A")[0]}
+                        {(opportunities[0]?.ownerName || "U")[0]}
                       </div>
-                      <span className="text-truncate">{opportunities[0]?.ownerName || "Amit Kumar"}</span>
+                      <span className="text-truncate">{opportunities[0]?.ownerName || "Unassigned"}</span>
                     </div>
                   </Col>
 
@@ -1060,11 +1070,11 @@ const CustomerDetail = () => {
                                   className="rounded-0 d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
                                   style={{ width: 36, height: 36, fontSize: "12px", backgroundColor: THEME.primary }}
                                 >
-                                  {getInitials(c.fullName || `${c.firstName || ""} ${c.lastName || ""}`)}
+                                  {getInitials(c.displayName || c.fullName || `${c.firstName || ""} ${c.lastName || ""}`)}
                                 </div>
                                 <div>
                                   <div className="fw-bold text-dark fs-13">
-                                    {c.fullName || `${c.firstName || ""} ${c.lastName || ""}`}
+                                    {c.displayName || c.fullName || `${c.firstName || ""} ${c.lastName || ""}`}
                                   </div>
                                   <span className="text-muted fs-11">{c.title || "Contact Person"}</span>
                                 </div>
@@ -1181,8 +1191,8 @@ const CustomerDetail = () => {
                           {(act.notes || act.callNotes) && (
                             <p className="text-muted fs-12 mb-1 mt-1">{act.notes || act.callNotes}</p>
                           )}
-                          {act.phoneNumber && (
-                            <span className="text-muted fs-11 d-block">Phone: {act.phoneNumber}</span>
+                          {(act.callNumber || act.phoneNumber) && (
+                            <span className="text-muted fs-11 d-block">Phone: {act.callNumber || act.phoneNumber}</span>
                           )}
                         </div>
                       </div>
@@ -1331,7 +1341,7 @@ const CustomerDetail = () => {
                       <option value="">Select Account Type...</option>
                       {accountTypes.map((t) => (
                         <option key={t.accountTypeId} value={t.accountTypeId}>
-                          {t.accountTypeName}
+                          {t.partyTypeName || t.accountTypeName}
                         </option>
                       ))}
                     </Input>

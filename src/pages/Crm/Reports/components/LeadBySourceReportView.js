@@ -111,82 +111,53 @@ const LeadBySourceReportView = ({
     return "ri-compass-3-line";
   };
 
-  // Mini Sparkline Generator
-  const makeSparklineConfig = (seriesData, strokeColor, fillColor) => ({
-    series: [{ data: seriesData }],
-    options: {
-      chart: {
-        type: "area",
-        height: 38,
-        width: 80,
-        sparkline: { enabled: true },
-      },
-      stroke: { curve: "smooth", width: 2, colors: [strokeColor] },
-      fill: {
-        type: "gradient",
-        gradient: {
-          shadeIntensity: 1,
-          opacityFrom: 0.35,
-          opacityTo: 0.05,
-          stops: [0, 90, 100],
-          colorStops: [
-            { offset: 0, color: fillColor, opacity: 0.35 },
-            { offset: 100, color: fillColor, opacity: 0.0 },
-          ],
-        },
-      },
-      colors: [strokeColor],
-      tooltip: { enabled: false },
-    },
-  });
+  // Channel List for right card (strictly real tenant data)
+  const channelBreakdownList = useMemo(() => {
+    const colors = ["#7f1d1d", "#2563eb", "#16a34a", "#d97706", "#7c3aed"];
+    const list = chartData.length > 0 ? chartData : [];
+    const totalCount = list.reduce((acc, c) => acc + Number(c.lead_count || 0), 0);
+    const totalVal = list.reduce((acc, c) => acc + Number(c.total_estimated_value || 0), 0);
 
-  const pipelineSparkline = useMemo(
-    () => makeSparklineConfig([0, 100000, 150000, 250000], "#7f1d1d", "#7f1d1d"),
-    []
-  );
-  const leadsSparkline = useMemo(
-    () => makeSparklineConfig([0, 1, 1, 1], "#2563eb", "#2563eb"),
-    []
-  );
-  const websiteSparkline = useMemo(
-    () => makeSparklineConfig([0, 1, 1, 1], "#16a34a", "#16a34a"),
-    []
-  );
-  const avgValueSparkline = useMemo(
-    () => makeSparklineConfig([100000, 150000, 200000, 250000], "#d97706", "#d97706"),
-    []
-  );
+    return [...list]
+      .sort((a, b) => Number(b.lead_count || 0) - Number(a.lead_count || 0))
+      .map((c, i) => {
+        const cnt = Number(c.lead_count || 0);
+        const val = Number(c.total_estimated_value || 0);
+        const pct = totalCount > 0 ? Math.round((cnt / totalCount) * 100) : 0;
+        const valPct = totalVal > 0 ? Math.round((val / totalVal) * 100) : 0;
+        return {
+          ...c,
+          lead_count: cnt,
+          total_estimated_value: val,
+          percentage: pct,
+          valueSharePct: valPct,
+          color: colors[i % colors.length],
+        };
+      });
+  }, [chartData]);
+
+  const topChannel = channelBreakdownList[0] || null;
+  const activeChannelsCount = channelBreakdownList.filter((c) => c.lead_count > 0).length;
 
   // 1. Channel Share Donut Chart
   const channelDonutConfig = useMemo(() => {
-    const list =
-      chartData.length > 0
-        ? chartData
-        : [
-            { source_name: "Website", lead_count: 1, total_estimated_value: 250000 },
-            { source_name: "WhatsApp", lead_count: 0, total_estimated_value: 0 },
-            { source_name: "Referral", lead_count: 0, total_estimated_value: 0 },
-            { source_name: "Walk-In", lead_count: 0, total_estimated_value: 0 },
-            { source_name: "LinkedIn", lead_count: 0, total_estimated_value: 0 },
-          ];
-
-    const labels = list.map((d) => d.source_name);
-    const series = list.map((d) => Number(d.lead_count || 0));
-
-    // If all zero, default first item
-    const allZero = series.every((v) => v === 0);
-    const finalSeries = allZero ? [1, 0, 0, 0, 0] : series;
+    const labels = channelBreakdownList.map((d) => d.source_name || "Other");
+    const series = channelBreakdownList.map((d) => Number(d.lead_count || 0));
+    const hasData = series.some((v) => v > 0);
 
     return {
-      series: finalSeries,
+      hasData,
+      series: hasData ? series : [1],
       options: {
         chart: {
           type: "donut",
           height: 180,
           sparkline: { enabled: true },
         },
-        labels,
-        colors: ["#7f1d1d", "#2563eb", "#16a34a", "#d97706", "#7c3aed"],
+        labels: hasData ? labels : ["No Data"],
+        colors: hasData
+          ? ["#7f1d1d", "#2563eb", "#16a34a", "#d97706", "#7c3aed"]
+          : [isDark ? "#21262d" : "#e2e8f0"],
         stroke: { width: 2, colors: [isDark ? cardBg : "#ffffff"] },
         legend: { show: false },
         dataLabels: { enabled: false },
@@ -198,6 +169,7 @@ const LeadBySourceReportView = ({
           },
         },
         tooltip: {
+          enabled: hasData,
           theme: isDark ? "dark" : "light",
           y: {
             formatter: (val) => `${val} leads`,
@@ -205,37 +177,7 @@ const LeadBySourceReportView = ({
         },
       },
     };
-  }, [chartData, isDark, cardBg]);
-
-  // Channel List for right card
-  const channelBreakdownList = useMemo(() => {
-    const colors = ["#7f1d1d", "#2563eb", "#16a34a", "#d97706", "#7c3aed"];
-    const list =
-      chartData.length > 0
-        ? chartData
-        : [
-            { source_name: "Website", lead_count: 1, total_estimated_value: 250000 },
-            { source_name: "WhatsApp", lead_count: 0, total_estimated_value: 0 },
-            { source_name: "Referral", lead_count: 0, total_estimated_value: 0 },
-            { source_name: "Walk-In", lead_count: 0, total_estimated_value: 0 },
-            { source_name: "LinkedIn", lead_count: 0, total_estimated_value: 0 },
-          ];
-
-    const totalCount = list.reduce((acc, c) => acc + Number(c.lead_count || 0), 0) || 1;
-
-    return list.map((c, i) => {
-      const cnt = Number(c.lead_count || 0);
-      const val = Number(c.total_estimated_value || 0);
-      const pct = Math.round((cnt / totalCount) * 100);
-      return {
-        ...c,
-        lead_count: cnt,
-        total_estimated_value: val,
-        percentage: pct,
-        color: colors[i % colors.length],
-      };
-    });
-  }, [chartData]);
+  }, [channelBreakdownList, isDark, cardBg]);
 
   return (
     <div className="lead-by-source-report-view">
@@ -380,7 +322,9 @@ const LeadBySourceReportView = ({
                 className="fw-bold"
                 style={{ fontSize: "22px", lineHeight: "1.1", margin: "6px 0", color: textTitle }}
               >
-                Website (100%)
+                {topChannel && topChannel.lead_count > 0
+                  ? `${topChannel.source_name} (${topChannel.percentage}%)`
+                  : "None"}
               </div>
               <div className="d-flex align-items-center gap-1.5 mt-2" style={{ fontSize: "11.5px" }}>
                 <span style={{ color: "#16a34a", fontWeight: 600 }}>★ Top Channel</span>
@@ -477,7 +421,9 @@ const LeadBySourceReportView = ({
                   borderRadius: 0,
                 }}
               >
-                Top: Website (100%)
+                {topChannel && topChannel.lead_count > 0
+                  ? `Top: ${topChannel.source_name} (${topChannel.percentage}%)`
+                  : "No active channels"}
               </span>
             </div>
 
@@ -514,7 +460,7 @@ const LeadBySourceReportView = ({
                         lineHeight: "1.1",
                       }}
                     >
-                      100%
+                      {topChannel && topChannel.lead_count > 0 ? `${topChannel.percentage}%` : "0%"}
                     </div>
                     <div
                       style={{
@@ -525,7 +471,7 @@ const LeadBySourceReportView = ({
                         marginTop: "2px",
                       }}
                     >
-                      Website
+                      {topChannel && topChannel.lead_count > 0 ? topChannel.source_name : "No Data"}
                     </div>
                   </div>
                 </div>
@@ -560,10 +506,14 @@ const LeadBySourceReportView = ({
                   </div>
                   <div>
                     <span className="fw-bold d-block" style={{ fontSize: "12.5px", color: textTitle }}>
-                      Website • Dominant Channel
+                      {topChannel && topChannel.lead_count > 0
+                        ? `${topChannel.source_name} • Dominant Channel`
+                        : "No Active Lead Channels"}
                     </span>
                     <span style={{ fontSize: "11px", color: textSub }}>
-                      100% volume • {formatCurrency(totalEstimatedPipeline)} estimated pipeline
+                      {topChannel && topChannel.lead_count > 0
+                        ? `${topChannel.percentage}% volume • ${formatCurrency(topChannel.total_estimated_value)} estimated pipeline`
+                        : "Add leads with source attribution to track channel performance"}
                     </span>
                   </div>
                 </div>
@@ -730,7 +680,7 @@ const LeadBySourceReportView = ({
                         <div style={{ fontSize: "11px" }}>
                           {isTop ? (
                             <span style={{ color: "#16a34a", fontWeight: 600 }}>
-                              <i className="ri-checkbox-circle-fill"></i> 100% of pipeline
+                              <i className="ri-checkbox-circle-fill"></i> {ch.valueSharePct}% of pipeline
                             </span>
                           ) : (
                             <span style={{ color: textSub }}>No active pipeline</span>
@@ -754,7 +704,10 @@ const LeadBySourceReportView = ({
                 <div className="d-flex align-items-center gap-2">
                   <i className="ri-pie-chart-line" style={{ fontSize: "15px", color: textSub }}></i>
                   <span style={{ fontSize: "11.5px", color: textSub }}>
-                    <strong style={{ color: textTitle }}>1 of 5 Channels</strong> actively acquiring sales pipeline
+                    <strong style={{ color: textTitle }}>
+                      {activeChannelsCount} of {channelBreakdownList.length} Channels
+                    </strong>{" "}
+                    actively acquiring sales pipeline
                   </span>
                 </div>
                 <div className="d-flex align-items-center gap-2">

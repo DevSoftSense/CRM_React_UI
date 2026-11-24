@@ -55,10 +55,17 @@ const OverdueTasksComplianceView = ({
       rows.filter((r) => Number(r.days_overdue || 0) > 0).length ??
       0
   );
-  const completedTasks = Math.max(0, totalTasks - overdueTasks);
-  const pendingTasks = 0;
-  const complianceRate =
-    totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 100;
+  const completedTasks = Number(
+    summary.completed_tasks_count ?? Math.max(0, totalTasks - overdueTasks)
+  );
+  const pendingTasks = Number(
+    summary.pending_tasks_count ?? Math.max(0, totalTasks - completedTasks - overdueTasks)
+  );
+  const complianceRate = Number(
+    summary.compliance_rate_percentage ??
+      (totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 100)
+  );
+  const overduePct = totalTasks > 0 ? Math.round((overdueTasks / totalTasks) * 100) : 0;
 
   // Filtered rows for search and status
   const filteredRows = useMemo(() => {
@@ -83,11 +90,34 @@ const OverdueTasksComplianceView = ({
     return result;
   }, [rows, statusFilter, searchTerm]);
 
-  // 1. Clustered Column Chart: Overdue Tasks Trend
+  // 1. Clustered Column Chart: Overdue Tasks Trend (dynamically computed across last 4 months from rows)
   const trendChartConfig = useMemo(() => {
-    const categories = ["Oct 2026", "Nov 2026", "Dec 2026", "Jan 2027"];
-    const totalSeries = [3, 4, 2, 4];
-    const overdueSeries = [1, 2, 1, 2];
+    const now = new Date();
+    const buckets = Array.from({ length: 4 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (3 - i), 1);
+      return {
+        year: d.getFullYear(),
+        month: d.getMonth(),
+        label: d.toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+        total: 0,
+        overdue: 0,
+      };
+    });
+
+    rows.forEach((r) => {
+      const dt = new Date(r.due_date || r.finish_date || r.created_at);
+      if (isNaN(dt.getTime())) return;
+      const b = buckets.find((x) => x.year === dt.getFullYear() && x.month === dt.getMonth());
+      if (b) {
+        b.total += 1;
+        if (Number(r.days_overdue || 0) > 0) b.overdue += 1;
+      }
+    });
+
+    const categories = buckets.map((b) => b.label);
+    const totalSeries = buckets.map((b) => b.total);
+    const overdueSeries = buckets.map((b) => b.overdue);
+    const maxY = Math.max(...totalSeries, ...overdueSeries, 4);
 
     return {
       series: [
@@ -145,8 +175,8 @@ const OverdueTasksComplianceView = ({
           axisTicks: { show: false },
         },
         yaxis: {
-          max: 5,
-          tickAmount: 5,
+          max: Math.ceil(maxY * 1.25),
+          tickAmount: 4,
           labels: {
             style: {
               colors: textSub,
@@ -166,7 +196,7 @@ const OverdueTasksComplianceView = ({
         },
       },
     };
-  }, [isDark, textSub]);
+  }, [rows, isDark, textSub]);
 
   // 2. Donut Chart: Compliance Overview
   const donutChartConfig = useMemo(() => {
@@ -345,10 +375,10 @@ const OverdueTasksComplianceView = ({
                         fontWeight: 600,
                       }}
                     >
-                      <i className="ri-arrow-up-line"></i> 100%
+                      <i className="ri-error-warning-line"></i> {overduePct}%
                     </span>
                     <span style={{ fontSize: "11px", color: textSub }}>
-                      vs last period
+                      of total tasks
                     </span>
                   </div>
                 </div>
@@ -725,7 +755,10 @@ const OverdueTasksComplianceView = ({
                     className="mb-0"
                     style={{ fontSize: "12px", lineHeight: "1.5", color: textTitle }}
                   >
-                    <span className="fw-semibold">2 tasks are overdue</span> and need immediate attention.
+                    <span className="fw-semibold">
+                      {overdueTasks} {overdueTasks === 1 ? "task is" : "tasks are"} overdue
+                    </span>{" "}
+                    {overdueTasks > 0 ? "and need immediate attention." : "— great job staying on schedule."}
                   </p>
                 </div>
 

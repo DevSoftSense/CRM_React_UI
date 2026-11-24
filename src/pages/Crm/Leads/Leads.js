@@ -572,38 +572,46 @@ const Leads = () => {
         return;
       }
 
-      // Default status 'New'
+      // Default status 'New' from org lookups (never hardcode ID 1)
       const newStatus = (lookups.leadStatus || []).find((s) =>
         (s.masterName || s.masterCode || "").toLowerCase().includes("new")
       );
-      const defaultStatusId = newStatus?.masterId || (lookups.leadStatus[0]?.masterId ?? 1);
+      const defaultStatusId = newStatus?.masterId || lookups.leadStatus[0]?.masterId || null;
 
       let importedCount = 0;
-      // Skip header, process each row
+      let skippedCount = 0;
+      // Skip header, process each row (require both name and mobile — never fabricate phone numbers)
       for (let i = 1; i < lines.length; i += 1) {
         const parts = lines[i].split(",").map((p) => p.replace(/^"|"$/g, "").trim());
-        if (parts.length >= 2 && parts[0]) {
-          const leadName = parts[0];
-          const companyName = parts[1] || "";
-          const mobile = parts[2] || "9876543210";
-          const email = parts[3] || "";
+        const leadName = parts[0] || "";
+        const companyName = parts[1] || "";
+        const mobile = parts[2] || "";
+        const email = parts[3] || "";
 
-          try {
-            await createLead({
-              leadName,
-              companyName: companyName || null,
-              mobile,
-              email: email || null,
-              statusId: defaultStatusId,
-            });
-            importedCount += 1;
-          } catch {
-            // continue on duplicate
-          }
+        if (!leadName || !mobile) {
+          skippedCount += 1;
+          continue;
+        }
+
+        try {
+          await createLead({
+            leadName,
+            companyName: companyName || null,
+            mobile,
+            email: email || null,
+            statusId: defaultStatusId,
+          });
+          importedCount += 1;
+        } catch {
+          skippedCount += 1;
         }
       }
 
-      toastSuccess(`Import completed! ${importedCount} leads added to database.`);
+      toastSuccess(
+        skippedCount > 0
+          ? `Import completed! ${importedCount} lead(s) added, ${skippedCount} skipped (missing mobile/name or duplicate).`
+          : `Import completed! ${importedCount} lead(s) added to database.`
+      );
       setImportModal(false);
       setImportFile(null);
       await Promise.all([loadLeads(), loadKpis()]);
@@ -748,8 +756,19 @@ const Leads = () => {
 
         await updateLead(convertLeadData.leadId, {
           leadName: convertLeadData.leadName,
+          companyName: convertLeadData.companyName || null,
+          email: convertLeadData.email || null,
           mobile: convertLeadData.mobile,
+          phone: convertLeadData.phone || null,
+          sourceId: convertLeadData.sourceId || null,
           statusId: convStatus?.masterId || convertLeadData.statusId,
+          ratingId: convertLeadData.ratingId || null,
+          estimatedValue: convertLeadData.estimatedValue ?? null,
+          currencyCode: convertLeadData.currencyCode || "INR",
+          expectedCloseDate: convertLeadData.expectedCloseDate || null,
+          ownerEmployeeId: convertLeadData.ownerEmployeeId || null,
+          campaignId: convertLeadData.campaignId || null,
+          description: convertLeadData.description || null,
           convertedAccountId: newAccountId,
         });
       }
@@ -776,10 +795,15 @@ const Leads = () => {
     if (!quickActivityLead) return;
     setSavingActivity(true);
     try {
+      const leadTag = `[Lead: ${quickActivityLead.leadId}] Related: ${quickActivityLead.leadName}`;
+      const combinedNotes = activityForm.callNotes?.trim()
+        ? `${activityForm.callNotes.trim()}\n${leadTag}`
+        : leadTag;
       await createActivity({
         actType: activityForm.actType,
-        reason: activityForm.reason.trim(),
-        callNotes: activityForm.callNotes?.trim() || null,
+        subject: activityForm.reason.trim(),
+        callNumber: quickActivityLead.mobile || null,
+        callNotes: combinedNotes,
         startTime: new Date().toISOString(),
         employeeId: quickActivityLead.ownerEmployeeId || null,
       });

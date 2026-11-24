@@ -38,7 +38,7 @@ export const getDocumentById = (id) => api.get(`/api/documents/${id}`);
 export const uploadDocument = (formData) => {
   return axios.post("/api/documents/upload", formData, {
     headers: {
-      "Content-Type": "multipart/form-data",
+      "Content-Type": undefined,
     },
   });
 };
@@ -51,5 +51,24 @@ export const deactivateDocument = (id) => api.delete(`/api/documents/${id}`);
 export const getDocumentDownloadUrl = (id) => {
   const base = getCrmApiBaseUrl() || "";
   return `${base.replace(/\/+$/, "")}/api/documents/${id}/download`;
+};
+
+/** Authenticated blob download so Bearer JWT header is attached (raw <a> fails with 401). */
+export const downloadDocumentBlob = async (id, fallbackFileName = "document") => {
+  const blob = await axios.get(`/api/documents/${id}/download`, {
+    responseType: "blob",
+  });
+  const blobObj = blob instanceof Blob ? blob : new Blob([blob]);
+  const url = window.URL.createObjectURL(blobObj);
+  try {
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", fallbackFileName || `document_${id}`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } finally {
+    window.URL.revokeObjectURL(url);
+  }
 };
 

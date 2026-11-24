@@ -97,7 +97,9 @@ const CATEGORIES = [
 ];
 
 const getCategoryConfig = (catId, isDark = false) => {
-  const cat = CATEGORIES.find((c) => c.id === catId) || CATEGORIES[0];
+  const norm = String(catId || "CALL").toUpperCase();
+  const lookupId = norm === "VISIT" ? "DEMO" : norm;
+  const cat = CATEGORIES.find((c) => c.id === lookupId) || CATEGORIES[0];
   if (!isDark) return cat;
   const darkTints = {
     CALL: {
@@ -154,6 +156,9 @@ const monthNames = [
 ];
 
 const pad = (n) => String(n).padStart(2, "0");
+
+const toLocalIsoDate = (d = new Date()) =>
+  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
 const toDatetimeLocalValue = (d) => {
   if (!d) return "";
@@ -247,7 +252,7 @@ const Calendar = () => {
   // Mini Calendar State
   const [miniMonth, setMiniMonth] = useState(new Date().getMonth());
   const [miniYear, setMiniYear] = useState(new Date().getFullYear());
-  const [selectedMiniDate, setSelectedMiniDate] = useState(new Date().toISOString().slice(0, 10));
+  const [selectedMiniDate, setSelectedMiniDate] = useState(() => toLocalIsoDate(new Date()));
 
   // Dropdown options
   const [ownerOptions, setOwnerOptions] = useState([]);
@@ -368,13 +373,13 @@ const Calendar = () => {
         borderColor: cat.borderColor,
         textColor: cat.color,
         description: parsed.notes || a.callNotes || "",
-        location: a.relatedTo || parsed.related || "Direct Client",
+        location: a.relatedTo || parsed.related || "",
         extendedProps: {
           ...a,
           actType: typeKey,
-          actSubtype: a.actSubtype || parsed.subtype || "General",
-          withName: a.withName || parsed.withName || "Key Contact",
-          relatedTo: a.relatedTo || parsed.related || "Direct Client",
+          actSubtype: a.actSubtype || parsed.subtype || "",
+          withName: a.withName || parsed.withName || "",
+          relatedTo: a.relatedTo || parsed.related || "",
           cleanNotes: parsed.notes,
           isCompleted,
           category: cat,
@@ -463,7 +468,7 @@ const Calendar = () => {
       if (ev.start) {
         const dt = new Date(ev.start);
         if (!isNaN(dt.getTime())) {
-          set.add(dt.toISOString().slice(0, 10));
+          set.add(toLocalIsoDate(dt));
         }
       }
     });
@@ -532,10 +537,7 @@ const Calendar = () => {
       return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}` === todayStr;
     });
 
-    if (todays.length > 0) return todays;
-
-    // 2. If none today, show upcoming or recent so list is not empty!
-    return (allEvents || []).slice(0, 3);
+    return todays;
   }, [allEvents]);
 
   // Mini Calendar Generation (Callout 3)
@@ -617,7 +619,7 @@ const Calendar = () => {
       const api = calendarRef.current.getApi();
       api.today();
       setCurrentTitle(api.view.title);
-      setSelectedMiniDate(new Date().toISOString().slice(0, 10));
+      setSelectedMiniDate(toLocalIsoDate(new Date()));
     }
   };
 

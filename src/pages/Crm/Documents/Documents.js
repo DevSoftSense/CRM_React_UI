@@ -21,7 +21,7 @@ import {
   getDocuments,
   getDocumentStats,
   getDocumentLookups,
-  getDocumentDownloadUrl,
+  downloadDocumentBlob,
 } from "../../../helpers/crmDocumentApi";
 import { toastApiError, toastSuccess } from "../../../helpers/crmToast";
 import UploadDocumentModal from "./UploadDocumentModal";
@@ -106,7 +106,6 @@ const Documents = () => {
   const textTitle = isDark ? "#f8fafc" : "#0f172a";
   const textSub = isDark ? "#94a3b8" : "#64748b";
   const primaryColor = isDark ? "#fca5a5" : "#7f1d1d";
-  document.title = "Documents | SoftOnCloud CRM";
 
   // Data state
   const [documents, setDocuments] = useState([]);
@@ -153,9 +152,9 @@ const Documents = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [activeDocForDelete, setActiveDocForDelete] = useState(null);
 
-  // Header & Row menu states
+  // Header menu & sidebar folder expansion
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
-  const [actionMenuOpenId, setActionMenuOpenId] = useState(null);
+  const [showAllFolders, setShowAllFolders] = useState(false);
 
   // Load Lookups & Stats
   const loadLookupsAndStats = useCallback(async () => {
@@ -306,18 +305,29 @@ const Documents = () => {
     if (backendDist.length === 0) return defaults;
 
     return defaults.map((def) => {
+      if (def.file_type === "Others") {
+        const othersCount = backendDist
+          .filter((b) => !["pdf", "docx", "xlsx", "pptx"].includes(String(b.file_type || "").toLowerCase()))
+          .reduce((sum, b) => sum + Number(b.count || 0), 0);
+        return { ...def, count: othersCount };
+      }
       const match = backendDist.find(
-        (b) =>
-          b.file_type?.toLowerCase() === def.file_type.toLowerCase() ||
-          (def.file_type === "Others" &&
-            !["pdf", "docx", "xlsx", "pptx"].includes(b.file_type?.toLowerCase()))
+        (b) => String(b.file_type || "").toLowerCase() === def.file_type.toLowerCase()
       );
       return {
         ...def,
-        count: match ? match.count : 0,
+        count: match ? Number(match.count || 0) : 0,
       };
     });
   }, [stats?.type_distribution, isDark]);
+
+  const handleDownloadDocument = async (doc) => {
+    try {
+      await downloadDocumentBlob(doc.document_id, doc.file_name);
+    } catch (err) {
+      toastApiError(err, "Failed to download document.");
+    }
+  };
 
   return (
     <div className="page-content" style={{ backgroundColor: isDark ? "#0d1117" : "#f8fafc", minHeight: "100vh" }}>
@@ -466,12 +476,14 @@ const Documents = () => {
                         }}
                       >
                         <option value="">All Types</option>
-                        <option value="PDF">PDF</option>
-                        <option value="DOCX">DOCX</option>
-                        <option value="XLSX">XLSX</option>
-                        <option value="PPTX">PPTX</option>
-                        <option value="ZIP">ZIP</option>
-                        <option value="PNG">PNG / Image</option>
+                        {(lookups.types && lookups.types.length > 0
+                          ? lookups.types
+                          : ["PDF", "DOCX", "XLSX", "PPTX", "ZIP", "PNG", "JPG", "OTHER"]
+                        ).map((t) => (
+                          <option key={t} value={t}>
+                            {t}
+                          </option>
+                        ))}
                       </Input>
                     </Col>
 
@@ -615,7 +627,6 @@ const Documents = () => {
                         {documents.map((doc) => {
                           const meta = getFileTypeMeta(doc.file_type, isDark);
                           const isSelected = selectedDocIds.includes(doc.document_id);
-                          const downloadUrl = getDocumentDownloadUrl(doc.document_id);
 
                           return (
                             <tr key={doc.document_id} className={isSelected ? "table-active" : ""}>
@@ -653,11 +664,11 @@ const Documents = () => {
                                   >
                                     <i className="ri-eye-line fs-14" />
                                   </Button>
-                                  <a
-                                    href={downloadUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="btn btn-sm border rounded-0 p-1"
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    onClick={() => handleDownloadDocument(doc)}
+                                    className="border rounded-0 p-1"
                                     style={{
                                       width: "28px",
                                       height: "28px",
@@ -671,7 +682,7 @@ const Documents = () => {
                                     title="Download Document"
                                   >
                                     <i className="ri-download-2-line fs-14" />
-                                  </a>
+                                  </Button>
                                   <Button
                                     size="sm"
                                     className="border rounded-0 p-1 text-danger"
@@ -989,7 +1000,7 @@ const Documents = () => {
                       Available
                     </span>
                     <span className="fw-semibold" style={{ color: textTitle }}>
-                      {Number(stats.available_gb || 20).toFixed(2)} GB
+                      {Number(stats.available_gb ?? 0).toFixed(2)} GB
                     </span>
                   </div>
                 </div>
@@ -1017,7 +1028,7 @@ const Documents = () => {
                   {displayFolders.length === 0 ? (
                     <p className="small mb-0 py-2 text-center" style={{ color: textSub }}>No folders available</p>
                   ) : (
-                    displayFolders.slice(0, 8).map((fc) => {
+                    (showAllFolders ? displayFolders : displayFolders.slice(0, 8)).map((fc) => {
                       const isFilterActive = selectedFolder === fc.folder_name;
                       return (
                         <div
@@ -1073,9 +1084,9 @@ const Documents = () => {
                     type="button"
                     className="btn btn-link p-0 text-decoration-none small mt-2 d-block"
                     style={{ color: primaryColor }}
-                    onClick={() => setSelectedFolder("")}
+                    onClick={() => setShowAllFolders((prev) => !prev)}
                   >
-                    View All Folders →
+                    {showAllFolders ? "Show Fewer Folders ↑" : `View All Folders (${displayFolders.length}) →`}
                   </button>
                 )}
               </CardBody>
@@ -1106,7 +1117,9 @@ const Documents = () => {
                     </div>
                   ) : (
                     stats.recent_activity.slice(0, 5).map((act) => {
-                      const isUpload = (act.title || "").toLowerCase().includes("upload");
+                      const lowerTitle = String(act.title || "").toLowerCase();
+                      const isUpload = lowerTitle.includes("upload");
+                      const isDelete = lowerTitle.includes("delet") || lowerTitle.includes("remov");
                       return (
                         <div key={act.activity_id} className="d-flex align-items-start gap-2">
                           <div
@@ -1129,7 +1142,9 @@ const Documents = () => {
                               className={
                                 isUpload
                                   ? "ri-upload-2-line"
-                                  : "ri-download-2-line"
+                                  : isDelete
+                                    ? "ri-delete-bin-line"
+                                    : "ri-download-2-line"
                               }
                             />
                           </div>
@@ -1169,9 +1184,9 @@ const Documents = () => {
 
                 <div className="d-flex flex-column gap-3">
                   {distributionList.map((dist) => {
-                    const totalDocs = totalCount || 1;
+                    const allTimeTotal = Number(stats?.total_documents || 0);
                     const percent =
-                      totalCount > 0 ? Math.round((dist.count / totalDocs) * 100) : 0;
+                      allTimeTotal > 0 ? Math.round((dist.count / allTimeTotal) * 100) : 0;
 
                     return (
                       <div key={dist.file_type}>

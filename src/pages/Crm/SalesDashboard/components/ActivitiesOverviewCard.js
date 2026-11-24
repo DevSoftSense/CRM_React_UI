@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardBody, CardHeader, Row, Col } from "reactstrap";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -11,41 +11,46 @@ const ActivitiesOverviewCard = ({ activities = {} }) => {
       (document.documentElement.getAttribute("data-bs-theme") === "dark" ||
         document.documentElement.getAttribute("data-layout-mode") === "dark"));
 
-  const [periodFilter, setPeriodFilter] = useState("month");
-
   // Strictly real data from database
   const tiles = [
     {
       title: "Calls",
       count: activities?.calls_made?.count ?? 0,
+      growth: activities?.calls_made?.growth_pct,
       icon: "ri-phone-fill",
     },
     {
       title: "Emails",
       count: activities?.emails_sent?.count ?? 0,
+      growth: activities?.emails_sent?.growth_pct,
       icon: "ri-mail-fill",
     },
     {
       title: "Meetings",
       count: activities?.meetings?.count ?? 0,
+      growth: activities?.meetings?.growth_pct,
       icon: "ri-calendar-2-fill",
     },
     {
       title: "Tasks",
       count: activities?.tasks_completed?.count ?? 0,
+      growth: activities?.tasks_completed?.growth_pct,
       icon: "ri-checkbox-fill",
     },
     {
       title: "Follow-ups",
       count: activities?.follow_ups?.count ?? 0,
+      growth: activities?.follow_ups?.growth_pct,
       icon: "ri-time-fill",
     },
     {
       title: "Quotes",
       count: activities?.quotes_sent?.count ?? 0,
+      growth: activities?.quotes_sent?.growth_pct,
       icon: "ri-file-text-fill",
     },
   ];
+  const totalActivities = tiles.reduce((s, t) => s + (Number(t.count) || 0), 0);
 
   return (
     <Card
@@ -56,7 +61,7 @@ const ActivitiesOverviewCard = ({ activities = {} }) => {
         backgroundColor: isDark ? "#161b22" : "#ffffff",
       }}
     >
-      {/* Top Header: Title + Period Filter */}
+      {/* Top Header: Title + Total Badge */}
       <CardHeader className="bg-transparent border-0 pt-3 pb-1 px-3 d-flex align-items-center justify-content-between">
         <h6
           className="fw-bold fs-14 mb-0"
@@ -64,27 +69,16 @@ const ActivitiesOverviewCard = ({ activities = {} }) => {
         >
           Activities Overview
         </h6>
-        <div style={{ width: 105 }}>
-          <select
-            value={periodFilter}
-            onChange={(e) => setPeriodFilter(e.target.value)}
-            className="form-select form-select-sm border shadow-none"
-            style={{
-              borderRadius: 0,
-              fontSize: "11px",
-              fontWeight: 500,
-              padding: "4px 8px",
-              cursor: "pointer",
-              backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
-              color: isDark ? "#cbd5e1" : "#334155",
-              borderColor: isDark ? "#262626" : "#e2e8f0",
-            }}
-          >
-            <option value="month">This Month</option>
-            <option value="quarter">This Quarter</option>
-            <option value="week">This Week</option>
-          </select>
-        </div>
+        <span
+          className="badge rounded-0 fs-11 fw-medium px-2 py-1"
+          style={{
+            backgroundColor: isDark ? "#1a1a1a" : "#f8fafc",
+            color: isDark ? "#94a3b8" : "#475569",
+            border: `1px solid ${isDark ? "#262626" : "#e2e8f0"}`,
+          }}
+        >
+          {totalActivities} Total
+        </span>
       </CardHeader>
 
       <CardBody className="p-3 pt-2 d-flex flex-column justify-content-between">

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardBody, CardHeader } from "reactstrap";
 import { useSelector } from "react-redux";
 import ReactApexChart from "react-apexcharts";
@@ -47,8 +47,6 @@ const RevenueTrendChart = ({ data = [] }) => {
     (typeof document !== "undefined" &&
       (document.documentElement.getAttribute("data-bs-theme") === "dark" ||
         document.documentElement.getAttribute("data-layout-mode") === "dark"));
-
-  const [filterMode, setFilterMode] = useState("month");
 
   // Determine trend dataset from database props
   const trendData = Array.isArray(data) ? data : [];
@@ -287,27 +285,16 @@ const RevenueTrendChart = ({ data = [] }) => {
         >
           Revenue Trend
         </h6>
-        <div style={{ width: 105 }}>
-          <select
-            value={filterMode}
-            onChange={(e) => setFilterMode(e.target.value)}
-            className="form-select form-select-sm border shadow-none"
-            style={{
-              borderRadius: 0,
-              fontSize: "11px",
-              fontWeight: 500,
-              padding: "4px 8px",
-              cursor: "pointer",
-              backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
-              color: isDark ? "#cbd5e1" : "#334155",
-              borderColor: isDark ? "#262626" : "#e2e8f0",
-            }}
-          >
-            <option value="month">By Month</option>
-            <option value="quarter">By Quarter</option>
-            <option value="week">By Week</option>
-          </select>
-        </div>
+        <span
+          className="badge rounded-0 fs-11 fw-medium px-2 py-1"
+          style={{
+            backgroundColor: isDark ? "#1a1a1a" : "#f8fafc",
+            color: isDark ? "#94a3b8" : "#475569",
+            border: `1px solid ${isDark ? "#262626" : "#e2e8f0"}`,
+          }}
+        >
+          Monthly ({trendData.length}m)
+        </span>
       </CardHeader>
 
       {/* Custom Clean Legend matching mockup */}

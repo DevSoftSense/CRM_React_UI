@@ -51,7 +51,8 @@ const formatCurrency = (amount, currencyCode = "INR") => {
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
   try {
-    const d = new Date(dateStr);
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateStr).trim());
+    const d = m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
     return d.toLocaleDateString("en-IN", {
       day: "2-digit",

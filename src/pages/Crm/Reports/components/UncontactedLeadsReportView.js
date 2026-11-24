@@ -112,59 +112,48 @@ const UncontactedLeadsReportView = ({
     return (name || "LD").slice(0, 2).toUpperCase();
   };
 
-  // Mini Sparkline Generator
-  const makeSparklineConfig = (seriesData, strokeColor, fillColor) => ({
-    series: [{ data: seriesData }],
-    options: {
-      chart: {
-        type: "area",
-        height: 40,
-        width: 85,
-        sparkline: { enabled: true },
-      },
-      stroke: { curve: "smooth", width: 2, colors: [strokeColor] },
-      fill: {
-        type: "gradient",
-        gradient: {
-          shadeIntensity: 1,
-          opacityFrom: 0.35,
-          opacityTo: 0.05,
-          stops: [0, 90, 100],
-          colorStops: [
-            { offset: 0, color: fillColor, opacity: 0.35 },
-            { offset: 100, color: fillColor, opacity: 0.0 },
-          ],
-        },
-      },
-      colors: [strokeColor],
-      tooltip: { enabled: false },
-    },
-  });
-
-  const pipelineSparkline = useMemo(
-    () => makeSparklineConfig([0, 100000, 150000, 250000], "#7f1d1d", "#7f1d1d"),
-    []
-  );
-  const criticalSparkline = useMemo(
-    () => makeSparklineConfig([0, 1, 1, 1], "#dc2626", "#dc2626"),
-    []
-  );
-  const uncontactedSparkline = useMemo(
-    () => makeSparklineConfig([1, 1, 1, 1], "#d97706", "#d97706"),
-    []
-  );
-  const daysSparkline = useMemo(
-    () => makeSparklineConfig([5, 12, 18, 22.8], "#475569", "#475569"),
-    []
-  );
+  // Dynamic 4-bracket aging breakdown computed strictly from rawRows
+  const severityBrackets = useMemo(() => {
+    const b = {
+      fresh: { count: 0, value: 0 },
+      recent: { count: 0, value: 0 },
+      urgent: { count: 0, value: 0 },
+      stale: { count: 0, value: 0 },
+    };
+    rawRows.forEach((r) => {
+      const hrs = Number(r.hours_uncontacted || 0);
+      const val = Number(r.estimated_value || r.amount || 0);
+      if (hrs < 24) {
+        b.fresh.count += 1;
+        b.fresh.value += val;
+      } else if (hrs < 72) {
+        b.recent.count += 1;
+        b.recent.value += val;
+      } else if (hrs < 168) {
+        b.urgent.count += 1;
+        b.urgent.value += val;
+      } else {
+        b.stale.count += 1;
+        b.stale.value += val;
+      }
+    });
+    const totalVal = b.fresh.value + b.recent.value + b.urgent.value + b.stale.value;
+    const pct = (v) => (totalVal > 0 ? Math.round((v / totalVal) * 100) : 0);
+    return {
+      fresh: { ...b.fresh, pct: pct(b.fresh.value) },
+      recent: { ...b.recent, pct: pct(b.recent.value) },
+      urgent: { ...b.urgent, pct: pct(b.urgent.value) },
+      stale: { ...b.stale, pct: pct(b.stale.value) },
+    };
+  }, [rawRows]);
 
   // 1. Horizontal Aging Severity Distribution Chart
   const agingChartConfig = useMemo(() => {
     const defaultData = [
-      { bracket: "< 24 Hours", count: 0 },
-      { bracket: "1 - 3 Days", count: 0 },
-      { bracket: "4 - 7 Days", count: 0 },
-      { bracket: "> 7 Days (Stale)", count: 1 },
+      { bracket: "< 24 Hours", count: severityBrackets.fresh.count },
+      { bracket: "1 - 3 Days", count: severityBrackets.recent.count },
+      { bracket: "4 - 7 Days", count: severityBrackets.urgent.count },
+      { bracket: "> 7 Days (Stale)", count: severityBrackets.stale.count },
     ];
 
     const list = chartData.length > 0 ? chartData : defaultData;
@@ -447,7 +436,9 @@ const UncontactedLeadsReportView = ({
                 {avgNeglectDays} Days
               </div>
               <div className="d-flex align-items-center gap-1.5 mt-2" style={{ fontSize: "11.5px" }}>
-                <span style={{ color: isDark ? "#60a5fa" : "#2563eb", fontWeight: 600 }}>~547 Hours</span>
+                <span style={{ color: isDark ? "#60a5fa" : "#2563eb", fontWeight: 600 }}>
+                  ~{Math.round(avgNeglectDays * 24)} Hours
+                </span>
                 <span style={{ color: textSub }}>• Since acquisition</span>
               </div>
             </CardBody>
@@ -541,7 +532,7 @@ const UncontactedLeadsReportView = ({
                   borderRadius: 0,
                 }}
               >
-                1 Critical Stale Lead
+                {criticalStaleLeads} Critical Stale {criticalStaleLeads === 1 ? "Lead" : "Leads"}
               </span>
             </div>
 
@@ -571,7 +562,7 @@ const UncontactedLeadsReportView = ({
                         &lt; 24 Hours
                       </span>
                       <span style={{ fontSize: "10.5px", color: textSub }}>
-                        0 leads • Fresh (&lt; 24h)
+                        {severityBrackets.fresh.count} {severityBrackets.fresh.count === 1 ? "lead" : "leads"} • Fresh (&lt; 24h)
                       </span>
                     </div>
                   </div>
@@ -586,7 +577,7 @@ const UncontactedLeadsReportView = ({
                         fontSize: "11px",
                       }}
                     >
-                      ₹ 0 (0%)
+                      {formatCurrency(severityBrackets.fresh.value)} ({severityBrackets.fresh.pct}%)
                     </span>
                   </div>
                 </div>
@@ -615,7 +606,7 @@ const UncontactedLeadsReportView = ({
                         1 - 3 Days
                       </span>
                       <span style={{ fontSize: "10.5px", color: textSub }}>
-                        0 leads • Recent (1-3d)
+                        {severityBrackets.recent.count} {severityBrackets.recent.count === 1 ? "lead" : "leads"} • Recent (1-3d)
                       </span>
                     </div>
                   </div>
@@ -630,7 +621,7 @@ const UncontactedLeadsReportView = ({
                         fontSize: "11px",
                       }}
                     >
-                      ₹ 0 (0%)
+                      {formatCurrency(severityBrackets.recent.value)} ({severityBrackets.recent.pct}%)
                     </span>
                   </div>
                 </div>
@@ -659,7 +650,7 @@ const UncontactedLeadsReportView = ({
                         4 - 7 Days
                       </span>
                       <span style={{ fontSize: "10.5px", color: textSub }}>
-                        0 leads • Urgent (4-7d)
+                        {severityBrackets.urgent.count} {severityBrackets.urgent.count === 1 ? "lead" : "leads"} • Urgent (4-7d)
                       </span>
                     </div>
                   </div>
@@ -674,7 +665,7 @@ const UncontactedLeadsReportView = ({
                         fontSize: "11px",
                       }}
                     >
-                      ₹ 0 (0%)
+                      {formatCurrency(severityBrackets.urgent.value)} ({severityBrackets.urgent.pct}%)
                     </span>
                   </div>
                 </div>
@@ -703,7 +694,7 @@ const UncontactedLeadsReportView = ({
                         &gt; 7 Days (Stale)
                       </span>
                       <span style={{ fontSize: "10.5px", color: isDark ? "#f87171" : "#dc2626", fontWeight: 600 }}>
-                        1 lead • Critical (&gt; 7d)
+                        {severityBrackets.stale.count} {severityBrackets.stale.count === 1 ? "lead" : "leads"} • Critical (&gt; 7d)
                       </span>
                     </div>
                   </div>
@@ -717,7 +708,7 @@ const UncontactedLeadsReportView = ({
                         fontSize: "11px",
                       }}
                     >
-                      ₹ 2,50,000 (100%)
+                      {formatCurrency(severityBrackets.stale.value)} ({severityBrackets.stale.pct}%)
                     </span>
                   </div>
                 </div>

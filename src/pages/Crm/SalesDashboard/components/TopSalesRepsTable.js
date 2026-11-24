@@ -18,40 +18,22 @@ const TopSalesRepsTable = ({ reps = [] }) => {
 
   const [sortMode, setSortMode] = useState("revenue");
 
-  // Read strictly incoming database reps
-  const repList = Array.isArray(reps) ? reps : [];
+  // Read strictly incoming database reps and apply selected sort order
+  const repList = React.useMemo(() => {
+    const arr = Array.isArray(reps) ? [...reps] : [];
+    arr.sort((a, b) => {
+      if (sortMode === "deals") {
+        return (Number(b.deals_won) || 0) - (Number(a.deals_won) || 0);
+      }
+      if (sortMode === "rate") {
+        return (Number(b.win_rate) || 0) - (Number(a.win_rate) || 0);
+      }
+      return (Number(b.won_revenue) || 0) - (Number(a.won_revenue) || 0);
+    });
+    return arr;
+  }, [reps, sortMode]);
 
-  // Generate sparkline coordinates for each rep based on actual metrics
-  const getSparklineData = (rep, index) => {
-    const isTop = Number(rep.won_revenue) > 0;
-    if (isTop) {
-      return {
-        points: [
-          [4, 20],
-          [24, 14],
-          [44, 18],
-          [64, 11],
-          [84, 14],
-          [102, 6],
-        ],
-        strokeColor: "#dc2626",
-        hasGlow: true,
-      };
-    }
-    const yOffsets = index % 2 === 0 ? [20, 15, 19, 14, 15, 10] : [20, 14, 18, 14, 12, 8];
-    return {
-      points: [
-        [4, yOffsets[0]],
-        [24, yOffsets[1]],
-        [44, yOffsets[2]],
-        [64, yOffsets[3]],
-        [84, yOffsets[4]],
-        [102, yOffsets[5]],
-      ],
-      strokeColor: isDark ? "#475569" : "#cbd5e1",
-      hasGlow: false,
-    };
-  };
+  const maxRevenue = Math.max(...repList.map((r) => Number(r.won_revenue) || 0), 1);
 
   return (
     <Card
@@ -103,15 +85,15 @@ const TopSalesRepsTable = ({ reps = [] }) => {
           <div className="d-flex flex-column my-auto py-1">
             {repList.map((r, idx) => {
               const isLast = idx === repList.length - 1;
-              const spark = getSparklineData(r, idx);
-              const pathD = spark.points.reduce(
-                (acc, [x, y], i) => (i === 0 ? `M ${x} ${y}` : `${acc} L ${x} ${y}`),
-                ""
-              );
+              const repName = r.sales_rep || r.name || "Unassigned";
+              const wonRev = Number(r.won_revenue) || 0;
+              const dealsWon = Number(r.deals_won) || 0;
+              const winRate = Number(r.win_rate) || 0;
+              const sharePct = wonRev > 0 ? Math.max(4, Math.min(100, Math.round((wonRev / maxRevenue) * 100))) : 0;
 
               return (
                 <div
-                  key={idx}
+                  key={r.employee_id || idx}
                   className="d-flex align-items-center justify-content-between px-3 py-3"
                   style={{
                     borderBottom: isLast
@@ -120,82 +102,68 @@ const TopSalesRepsTable = ({ reps = [] }) => {
                     transition: "background-color 0.15s ease",
                   }}
                 >
-                  {/* Left: Rep Name */}
-                  <div style={{ width: "34%", minWidth: "95px" }}>
+                  {/* Left: Rep Name & Deals Won */}
+                  <div style={{ width: "36%", minWidth: "95px" }}>
                     <span
                       className="fw-semibold fs-13 d-block text-truncate"
                       style={{ color: isDark ? "#f8fafc" : "#1e293b" }}
-                      title={r.name}
+                      title={repName}
                     >
-                      {r.name}
+                      {repName}
+                    </span>
+                    <span className="fs-11 text-muted d-block">
+                      {dealsWon} {dealsWon === 1 ? "deal" : "deals"} won
                     </span>
                   </div>
 
                   {/* Center: Won Revenue */}
-                  <div style={{ width: "36%", minWidth: "100px" }}>
+                  <div style={{ width: "34%", minWidth: "95px" }}>
                     <span
                       className="fw-bold fs-14 text-nowrap d-block"
                       style={{ color: isDark ? "#f8fafc" : "#0f172a" }}
                     >
-                      {formatInr(r.won_revenue)}
+                      {formatInr(wonRev)}
                     </span>
+                    <div
+                      className="mt-1"
+                      style={{
+                        width: "100%",
+                        maxWidth: "90px",
+                        height: "4px",
+                        backgroundColor: isDark ? "#262626" : "#f1f5f9",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${sharePct}%`,
+                          height: "100%",
+                          backgroundColor: wonRev > 0 ? "#991b1b" : "transparent",
+                          transition: "width 0.3s ease",
+                        }}
+                      />
+                    </div>
                   </div>
 
-                  {/* Right: Mini Sparkline with Nodes */}
+                  {/* Right: Win Rate Badge */}
                   <div
                     className="d-flex align-items-center justify-content-end"
-                    style={{ width: "30%", minWidth: "85px" }}
+                    style={{ width: "30%", minWidth: "75px" }}
                   >
-                    <svg
-                      viewBox="0 0 106 26"
-                      width="95"
-                      height="24"
-                      style={{ overflow: "visible" }}
+                    <span
+                      className="badge rounded-0 fw-semibold fs-11 px-2 py-1"
+                      style={{
+                        backgroundColor:
+                          winRate >= 50
+                            ? isDark ? "rgba(16, 185, 129, 0.2)" : "#d1fae5"
+                            : isDark ? "#262626" : "#f1f5f9",
+                        color:
+                          winRate >= 50
+                            ? isDark ? "#34d399" : "#047857"
+                            : isDark ? "#cbd5e1" : "#475569",
+                      }}
                     >
-                      <defs>
-                        {spark.hasGlow && (
-                          <filter
-                            id={`sparkGlow_${idx}`}
-                            x="-20%"
-                            y="-20%"
-                            width="140%"
-                            height="140%"
-                          >
-                            <feDropShadow
-                              dx="0"
-                              dy="2"
-                              stdDeviation="2"
-                              floodColor="#dc2626"
-                              floodOpacity={isDark ? "0.45" : "0.25"}
-                            />
-                          </filter>
-                        )}
-                      </defs>
-
-                      {/* Sparkline Line */}
-                      <path
-                        d={pathD}
-                        fill="none"
-                        stroke={spark.strokeColor}
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        filter={spark.hasGlow ? `url(#sparkGlow_${idx})` : undefined}
-                      />
-
-                      {/* Circular Node Dots */}
-                      {spark.points.map(([cx, cy], pIdx) => (
-                        <circle
-                          key={pIdx}
-                          cx={cx}
-                          cy={cy}
-                          r="2.4"
-                          fill={spark.strokeColor}
-                          stroke={isDark ? "#121212" : "#ffffff"}
-                          strokeWidth="0.8"
-                        />
-                      ))}
-                    </svg>
+                      {winRate.toFixed(1)}% Win
+                    </span>
                   </div>
                 </div>
               );

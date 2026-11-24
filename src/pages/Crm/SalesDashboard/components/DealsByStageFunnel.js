@@ -67,7 +67,6 @@ const DealsByStageFunnel = ({ data = {} }) => {
         document.documentElement.getAttribute("data-layout-mode") === "dark"));
 
   const [activeStage, setActiveStage] = useState(null);
-  const [filterMode, setFilterMode] = useState("pipeline");
 
   // Map incoming stages from API
   const incomingStages = Array.isArray(data.stages) ? data.stages : [];
@@ -81,20 +80,23 @@ const DealsByStageFunnel = ({ data = {} }) => {
 
   // Calculate canonical stage data
   let computedTotalRevenue = 0;
+  let computedTotalDeals = 0;
   const canonicalData = CANONICAL_STAGES.map((c) => {
     const matched = stageMap[c.code] || {};
     const dealCount = Number(matched.deal_count ?? 0);
     const amount = Number(matched.stage_amount ?? 0);
     computedTotalRevenue += amount;
+    computedTotalDeals += dealCount;
     return {
       ...c,
+      name: matched.stage_name || c.name,
       dealCount,
       amount,
     };
   });
 
   const totalRevenue =
-    data.total_pipeline_value && Number(data.total_pipeline_value) > 0
+    data.total_pipeline_value !== undefined && data.total_pipeline_value !== null
       ? Number(data.total_pipeline_value)
       : computedTotalRevenue;
 
@@ -107,7 +109,7 @@ const DealsByStageFunnel = ({ data = {} }) => {
         backgroundColor: isDark ? "#161b22" : "#ffffff",
       }}
     >
-      {/* Top Header: Title + Filter Pill */}
+      {/* Top Header: Title + Total Deals Badge */}
       <CardHeader className="bg-transparent border-0 pt-3 pb-1 px-3 d-flex align-items-center justify-content-between">
         <h6
           className="fw-bold fs-14 mb-0"
@@ -115,26 +117,16 @@ const DealsByStageFunnel = ({ data = {} }) => {
         >
           Deals by Stage
         </h6>
-        <div style={{ width: 95 }}>
-          <select
-            value={filterMode}
-            onChange={(e) => setFilterMode(e.target.value)}
-            className="form-select form-select-sm border shadow-none"
-            style={{
-              borderRadius: 0,
-              fontSize: "11px",
-              fontWeight: 500,
-              padding: "4px 8px",
-              cursor: "pointer",
-              backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
-              color: isDark ? "#cbd5e1" : "#334155",
-              borderColor: isDark ? "#262626" : "#e2e8f0",
-            }}
-          >
-            <option value="pipeline">Pipeline</option>
-            <option value="all">All Deals</option>
-          </select>
-        </div>
+        <span
+          className="badge rounded-0 fs-11 fw-medium px-2 py-1"
+          style={{
+            backgroundColor: isDark ? "#1a1a1a" : "#f8fafc",
+            color: isDark ? "#94a3b8" : "#475569",
+            border: `1px solid ${isDark ? "#262626" : "#e2e8f0"}`,
+          }}
+        >
+          {computedTotalDeals} {computedTotalDeals === 1 ? "Deal" : "Deals"}
+        </span>
       </CardHeader>
 
       <CardBody className="p-3 pt-2 d-flex flex-column justify-content-between">

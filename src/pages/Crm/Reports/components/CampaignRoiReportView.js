@@ -651,7 +651,7 @@ const CampaignRoiReportView = ({
                   Budget Utilization
                 </span>
                 <span className="fw-bold font-monospace" style={{ fontSize: "12px", color: textTitle }}>
-                  100% Allocated
+                  {totalBudget > 0 ? `${Math.round((totalSpend / totalBudget) * 100)}% Utilized` : "0% Utilized"}
                 </span>
               </div>
             </CardBody>
@@ -759,7 +759,7 @@ const CampaignRoiReportView = ({
                   </tr>
                 ) : (
                   filteredRows.map((c, idx) => {
-                    const roi = Number(c.roi_percentage ?? -100);
+                    const roi = Number(c.roi_percentage ?? 0);
                     const isPositive = roi > 0;
                     const isZero = roi === 0;
 

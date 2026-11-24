@@ -134,21 +134,25 @@ const TaskDetail = () => {
     if (phone) {
       window.open(`tel:${phone}`);
     } else {
-      alert(`No direct phone registered for ${task?.company || "this customer"}.`);
+      toastApiError(null, `No direct phone registered for ${task?.company || "this task"}.`);
     }
   };
 
   const handleWhatsApp = () => {
     const phone = (task?.contactPersonPhone || task?.phone || "").replace(/[^0-9]/g, "");
     if (phone) {
-      window.open(`https://wa.me/${phone}`, "_blank");
+      window.open(`https://wa.me/${phone}`, "_blank", "noopener,noreferrer");
     } else {
-      alert(`No WhatsApp number registered for ${task?.company || "this customer"}.`);
+      toastApiError(null, `No WhatsApp number registered for ${task?.company || "this task"}.`);
     }
   };
 
   const handleEmail = () => {
     const email = task?.email || "";
+    if (!email) {
+      toastApiError(null, `No email address registered for ${task?.company || "this task"}.`);
+      return;
+    }
     window.location.href = `mailto:${email}?subject=${encodeURIComponent(`Follow-up: ${task?.title || "CRM Task"}`)}`;
   };
 
@@ -173,7 +177,7 @@ const TaskDetail = () => {
           pageTitle="CRM / Tasks"
           description={
             task
-              ? `Task Code: ${task.taskCode || "—"} • Linked Customer: ${task.company || "General Client"}`
+              ? `Task Code: ${task.taskCode || "—"} • Linked Customer: ${task.company || "—"}`
               : "Review task details and update status"
           }
           actions={
@@ -314,7 +318,7 @@ const TaskDetail = () => {
                       </div>
                       <div className="fw-bold text-dark mt-1 d-flex align-items-center" style={{ fontSize: "0.875rem" }}>
                         <i className="ri-building-line me-1 text-primary" />
-                        {task.company || "General Client"}
+                        {task.company || "—"}
                       </div>
                     </Col>
 

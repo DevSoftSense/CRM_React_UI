@@ -2,9 +2,33 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { Button, Input } from "reactstrap";
 
+const DEFAULT_PERIODS = [
+  { code: "this_month", label: "This Month" },
+  { code: "last_month", label: "Last Month" },
+  { code: "this_quarter", label: "This Quarter" },
+  { code: "this_year", label: "This Year" },
+  { code: "custom", label: "Custom Range" },
+];
+
+const parseSafeDate = (val, fallback) => {
+  if (!val) return fallback;
+  const s = String(val).slice(0, 10);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    const [y, m, d] = s.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+  const d = new Date(val);
+  return Number.isNaN(d.getTime()) ? fallback : d;
+};
+
 const SalesDashboardHeader = ({
   period = "this_month",
   onPeriodChange,
+  periods = [],
+  dateFrom = "",
+  dateTo = "",
+  onDateFromChange,
+  onDateToChange,
   owners = [],
   selectedOwner = "",
   onOwnerChange,
@@ -23,10 +47,12 @@ const SalesDashboardHeader = ({
   const textTitle = isDark ? "#f0f6fc" : "#0f172a";
   const textSub = isDark ? "#8b949e" : "#64748b";
 
+  const periodOptions = Array.isArray(periods) && periods.length > 0 ? periods : DEFAULT_PERIODS;
+
   const formatDateRange = () => {
     const now = new Date();
-    const s = startDate ? new Date(startDate) : new Date(now.getFullYear(), now.getMonth(), 1);
-    const e = endDate ? new Date(endDate) : new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    const s = parseSafeDate(startDate, new Date(now.getFullYear(), now.getMonth(), 1));
+    const e = parseSafeDate(endDate, new Date(now.getFullYear(), now.getMonth() + 1, 0));
     const opts = { day: "2-digit", month: "short", year: "numeric" };
     return `${s.toLocaleDateString("en-GB", opts)} - ${e.toLocaleDateString("en-GB", opts)}`;
   };
@@ -74,13 +100,50 @@ const SalesDashboardHeader = ({
               color: textTitle,
             }}
           >
-            <option value="this_month">This Month</option>
-            <option value="last_month">Last Month</option>
-            <option value="this_quarter">This Quarter</option>
-            <option value="this_year">This Year</option>
-            <option value="custom">Custom Range</option>
+            {periodOptions.map((p) => (
+              <option key={p.code || p.value} value={p.code || p.value}>
+                {p.label || p.name}
+              </option>
+            ))}
           </Input>
         </div>
+
+        {/* Custom Date Range Pickers */}
+        {period === "custom" && (
+          <div className="d-flex align-items-center gap-1">
+            <Input
+              type="date"
+              bsSize="sm"
+              value={dateFrom}
+              onChange={(e) => onDateFromChange && onDateFromChange(e.target.value)}
+              style={{
+                borderRadius: 0,
+                height: "34px",
+                fontSize: "12px",
+                backgroundColor: subtleBg,
+                borderColor: subtleBorder,
+                color: textTitle,
+                width: "130px",
+              }}
+            />
+            <span className="fs-12" style={{ color: textSub }}>to</span>
+            <Input
+              type="date"
+              bsSize="sm"
+              value={dateTo}
+              onChange={(e) => onDateToChange && onDateToChange(e.target.value)}
+              style={{
+                borderRadius: 0,
+                height: "34px",
+                fontSize: "12px",
+                backgroundColor: subtleBg,
+                borderColor: subtleBorder,
+                color: textTitle,
+                width: "130px",
+              }}
+            />
+          </div>
+        )}
 
         {/* Sales Owner Dropdown */}
         {owners.length > 0 && (

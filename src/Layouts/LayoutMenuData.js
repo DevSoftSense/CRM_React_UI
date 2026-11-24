@@ -158,7 +158,7 @@ const Navdata = () => {
       id: "crm-settings",
       label: "Settings",
       icon: "ri-settings-3-line",
-      link: "/crm/settings",
+      link: "/profile",
       click: function () {
         setIscurrentState("Settings");
       },

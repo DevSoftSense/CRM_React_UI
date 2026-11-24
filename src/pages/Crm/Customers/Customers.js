@@ -206,7 +206,7 @@ const Customers = () => {
       const isNetwork =
         /network error|cannot reach crm api/i.test(raw) || err?.code === "ERR_NETWORK";
       const msg = isNetwork
-        ? "Cannot reach CRM API (http://localhost:5191). Start CRM.API (F5), then refresh."
+        ? "Cannot reach CRM API. Please ensure the CRM API server is running, then refresh."
         : raw || "Failed to load customers.";
       setListError(msg);
       toastApiError({ message: msg }, msg);

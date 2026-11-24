@@ -70,8 +70,8 @@ const ReportWorkspaceView = ({ report, onBackToCatalog, owners = [] }) => {
 
       const payload = {
         reportCode: report.code,
-        dateFrom: dateFrom ? new Date(dateFrom).toISOString() : null,
-        dateTo: dateTo ? new Date(dateTo).toISOString() : null,
+        dateFrom: dateFrom ? `${dateFrom}T00:00:00.000Z` : null,
+        dateTo: dateTo ? `${dateTo}T23:59:59.999Z` : null,
         ownerEmployeeId: selectedOwnerId ? Number(selectedOwnerId) : null,
       };
 

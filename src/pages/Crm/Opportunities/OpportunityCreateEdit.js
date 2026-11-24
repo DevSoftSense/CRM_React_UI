@@ -82,7 +82,7 @@ const OpportunityCreateEdit = ({
     currencyCode: "INR",
     amount: "",
     forecastCategoryId: "",
-    territory: "Head Office",
+    territory: "",
     priorityId: "",
     nextStep: "",
     followupDate: "",
@@ -178,7 +178,7 @@ const OpportunityCreateEdit = ({
         currencyCode: initialData.currencyCode || "INR",
         amount: initialData.amount != null ? String(initialData.amount) : "",
         forecastCategoryId: initialData.forecastCategoryId ? String(initialData.forecastCategoryId) : "",
-        territory: initialData.territory || "Head Office",
+        territory: initialData.territory || "",
         priorityId: initialData.priorityId ? String(initialData.priorityId) : "",
         nextStep: initialData.nextStep || "",
         followupDate: initialData.followupDate ? String(initialData.followupDate).slice(0, 10) : "",
@@ -232,10 +232,9 @@ const OpportunityCreateEdit = ({
     }
   };
 
-  // Stepper stages list (5 pipeline stages)
+  // Stepper stages list (all configured pipeline stages)
   const stageList = useMemo(() => {
-    const list = lookups.opportunityStage || lookups.opportunity_stage || [];
-    return list.slice(0, 5); // Prospecting, Qualified, Proposal, Negotiation, Closed Won
+    return lookups.opportunityStage || lookups.opportunity_stage || [];
   }, [lookups]);
 
   // Active step index for timeline progress fill
@@ -863,11 +862,16 @@ const OpportunityCreateEdit = ({
                     onChange={(e) => setFormData({ ...formData, campaignId: e.target.value })}
                   >
                     <option value="">Select campaign</option>
-                    {campaignOptions.map((c) => (
-                      <option key={c.campaign_id} value={c.campaign_id}>
-                        {c.campaign_name} {c.channel_name ? `(${c.channel_name})` : ""}
-                      </option>
-                    ))}
+                    {campaignOptions.map((c) => {
+                      const id = c.campaignId ?? c.campaign_id;
+                      const name = c.campaignName ?? c.campaign_name;
+                      const channel = c.channelName ?? c.channel_name;
+                      return (
+                        <option key={id} value={id}>
+                          {name} {channel ? `(${channel})` : ""}
+                        </option>
+                      );
+                    })}
                   </Input>
                 </Col>
 

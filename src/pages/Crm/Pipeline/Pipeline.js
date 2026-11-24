@@ -50,6 +50,14 @@ const formatInr = (val) => {
   })}`;
 };
 
+// Local YYYY-MM-DD formatter (avoids UTC shift in IST/non-UTC timezones)
+const toLocalIsoDate = (d) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
 // Format short date (e.g. 20 May 2026)
 const formatCloseDate = (dateStr) => {
   if (!dateStr) return "";
@@ -187,7 +195,7 @@ const Pipeline = () => {
 
   // Load Owners & Customers dynamically from database
   useEffect(() => {
-    getOwnerDropdown({ ensureSeed: true })
+    getOwnerDropdown()
       .then((res) => {
         const list = res?.owners || res?.Owners || res || [];
         setOwnersList(Array.isArray(list) ? list : []);
@@ -330,7 +338,7 @@ const Pipeline = () => {
     };
   }, [stages, serverSummary]);
 
-  // Date Preset Helpers (Dynamic dates, never hardcoded)
+  // Date Preset Helpers (Dynamic local dates, timezone-safe)
   const applyDatePreset = (preset) => {
     setActiveDatePreset(preset);
     const now = new Date();
@@ -341,19 +349,18 @@ const Pipeline = () => {
     } else if (preset === "thisMonth") {
       const start = new Date(now.getFullYear(), now.getMonth(), 1);
       const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      setFilterStartDate(start.toISOString().slice(0, 10));
-      setFilterEndDate(end.toISOString().slice(0, 10));
+      setFilterStartDate(toLocalIsoDate(start));
+      setFilterEndDate(toLocalIsoDate(end));
     } else if (preset === "last30") {
-      const start = new Date();
-      start.setDate(now.getDate() - 30);
-      setFilterStartDate(start.toISOString().slice(0, 10));
-      setFilterEndDate(now.toISOString().slice(0, 10));
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
+      setFilterStartDate(toLocalIsoDate(start));
+      setFilterEndDate(toLocalIsoDate(now));
     } else if (preset === "thisQuarter") {
       const currentQuarter = Math.floor(now.getMonth() / 3);
       const start = new Date(now.getFullYear(), currentQuarter * 3, 1);
       const end = new Date(now.getFullYear(), (currentQuarter + 1) * 3, 0);
-      setFilterStartDate(start.toISOString().slice(0, 10));
-      setFilterEndDate(end.toISOString().slice(0, 10));
+      setFilterStartDate(toLocalIsoDate(start));
+      setFilterEndDate(toLocalIsoDate(end));
     }
   };
 
@@ -390,9 +397,14 @@ const Pipeline = () => {
     const [moved] = fromCol.opportunities.splice(source.index, 1);
     if (!moved) return;
 
-    // Update target card stage code
+    // Update target card stage code & recalculate optimistic column counts/totals
     moved.stageCode = toCol.stageCode;
     toCol.opportunities.splice(destination.index, 0, moved);
+    fromCol.totalCount = fromCol.opportunities.length;
+    fromCol.totalAmount = fromCol.opportunities.reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+    toCol.totalCount = toCol.opportunities.length;
+    toCol.totalAmount = toCol.opportunities.reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+    setServerSummary(null);
     setStages(next);
 
     setMoving(true);
@@ -417,8 +429,8 @@ const Pipeline = () => {
       name: "",
       accountId: customersList[0]?.accountId ? String(customersList[0].accountId) : "",
       amount: "",
-      probability: String(theme.defaultProb || 10),
-      expectedCloseDate: new Date().toISOString().slice(0, 10),
+      probability: String(theme.defaultProb ?? 10),
+      expectedCloseDate: toLocalIsoDate(new Date()),
       ownerEmployeeId: selectedOwner || (ownersList[0]?.ownerId ? String(ownersList[0].ownerId) : ""),
       stageId: String(targetStageId),
     });
@@ -1207,13 +1219,13 @@ const Pipeline = () => {
                       style={{
                         borderRadius: 0,
                         backgroundColor: isDark ? "#262a2f" : (stageCount > 0 ? theme.lightBg : "#ffffff"),
-                        borderColor: isDark ? "#363d45" : (stageCount > 0 ? (theme.accentColor === THEME.primary ? THEME.borderTint : theme.accentColor + "40") : "#e2e8f0"),
-                        borderColor:
-                          stageCount > 0
-                            ? theme.accentColor === THEME.primary
-                              ? THEME.borderTint
-                              : theme.accentColor + "40"
-                            : "#e2e8f0",
+                        borderColor: isDark
+                          ? "#363d45"
+                          : stageCount > 0
+                          ? theme.accentColor === THEME.primary
+                            ? THEME.borderTint
+                            : theme.accentColor + "40"
+                          : "#e2e8f0",
                         transition: "all 0.2s ease",
                       }}
                     >

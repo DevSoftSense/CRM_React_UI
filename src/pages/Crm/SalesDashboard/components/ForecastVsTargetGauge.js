@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardBody, CardHeader } from "reactstrap";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -15,8 +15,6 @@ const ForecastVsTargetGauge = ({ forecast = {} }) => {
     (typeof document !== "undefined" &&
       (document.documentElement.getAttribute("data-bs-theme") === "dark" ||
         document.documentElement.getAttribute("data-layout-mode") === "dark"));
-
-  const [periodFilter, setPeriodFilter] = useState("quarter");
 
   // Strictly real data from database
   const target = Number(forecast?.target_amount ?? 0);
@@ -39,7 +37,7 @@ const ForecastVsTargetGauge = ({ forecast = {} }) => {
         backgroundColor: isDark ? "#161b22" : "#ffffff",
       }}
     >
-      {/* Top Header: Title + Period Filter */}
+      {/* Top Header: Title + Status Badge */}
       <CardHeader className="bg-transparent border-0 pt-3 pb-1 px-3 d-flex align-items-center justify-content-between">
         <h6
           className="fw-bold fs-14 mb-0"
@@ -47,27 +45,16 @@ const ForecastVsTargetGauge = ({ forecast = {} }) => {
         >
           Forecast vs Target
         </h6>
-        <div style={{ width: 110 }}>
-          <select
-            value={periodFilter}
-            onChange={(e) => setPeriodFilter(e.target.value)}
-            className="form-select form-select-sm border shadow-none"
-            style={{
-              borderRadius: 0,
-              fontSize: "11px",
-              fontWeight: 500,
-              padding: "4px 8px",
-              cursor: "pointer",
-              backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
-              color: isDark ? "#cbd5e1" : "#334155",
-              borderColor: isDark ? "#262626" : "#e2e8f0",
-            }}
-          >
-            <option value="quarter">This Quarter</option>
-            <option value="month">This Month</option>
-            <option value="year">This Year</option>
-          </select>
-        </div>
+        <span
+          className="badge rounded-0 fs-11 fw-medium px-2 py-1"
+          style={{
+            backgroundColor: isDark ? "#1a1a1a" : "#f8fafc",
+            color: target > 0 ? "#7f1d1d" : isDark ? "#94a3b8" : "#64748b",
+            border: `1px solid ${isDark ? "#262626" : "#e2e8f0"}`,
+          }}
+        >
+          {target > 0 ? `${clampedPct}% Achieved` : "No Target Set"}
+        </span>
       </CardHeader>
 
       <CardBody className="p-3 pt-2 d-flex flex-column justify-content-between">

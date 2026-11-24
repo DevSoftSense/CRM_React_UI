@@ -10,7 +10,8 @@ import {
   Col,
   Badge,
 } from "reactstrap";
-import { getDocumentDownloadUrl } from "../../../helpers/crmDocumentApi";
+import { downloadDocumentBlob } from "../../../helpers/crmDocumentApi";
+import { toastApiError } from "../../../helpers/crmToast";
 
 const getFileTypeStyle = (ext, isDark = false) => {
   const normalized = String(ext || "").toLowerCase().replace(".", "");
@@ -56,7 +57,13 @@ const DocumentDetailModal = ({ isOpen, toggle, document, onDelete }) => {
 
   const style = getFileTypeStyle(document.file_type, isDark);
   const docId = document.document_id || document.task_file_id;
-  const downloadUrl = getDocumentDownloadUrl(docId);
+  const handleDownload = async () => {
+    try {
+      await downloadDocumentBlob(docId, document.file_name);
+    } catch (err) {
+      toastApiError(err, "Failed to download document.");
+    }
+  };
 
   return (
     <Modal
@@ -223,15 +230,14 @@ const DocumentDetailModal = ({ isOpen, toggle, document, onDelete }) => {
             >
               Close
             </Button>
-            <a
-              href={downloadUrl}
-              target="_blank"
-              rel="noreferrer"
+            <Button
+              type="button"
+              onClick={handleDownload}
               className="btn rounded-0 px-4 text-white"
               style={{ backgroundColor: "#7f1d1d", borderColor: "#7f1d1d" }}
             >
               <i className="ri-download-2-line me-1" /> Download
-            </a>
+            </Button>
           </div>
         </ModalFooter>
       </div>

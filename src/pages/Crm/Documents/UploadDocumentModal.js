@@ -38,22 +38,18 @@ const UploadDocumentModal = ({
   const [submitting, setSubmitting] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
-  // Sync initial folder and owner when opened
+  // Sync initial folder when modal opens (do not re-trigger on ownerId/folder change so user can clear ownerId)
   React.useEffect(() => {
     if (isOpen) {
-      if (!folder && folders.length > 0) {
-        setFolder(folders[0].folder_name);
-      }
-      if (!ownerId && owners.length > 0) {
-        setOwnerId(String(owners[0].employee_id));
-      }
+      setFolder((prev) => prev || (folders.length > 0 ? folders[0].folder_name : ""));
+      setOwnerId((prev) => prev || (owners.length > 0 ? String(owners[0].employee_id) : ""));
     }
-  }, [isOpen, folders, owners, folder, ownerId]);
+  }, [isOpen, folders, owners]);
 
   const resetForm = () => {
     setFile(null);
     setFileName("");
-    setFolder(folders.length > 0 ? folders[0].folder_name : "Proposals");
+    setFolder(folders.length > 0 ? folders[0].folder_name : "");
     setDescription("");
     setEntityType("GLOBAL");
     setEntityId("");
@@ -61,8 +57,25 @@ const UploadDocumentModal = ({
     setSubmitting(false);
   };
 
+  const ALLOWED_EXTENSIONS = [
+    ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".csv",
+    ".ppt", ".pptx", ".zip", ".rar", ".7z",
+    ".png", ".jpg", ".jpeg", ".txt",
+  ];
+  const MAX_FILE_BYTES = 50 * 1024 * 1024;
+
   const handleFileChange = (selectedFile) => {
     if (!selectedFile) return;
+    const dotIdx = selectedFile.name.lastIndexOf(".");
+    const ext = dotIdx >= 0 ? selectedFile.name.slice(dotIdx).toLowerCase() : "";
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      toastApiError({ message: "Unsupported file type. Allowed: PDF, DOC/DOCX, XLS/XLSX/CSV, PPT/PPTX, ZIP/RAR/7Z, PNG, JPG, TXT." });
+      return;
+    }
+    if (selectedFile.size > MAX_FILE_BYTES) {
+      toastApiError({ message: "File exceeds maximum allowed size of 50 MB." });
+      return;
+    }
     setFile(selectedFile);
     if (!fileName) {
       setFileName(selectedFile.name);
@@ -246,17 +259,6 @@ const UploadDocumentModal = ({
                         {f.folder_name}
                       </option>
                     ))}
-                    {folders.length === 0 && (
-                      <>
-                        <option value="Proposals">Proposals</option>
-                        <option value="Pricing">Pricing</option>
-                        <option value="Contracts">Contracts</option>
-                        <option value="Quotations">Quotations</option>
-                        <option value="Presentations">Presentations</option>
-                        <option value="KYC">KYC</option>
-                        <option value="Reports">Reports</option>
-                      </>
-                    )}
                   </Input>
                 </FormGroup>
               </Col>

@@ -54,11 +54,22 @@ const THEME = {
   cardBorder: "#e2e8f0",
 };
 
-// Formats number to Indian Rupee (e.g. ₹ 18,50,000)
-const formatInr = (val) => {
-  if (val == null || isNaN(val)) return "\u20B9 0";
+const CURRENCY_LABELS = {
+  INR: "INR - Indian Rupee (₹)",
+  USD: "USD - US Dollar ($)",
+  EUR: "EUR - Euro (€)",
+  GBP: "GBP - British Pound (£)",
+  AED: "AED - UAE Dirham (AED)",
+};
+
+// Formats number with dynamic currency symbol
+const formatInr = (val, currencyCode = "INR") => {
+  const code = String(currencyCode || "INR").toUpperCase();
+  const sym = code === "USD" ? "$" : code === "EUR" ? "€" : code === "GBP" ? "£" : code === "AED" ? "AED " : "\u20B9 ";
+  if (val == null || isNaN(val)) return `${sym}0`;
   const num = Number(val);
-  return `\u20B9 ${num.toLocaleString("en-IN", {
+  const locale = code === "INR" ? "en-IN" : "en-US";
+  return `${sym}${num.toLocaleString(locale, {
     maximumFractionDigits: 0,
   })}`;
 };
@@ -272,7 +283,7 @@ const OpportunityDetail = () => {
 
   // Load Dropdowns & Lookups from database
   useEffect(() => {
-    getOwnerDropdown({ ensureSeed: true })
+    getOwnerDropdown()
       .then((res) => {
         const list = res?.owners || res?.Owners || res || [];
         setOwnersList(Array.isArray(list) ? list : []);
@@ -393,12 +404,17 @@ const OpportunityDetail = () => {
       await updateOpportunity(opp.opportunityId, {
         name: editForm.name.trim(),
         accountId: Number(editForm.accountId),
+        primaryContactId: opp.primaryContactId || null,
+        leadId: opp.leadId || null,
+        campaignId: opp.campaignId || null,
         stageId: Number(editForm.stageId || opp.stageId),
         opportunityTypeId: editForm.opportunityTypeId ? Number(editForm.opportunityTypeId) : null,
         sourceId: editForm.sourceId ? Number(editForm.sourceId) : null,
+        forecastCategoryId: opp.forecastCategoryId || null,
         priorityId: editForm.priorityId ? Number(editForm.priorityId) : null,
+        currencyCode: opp.currencyCode || "INR",
         amount: editForm.amount ? Number(editForm.amount) : 0,
-        probability: editForm.probability ? Number(editForm.probability) : 10,
+        probability: editForm.probability !== "" ? Number(editForm.probability) : 0,
         expectedCloseDate: editForm.expectedCloseDate || null,
         ownerEmployeeId: editForm.ownerEmployeeId ? Number(editForm.ownerEmployeeId) : null,
         closedReason: editForm.closedReason || null,
@@ -418,16 +434,23 @@ const OpportunityDetail = () => {
   // Toggle Task Completion State interactively
   const handleToggleTask = (task) => {
     const isCompleted = String(task.status).toUpperCase() === "COMPLETED";
-    const nextStatus = isCompleted ? "PENDING" : "COMPLETED";
+    if (isCompleted) return;
+    const prevTasks = localTasks;
 
     setLocalTasks((prev) =>
-      prev.map((t) => (t.taskId === task.taskId ? { ...t, status: nextStatus } : t))
+      prev.map((t) => (t.taskId === task.taskId ? { ...t, status: "COMPLETED" } : t))
     );
 
-    if (task.taskId && !isCompleted) {
+    if (task.taskId) {
       completeTask(task.taskId)
-        .then(() => toastSuccess(`Task "${task.title}" completed!`))
-        .catch(() => {});
+        .then(() => {
+          toastSuccess(`Task "${task.title}" completed!`);
+          loadOpportunity();
+        })
+        .catch((err) => {
+          setLocalTasks(prevTasks);
+          toastApiError(err, "Failed to complete task.");
+        });
     }
   };
 
@@ -475,12 +498,16 @@ const OpportunityDetail = () => {
 
     setActivitySubmitting(true);
     try {
+      const oppTag = `[Opportunity: ${opp?.opportunityId}]${opp?.accountId ? ` [Account: ${opp.accountId}]` : ""}`;
+      const combinedNotes = activityForm.notes?.trim()
+        ? `${activityForm.notes.trim()}\n${oppTag}`
+        : oppTag;
       await createActivity({
         subject: `[${opp?.name || "Deal"}] ${activityForm.subject.trim()}`,
         actType: activityForm.actType || "CALL",
         startTime: activityForm.startTime ? new Date(activityForm.startTime).toISOString() : new Date().toISOString(),
         callNumber: activityForm.phoneNumber || undefined,
-        callNotes: activityForm.notes || undefined,
+        callNotes: combinedNotes,
         employeeId: opp?.ownerEmployeeId ? Number(opp.ownerEmployeeId) : undefined,
       });
 
@@ -555,11 +582,20 @@ const OpportunityDetail = () => {
       await updateOpportunity(opp.opportunityId, {
         name: opp.name,
         accountId: opp.accountId,
+        primaryContactId: opp.primaryContactId || null,
+        leadId: opp.leadId || null,
+        campaignId: opp.campaignId || null,
         stageId: opp.stageId,
+        opportunityTypeId: opp.opportunityTypeId || null,
+        sourceId: opp.sourceId || null,
+        forecastCategoryId: opp.forecastCategoryId || null,
+        priorityId: opp.priorityId || null,
+        currencyCode: opp.currencyCode || "INR",
         amount: opp.amount,
         probability: opp.probability,
         expectedCloseDate: opp.expectedCloseDate,
         ownerEmployeeId: opp.ownerEmployeeId,
+        nextStep: opp.nextStep || null,
         closedReason: updatedNotes,
       });
 
@@ -1063,7 +1099,7 @@ const OpportunityDetail = () => {
                     <div>
                       Opportunity ID:{" "}
                       <span className="fw-bold" style={{ color: textTitle }}>
-                        {opp.opportunityCode || `OPP-2026-${String(opp.opportunityId).padStart(5, "0")}`}
+                        {opp.opportunityCode || `OPP-${new Date(opp.createdAt || Date.now()).getFullYear()}-${String(opp.opportunityId).padStart(5, "0")}`}
                       </span>
                     </div>
                     <div>
@@ -1416,15 +1452,15 @@ const OpportunityDetail = () => {
                       </div>
                       <div className="d-flex justify-content-between align-items-center py-1 border-bottom" style={{ borderColor: subtleBorder }}>
                         <span className="text-muted">Industry</span>
-                        <span className="fw-semibold" style={{ color: textTitle }}>{opp.industry || "General Business"}</span>
+                        <span className="fw-semibold" style={{ color: textTitle }}>{opp.industry || "—"}</span>
                       </div>
                       <div className="d-flex justify-content-between align-items-center py-1 border-bottom" style={{ borderColor: subtleBorder }}>
                         <span className="text-muted">Territory</span>
-                        <span className="fw-semibold" style={{ color: textTitle }}>{opp.territory || "Head Office"}</span>
+                        <span className="fw-semibold" style={{ color: textTitle }}>{opp.territory || "—"}</span>
                       </div>
                       <div className="d-flex justify-content-between align-items-center py-1 border-bottom" style={{ borderColor: subtleBorder }}>
                         <span className="text-muted">Campaign</span>
-                        <span className="fw-semibold" style={{ color: textTitle }}>{opp.campaignName || "Direct / Organic"}</span>
+                        <span className="fw-semibold" style={{ color: textTitle }}>{opp.campaignName || "—"}</span>
                       </div>
                       <div className="pt-2">
                         <span className="text-muted d-block mb-1 fw-medium">Description</span>
@@ -1447,7 +1483,7 @@ const OpportunityDetail = () => {
                     <div className="d-flex flex-column gap-2 fs-12 flex-grow-1">
                       <div className="d-flex justify-content-between align-items-center py-1 border-bottom" style={{ borderColor: subtleBorder }}>
                         <span className="text-muted">Currency</span>
-                        <span className="fw-semibold" style={{ color: textTitle }}>{opp.currencyCode || "INR"} - Indian Rupee ({"\u20B9"})</span>
+                        <span className="fw-semibold" style={{ color: textTitle }}>{CURRENCY_LABELS[String(opp.currencyCode || "INR").toUpperCase()] || (opp.currencyCode || "INR")}</span>
                       </div>
                       <div className="d-flex justify-content-between align-items-center py-1 border-bottom" style={{ borderColor: subtleBorder }}>
                         <span className="text-muted">Total Amount</span>

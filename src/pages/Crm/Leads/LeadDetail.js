@@ -511,25 +511,41 @@ const LeadDetail = () => {
         email: data.email || "—",
       };
 
-      // Load related Opportunities from database
-      try {
-        const oppsRes = await getOpportunities({
-          accountId: data.convertedAccountId || undefined,
-        });
-        const oppList = Array.isArray(oppsRes) ? oppsRes : oppsRes?.items || [];
-        setOpportunities(oppList);
-      } catch {
+      // Load related Opportunities ONLY if this lead has been converted to an account
+      if (data.convertedAccountId) {
+        try {
+          const oppsRes = await getOpportunities({
+            accountId: data.convertedAccountId,
+          });
+          const oppList = Array.isArray(oppsRes) ? oppsRes : oppsRes?.items || [];
+          setOpportunities(oppList);
+        } catch {
+          setOpportunities([]);
+        }
+      } else {
         setOpportunities([]);
       }
 
-      // Load related Activities from database
+      // Load related Activities scoped to this specific lead (by lead tag, name, or mobile)
       try {
+        const searchTerm = data.leadName || data.mobile || undefined;
         const actRes = await getActivities({
-          employeeId: data.ownerEmployeeId || undefined,
-          limit: 15,
+          search: searchTerm,
+          limit: 25,
         });
-        const actList = Array.isArray(actRes) ? actRes : actRes?.items || [];
-        setActivities(actList);
+        const rawList = Array.isArray(actRes) ? actRes : actRes?.items || [];
+        const leadTag = `[lead: ${leadId}]`;
+        const leadNameLower = (data.leadName || "").trim().toLowerCase();
+        const leadMobile = (data.mobile || "").trim();
+        const scopedActs = rawList.filter((a) => {
+          const hay = `${a.subject || a.reason || ""} ${a.callNotes || ""}`.toLowerCase();
+          return (
+            hay.includes(leadTag) ||
+            (leadNameLower && hay.includes(leadNameLower)) ||
+            (leadMobile && a.callNumber && String(a.callNumber).includes(leadMobile))
+          );
+        });
+        setActivities(scopedActs);
       } catch {
         setActivities([]);
       }
@@ -665,6 +681,29 @@ const LeadDetail = () => {
     }
   };
 
+  const buildFullUpdatePayload = (overrides = {}) => ({
+    leadName: lead.leadName,
+    companyName: lead.companyName || null,
+    designation: lead.designation || null,
+    industry: lead.industry || null,
+    email: lead.email || null,
+    mobile: lead.mobile,
+    phone: lead.phone || null,
+    website: lead.website || null,
+    sourceId: lead.sourceId || null,
+    statusId: lead.statusId,
+    ratingId: lead.ratingId || null,
+    estimatedValue: lead.estimatedValue ?? null,
+    currencyCode: lead.currencyCode || "INR",
+    expectedCloseDate: lead.expectedCloseDate || null,
+    ownerEmployeeId: lead.ownerEmployeeId || null,
+    campaignId: lead.campaignId || null,
+    convertedAccountId: lead.convertedAccountId || null,
+    convertedContactId: lead.convertedContactId || null,
+    description: lead.description || null,
+    ...overrides,
+  });
+
   // Real Database Lead Conversion Workflow
   const handleConvertLead = async () => {
     setConverting(true);
@@ -713,13 +752,11 @@ const LeadDetail = () => {
         (s.masterName || s.masterCode || "").toLowerCase().includes("convert")
       );
 
-      await updateLead(leadId, {
-        leadName: lead.leadName,
-        mobile: lead.mobile,
+      await updateLead(leadId, buildFullUpdatePayload({
         statusId: convStatus?.masterId || lead.statusId,
         convertedAccountId: newAccountId || null,
         convertedContactId: newContactId || null,
-      });
+      }));
 
       toastSuccess(`Lead converted into Customer Account "${convertForm.companyName}".`);
       setConvertModal(false);
@@ -737,10 +774,15 @@ const LeadDetail = () => {
     if (!activityForm.reason.trim()) return;
     setSavingActivity(true);
     try {
+      const leadTag = `[Lead: ${leadId}] Related: ${lead?.leadName || ""}`.trim();
+      const combinedNotes = activityForm.callNotes?.trim()
+        ? `${activityForm.callNotes.trim()}\n${leadTag}`
+        : leadTag;
       await createActivity({
         actType: activityForm.actType,
-        reason: activityForm.reason.trim(),
-        callNotes: activityForm.callNotes?.trim() || null,
+        subject: activityForm.reason.trim(),
+        callNumber: lead?.mobile || null,
+        callNotes: combinedNotes,
         startTime: activityForm.startTime || new Date().toISOString(),
         employeeId: lead?.ownerEmployeeId || null,
       });
@@ -826,8 +868,9 @@ const LeadDetail = () => {
     try {
       await createActivity({
         actType: "CALL",
-        reason: parsed.followUp ? `Completed: ${parsed.followUp}` : `Completed follow-up with ${lead?.leadName}`,
-        callNotes: "Follow-up marked as completed by user.",
+        subject: parsed.followUp ? `Completed: ${parsed.followUp}` : `Completed follow-up with ${lead?.leadName}`,
+        callNumber: lead?.mobile || null,
+        callNotes: `Follow-up marked as completed by user.\n[Lead: ${leadId}] Related: ${lead?.leadName || ""}`,
         startTime: new Date().toISOString(),
         employeeId: lead?.ownerEmployeeId || null,
       });
@@ -836,12 +879,7 @@ const LeadDetail = () => {
       if (lead?.description && lead.description.includes("Next Follow-up Reminder:")) {
         const lines = lead.description.split("\n");
         const updatedDesc = lines.filter((l) => !l.startsWith("Next Follow-up Reminder:")).join("\n");
-        await updateLead(leadId, {
-          leadName: lead.leadName,
-          mobile: lead.mobile,
-          statusId: lead.statusId,
-          description: updatedDesc,
-        });
+        await updateLead(leadId, buildFullUpdatePayload({ description: updatedDesc }));
       }
 
       toastSuccess("Follow-up marked as completed and recorded in activities.");
@@ -871,12 +909,7 @@ const LeadDetail = () => {
         updatedDesc = (updatedDesc ? updatedDesc + "\n\n" : "") + "--- Additional Info ---\n" + reminderLine;
       }
 
-      await updateLead(leadId, {
-        leadName: lead.leadName,
-        mobile: lead.mobile,
-        statusId: lead.statusId,
-        description: updatedDesc,
-      });
+      await updateLead(leadId, buildFullUpdatePayload({ description: updatedDesc }));
 
       toastSuccess("Follow-up successfully rescheduled in database.");
       setRescheduleModal(false);
@@ -912,12 +945,7 @@ const LeadDetail = () => {
         updatedDesc = updatedDesc ? `${updatedDesc}\n\n• ${noteEntry}` : `• ${noteEntry}`;
       }
 
-      await updateLead(leadId, {
-        leadName: lead.leadName,
-        mobile: lead.mobile,
-        statusId: lead.statusId,
-        description: updatedDesc,
-      });
+      await updateLead(leadId, buildFullUpdatePayload({ description: updatedDesc }));
 
       toastSuccess("Discussion note saved to database.");
       setNewNoteText("");
@@ -987,12 +1015,7 @@ const LeadDetail = () => {
         updatedDesc = (updatedDesc ? updatedDesc + "\n\n" : "") + "--- Additional Info ---\n" + docLine;
       }
 
-      await updateLead(leadId, {
-        leadName: lead.leadName,
-        mobile: lead.mobile,
-        statusId: lead.statusId,
-        description: updatedDesc,
-      });
+      await updateLead(leadId, buildFullUpdatePayload({ description: updatedDesc }));
 
       toastSuccess(`Document "${file.name}" attached successfully to database.`);
       await load();
@@ -1022,12 +1045,7 @@ const LeadDetail = () => {
         updatedDesc = lines.filter((l) => !l.startsWith("Staged Documents:")).join("\n");
       }
 
-      await updateLead(leadId, {
-        leadName: lead.leadName,
-        mobile: lead.mobile,
-        statusId: lead.statusId,
-        description: updatedDesc,
-      });
+      await updateLead(leadId, buildFullUpdatePayload({ description: updatedDesc }));
 
       toastSuccess(`Document "${docName}" removed from database.`);
       await load();
@@ -1495,7 +1513,7 @@ const LeadDetail = () => {
                             className="rounded d-flex align-items-center justify-content-center"
                             style={{ width: "32px", height: "32px", backgroundColor: "#fef2f2", color: "#7f1d1d" }}
                           >
-                            <span className="fs-15 fw-bold">₹</span>
+                            <span className="fs-15 fw-bold">{lead.currencyCode === "USD" ? "$" : lead.currencyCode === "EUR" ? "€" : lead.currencyCode === "GBP" ? "£" : "₹"}</span>
                           </div>
                         </div>
                         <div>

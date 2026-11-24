@@ -8,67 +8,12 @@ const formatInr = (val) => {
   return "₹ " + num.toLocaleString("en-IN");
 };
 
-/**
- * 5 Canonical Lead Sources matching the mockup (media_1793874780265_83ec02cb.png)
- * and tab_common_master:
- * Website, WhatsApp, Referral, LinkedIn, Walk-in
- */
-const CANONICAL_SOURCES = [
-  {
-    code: "WEBSITE",
-    name: "Website",
-    dotColor: "#701a1e", // Dark Maroon
-    gradId: "gradSourceWebsite",
-    gradStart: "#4c0519",
-    gradEnd: "#701a1e",
-    highlight: "#9f1239",
-    startAngle: 0,
-    endAngle: 38,
-  },
-  {
-    code: "WHATSAPP",
-    name: "WhatsApp",
-    dotColor: "#881337", // Burgundy
-    gradId: "gradSourceWhatsApp",
-    gradStart: "#88637b",
-    gradEnd: "#a57c96",
-    highlight: "#c084fc",
-    startAngle: 38,
-    endAngle: 95,
-  },
-  {
-    code: "REFERRAL",
-    name: "Referral",
-    dotColor: "#818cf8", // Soft Periwinkle / Slate Blue
-    gradId: "gradSourceReferral",
-    gradStart: "#fce7f3",
-    gradEnd: "#fbcfe8",
-    highlight: "#ffffff",
-    startAngle: 95,
-    endAngle: 155,
-  },
-  {
-    code: "LINKEDIN",
-    name: "LinkedIn",
-    dotColor: "#991b1b", // Crimson Maroon (Primary active source in mockup)
-    gradId: "gradSourceLinkedIn",
-    gradStart: "#9f1239",
-    gradEnd: "#be123c",
-    highlight: "#e11d48",
-    startAngle: 155,
-    endAngle: 310,
-  },
-  {
-    code: "WALK_IN",
-    name: "Walk-in",
-    dotColor: "#f97316", // Vibrant Orange
-    gradId: "gradSourceWalkin",
-    gradStart: "#7c4d5a",
-    gradEnd: "#9f6b78",
-    highlight: "#be8f9b",
-    startAngle: 310,
-    endAngle: 360,
-  },
+const SOURCE_PALETTE = [
+  { dotColor: "#701a1e", gradId: "gradSourceWebsite", gradStart: "#4c0519", gradEnd: "#701a1e" },
+  { dotColor: "#991b1b", gradId: "gradSourceLinkedIn", gradStart: "#9f1239", gradEnd: "#be123c" },
+  { dotColor: "#881337", gradId: "gradSourceWhatsApp", gradStart: "#88637b", gradEnd: "#a57c96" },
+  { dotColor: "#f97316", gradId: "gradSourceWalkin", gradStart: "#c2410c", gradEnd: "#ea580c" },
+  { dotColor: "#475569", gradId: "gradSourceReferral", gradStart: "#334155", gradEnd: "#64748b" },
 ];
 
 const polarToCartesian = (cx, cy, r, angleInDegrees) => {
@@ -117,34 +62,44 @@ const RevenueBySourceDonut = ({ data = {} }) => {
 
   const [hoveredSource, setHoveredSource] = useState(null);
 
-  // Incoming data from API
+  // Incoming dynamic sources from API (supports any tenant-configured sources)
   const incomingSources = Array.isArray(data.sources) ? data.sources : [];
-  const sourceMap = {};
-  incomingSources.forEach((s) => {
-    const key = (s.source_code || s.source_name || "")
-      .toUpperCase()
-      .replace(/[\s-]+/g, "_");
-    sourceMap[key] = s;
-  });
-
-  // Calculate canonical source metrics from database
-  let computedTotal = 0;
-  const sources = CANONICAL_SOURCES.map((c) => {
-    const matched = sourceMap[c.code] || {};
-    const revenue = Number(matched.revenue ?? 0);
-    const percentage = Number(matched.percentage ?? 0);
-    computedTotal += revenue;
-    return {
-      ...c,
-      revenue,
-      percentage,
-    };
-  });
-
+  const computedTotal = incomingSources.reduce((sum, s) => sum + (Number(s.revenue) || 0), 0);
   const totalRevenue =
     data.total_won_revenue !== undefined && data.total_won_revenue !== null
       ? Number(data.total_won_revenue)
       : computedTotal;
+
+  const angleDenom = computedTotal > 0 ? computedTotal : 0;
+  let runningAngle = 0;
+
+  const sources = incomingSources.map((s, idx) => {
+    const palette = SOURCE_PALETTE[idx % SOURCE_PALETTE.length];
+    const code = String(s.source_code || s.source_name || `SRC_${idx}`)
+      .toUpperCase()
+      .replace(/[\s-]+/g, "_");
+    const revenue = Number(s.revenue) || 0;
+    const percentage =
+      s.percentage !== undefined && s.percentage !== null
+        ? Number(s.percentage)
+        : angleDenom > 0
+          ? Number(((revenue / angleDenom) * 100).toFixed(1))
+          : 0;
+    const sweep = angleDenom > 0 ? (revenue / angleDenom) * 360 : 0;
+    const startAngle = runningAngle;
+    const endAngle = runningAngle + sweep;
+    runningAngle = endAngle;
+    return {
+      code,
+      name: s.source_name || s.source_code || "Other",
+      dotColor: palette.dotColor,
+      gradId: palette.gradId,
+      revenue,
+      percentage,
+      startAngle,
+      endAngle,
+    };
+  });
 
   const activeCount = sources.filter((s) => s.revenue > 0).length;
 
@@ -257,35 +212,48 @@ const RevenueBySourceDonut = ({ data = {} }) => {
                   filter="url(#donutFloorBlur)"
                 />
 
-                {/* 2. Donut Ring Segments (3D Beveled Torus) */}
+                {/* 2. Donut Ring Segments (Dynamic Proportional Arcs or Empty State Ring) */}
                 <g>
-                  {sources.map((s) => {
-                    const isHovered = hoveredSource === s.code;
-                    const pathD = describeArc(100, 96, 73, 44, s.startAngle, s.endAngle);
+                  {angleDenom <= 0 ? (
+                    <path
+                      d={describeArc(100, 96, 73, 44, 0, 359.99)}
+                      fill={isDark ? "#262626" : "#e2e8f0"}
+                      stroke={isDark ? "#121212" : "#ffffff"}
+                      strokeWidth="1.2"
+                    >
+                      <title>No won revenue recorded for this period</title>
+                    </path>
+                  ) : (
+                    sources
+                      .filter((s) => s.revenue > 0 && s.endAngle > s.startAngle)
+                      .map((s) => {
+                        const isHovered = hoveredSource === s.code;
+                        const pathD = describeArc(100, 96, 73, 44, s.startAngle, s.endAngle);
 
-                    return (
-                      <path
-                        key={s.code}
-                        d={pathD}
-                        fill={`url(#${s.gradId})`}
-                        stroke={isDark ? "#121212" : "#ffffff"}
-                        strokeWidth="1.2"
-                        style={{
-                          cursor: "pointer",
-                          transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                          transformOrigin: "100px 96px",
-                          transform: isHovered ? "scale(1.04)" : "scale(1)",
-                          filter: isHovered
-                            ? "drop-shadow(0 0 8px rgba(225, 29, 72, 0.5))"
-                            : "none",
-                        }}
-                        onMouseEnter={() => setHoveredSource(s.code)}
-                        onMouseLeave={() => setHoveredSource(null)}
-                      >
-                        <title>{`${s.name}: ${s.percentage}% (${formatInr(s.revenue)})`}</title>
-                      </path>
-                    );
-                  })}
+                        return (
+                          <path
+                            key={s.code}
+                            d={pathD}
+                            fill={`url(#${s.gradId})`}
+                            stroke={isDark ? "#121212" : "#ffffff"}
+                            strokeWidth="1.2"
+                            style={{
+                              cursor: "pointer",
+                              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                              transformOrigin: "100px 96px",
+                              transform: isHovered ? "scale(1.04)" : "scale(1)",
+                              filter: isHovered
+                                ? "drop-shadow(0 0 8px rgba(225, 29, 72, 0.5))"
+                                : "none",
+                            }}
+                            onMouseEnter={() => setHoveredSource(s.code)}
+                            onMouseLeave={() => setHoveredSource(null)}
+                          >
+                            <title>{`${s.name}: ${s.percentage}% (${formatInr(s.revenue)})`}</title>
+                          </path>
+                        );
+                      })
+                  )}
                 </g>
 
                 {/* 3. 3D Specular Highlight on Crest of Tube */}
